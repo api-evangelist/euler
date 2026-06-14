@@ -1,0 +1,149 @@
+# Euler Finance V2 Subgraph — GraphQL Schema (SDL)
+# Source: live introspection of https://api.goldsky.com/api/public/project_cm4iagnemt1wp01xn4gh1agft/subgraphs/euler-simple-mainnet/latest/gn
+# Confirmed via __schema introspection query on 2026-06-14.
+# Subgraph repository: https://github.com/euler-xyz/euler-subgraph
+
+"""
+A vault created by the EulerVaultFactory or EulerEarnFactory. Each vault address
+maps to a deployed ERC-4626 lending/earn contract on the protocol.
+"""
+type Vault {
+  "Vault contract address (bytes)"
+  id: Bytes!
+  "Factory contract address that deployed this vault"
+  factory: Bytes!
+}
+
+"""
+Tracks an active account across all vaults it has interacted with.
+The id is the 19-byte addressPrefix shared by a main account and all its
+sub-accounts in the Euler Vault Connector (EVC).
+"""
+type TrackingActiveAccount {
+  "First 19 bytes of the account address (addressPrefix)"
+  id: Bytes!
+  "First 19 bytes shared by the main address and all sub-accounts"
+  addressPrefix: Bytes!
+  "List of (account + vault) byte pairs where the account has deposits"
+  deposits: [Bytes!]!
+  "List of (account + vault) byte pairs where the account has borrows"
+  borrows: [Bytes!]!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+"""
+Tracks the eToken balance and outstanding debt for a specific (account, vault) pair.
+Updated on every Transfer event from the vault contract.
+"""
+type TrackingVaultBalance {
+  "Composite key: account address bytes concatenated with vault address bytes"
+  id: Bytes!
+  "Vault contract address"
+  vault: Bytes!
+  "First 19 bytes of the account address — links to TrackingActiveAccount"
+  addressPrefix: Bytes!
+  "Full account address"
+  account: Bytes!
+  "eToken balance (shares) held by the account in this vault"
+  balance: BigInt!
+  "Outstanding debt of the account in this vault"
+  debt: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# ---------------------------------------------------------------------------
+# Scalars
+# ---------------------------------------------------------------------------
+scalar BigDecimal
+scalar BigInt
+scalar Bytes
+scalar Int8
+scalar Timestamp
+
+# ---------------------------------------------------------------------------
+# Enums
+# ---------------------------------------------------------------------------
+enum OrderDirection {
+  asc
+  desc
+}
+
+enum Vault_orderBy {
+  id
+  factory
+}
+
+enum TrackingActiveAccount_orderBy {
+  id
+  addressPrefix
+  deposits
+  borrows
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+enum TrackingVaultBalance_orderBy {
+  id
+  vault
+  addressPrefix
+  account
+  balance
+  debt
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+enum _SubgraphErrorPolicy_ {
+  allow
+  deny
+}
+
+# ---------------------------------------------------------------------------
+# Root Query type (available top-level fields)
+# ---------------------------------------------------------------------------
+type Query {
+  "Fetch a single Vault by id"
+  vault(id: ID!, block: Block_height, subgraphError: _SubgraphErrorPolicy_): Vault
+  "Fetch a list of Vaults with optional filtering and ordering"
+  vaults(
+    skip: Int
+    first: Int
+    orderBy: Vault_orderBy
+    orderDirection: OrderDirection
+    where: Vault_filter
+    block: Block_height
+    subgraphError: _SubgraphErrorPolicy_
+  ): [Vault!]!
+  "Fetch a single TrackingActiveAccount by addressPrefix"
+  trackingActiveAccount(id: ID!, block: Block_height, subgraphError: _SubgraphErrorPolicy_): TrackingActiveAccount
+  "Fetch a list of TrackingActiveAccounts with optional filtering and ordering"
+  trackingActiveAccounts(
+    skip: Int
+    first: Int
+    orderBy: TrackingActiveAccount_orderBy
+    orderDirection: OrderDirection
+    where: TrackingActiveAccount_filter
+    block: Block_height
+    subgraphError: _SubgraphErrorPolicy_
+  ): [TrackingActiveAccount!]!
+  "Fetch a single TrackingVaultBalance by composite (account+vault) id"
+  trackingVaultBalance(id: ID!, block: Block_height, subgraphError: _SubgraphErrorPolicy_): TrackingVaultBalance
+  "Fetch a list of TrackingVaultBalances with optional filtering and ordering"
+  trackingVaultBalances(
+    skip: Int
+    first: Int
+    orderBy: TrackingVaultBalance_orderBy
+    orderDirection: OrderDirection
+    where: TrackingVaultBalance_filter
+    block: Block_height
+    subgraphError: _SubgraphErrorPolicy_
+  ): [TrackingVaultBalance!]!
+  "_meta returns subgraph indexing metadata"
+  _meta(block: Block_height): _Meta_
+}
