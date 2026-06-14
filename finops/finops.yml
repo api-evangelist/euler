@@ -1,0 +1,37 @@
+name: Euler Finance API FinOps
+description: Financial operations considerations for teams integrating with Euler Finance APIs. The core Euler V3 Data API is free at low volumes with IP-based rate limiting and transitions to API-key-authenticated access at higher volumes. The protocol itself generates revenue through interest rate spreads and fees on lending/borrowing activity. Teams building on Euler should plan for API key procurement, subgraph hosting costs via Goldsky or The Graph, and SDK operational overhead.
+url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+created: '2026-06-14'
+modified: '2026-06-14'
+costs:
+  - name: V3 Data API (Unauthenticated)
+    description: No cost. Publicly accessible with IP-based rate limiting at 100 requests/minute. Suitable for prototyping and low-traffic applications.
+    price: Free
+    unit: N/A
+  - name: V3 Data API (Authenticated)
+    description: API key provides 1000 requests/minute. Pricing not publicly listed; contact leonard@euler.xyz to negotiate terms.
+    price: Contact for pricing
+    contact: leonard@euler.xyz
+  - name: Subgraph Queries (Goldsky)
+    description: Euler-hosted Goldsky subgraphs are publicly accessible. Heavy production usage may require a dedicated Goldsky plan or self-hosted subgraph deployment. Refer to Goldsky pricing for indexed query volume costs.
+    price: Free (public endpoints) / Goldsky plan for high volume
+    url: https://goldsky.com/pricing
+  - name: Subgraph Queries (The Graph)
+    description: Alternative subgraph hosting via The Graph Explorer. Query fees may apply depending on curation signal and query volume under The Graph's GRT-based billing model.
+    price: Variable (GRT-based)
+    url: https://thegraph.com/docs/en/querying/billing/
+  - name: TypeScript SDK
+    description: Open-source npm package with no licensing cost. Infrastructure costs (RPC nodes, indexers) are borne by the integrating team.
+    price: Free (open source)
+    url: https://github.com/euler-xyz/euler-sdks
+optimization:
+  - name: Cache API Responses
+    description: Cache V3 API responses for vault metadata, token lists, and chain stats locally to reduce repeated identical requests and stay within rate limits.
+  - name: Batch Account Queries
+    description: Use the pagination parameters (limit, offset) on list endpoints to batch-retrieve data rather than making many single-item requests.
+  - name: Use Subgraphs for Historical Data
+    description: Subgraph GraphQL endpoints are better suited for historical time-series queries than the V3 REST API, reducing per-request costs on high-frequency historical pulls.
+  - name: Upgrade to API Key Early
+    description: Request an API key before hitting IP-based rate limits in production to avoid service interruptions and renegotiate terms as usage scales.
+  - name: Use Lens Contracts for On-Chain Reads
+    description: For off-chain tooling that needs aggregated vault data, Euler Lens Contracts can batch multiple contract reads into a single RPC call, reducing node provider costs.

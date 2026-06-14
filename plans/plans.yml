@@ -1,0 +1,45 @@
+name: Euler Finance API Plans
+description: Euler Finance provides tiered access to its V3 Data API based on authentication level. Unauthenticated requests are permitted with IP-based rate limiting suitable for development and low-volume use. API key authentication unlocks higher rate limits for production applications, dashboards, bots, and risk systems. Contact the Euler team directly to request an API key.
+url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+created: '2026-06-14'
+modified: '2026-06-14'
+plans:
+  - name: Free (Unauthenticated)
+    description: Default access tier for the Euler V3 Data API. Requests are rate-limited by IP address. Suitable for exploration, development, and low-volume integrations. No API key required.
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+    price: Free
+    rateLimits:
+      - name: Requests per Minute
+        value: 100
+        unit: requests/minute
+        scope: per IP address
+    authentication: None required
+    features:
+      - Access to all public V3 API endpoints
+      - Chain inventory and protocol stats
+      - Vault data and history
+      - Account positions and activity
+      - Token metadata and prices
+      - APYs and rewards data
+      - Liquidation events
+      - Oracle routing data
+  - name: Authenticated (API Key)
+    description: Enhanced access tier for the Euler V3 Data API using an API key. Provides higher request rate limits suitable for production dashboards, portfolio tools, trading bots, risk monitoring systems, and research workflows. Request an API key by contacting leonard@euler.xyz.
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+    price: Contact for pricing
+    rateLimits:
+      - name: Requests per Minute
+        value: 1000
+        unit: requests/minute
+        scope: per API key
+    authentication:
+      - type: ApiKey
+        header: X-API-Key
+      - type: BearerToken
+        header: Authorization
+    contact: leonard@euler.xyz
+    features:
+      - All Free tier endpoints
+      - Higher rate limits (10x)
+      - Suitable for production workloads
+      - Priority support

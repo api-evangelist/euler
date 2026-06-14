@@ -1,0 +1,133 @@
+name: Euler Finance
+description: Euler is a permissionless modular lending protocol that enables users to lend, borrow, and build custom lending markets without limits. The platform provides REST APIs for querying vaults, account positions, interest rates, liquidation thresholds, token prices, APYs, reward campaigns, and lending market analytics across multiple EVM-compatible networks.
+image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+url: https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/apis.yml
+created: '2026-06-14'
+modified: '2026-06-14'
+specificationVersion: '0.19'
+tags:
+  - DeFi
+  - Lending
+  - Borrowing
+  - Finance
+  - Ethereum
+  - Blockchain
+  - Vaults
+  - Liquidation
+  - Interest Rates
+  - Permissionless
+apis:
+  - name: Euler V3 Data API
+    description: The primary REST API for querying indexed Euler protocol data including vaults, account positions, token prices, APYs, reward campaigns, liquidation events, oracle routing, and chain-level analytics. Supports unauthenticated and API-key-authenticated access with higher rate limits.
+    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+    humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+    baseURL: https://v3.euler.finance/v3
+    tags:
+      - Vaults
+      - Lending
+      - Positions
+      - Liquidation
+      - Interest Rates
+      - Analytics
+      - DeFi
+    properties:
+      - type: Documentation
+        url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+      - type: OpenAPI
+        url: https://v3.euler.finance/v3/openapi.json
+      - type: SwaggerUI
+        url: https://v3.euler.finance/v3/docs
+      - type: PricingPage
+        url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+      - type: RateLimits
+        url: https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+    contact:
+      - FN: Euler Finance Developer Support
+        email: leonard@euler.xyz
+  - name: Euler Off-Chain Prices API
+    description: An unofficial REST endpoint for fetching USD-denominated asset prices for ERC-20 tokens across supported networks. Accepts chainId and comma-separated asset addresses. Returns prices with 18-decimal precision. Users should validate returned prices and maintain fallback sources.
+    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+    humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+    baseURL: https://app.euler.finance/api/v1
+    tags:
+      - Prices
+      - Tokens
+      - DeFi
+      - Analytics
+    properties:
+      - type: Documentation
+        url: https://docs.euler.finance/developers/data-querying/off-chain-prices
+    contact:
+      - FN: Euler Finance
+        url: https://euler.finance
+  - name: Euler Subgraphs (GraphQL)
+    description: GraphQL-based subgraph endpoints hosted on Goldsky for querying indexed Euler V2 protocol data including vault states, account positions, borrow/supply history, interest rates, collateral relationships, EulerEarn strategies, and swap pools across Mainnet, Base, Arbitrum, Optimism, Berachain, Avalanche, BSC, Sonic, and additional networks.
+    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+    humanURL: https://docs.euler.finance/developers/data-querying/subgraphs
+    baseURL: https://api.goldsky.com/api/public/project_cm4iagnemt1wp01xn4gh1agft/subgraphs
+    tags:
+      - GraphQL
+      - Subgraph
+      - Vaults
+      - Positions
+      - History
+      - Analytics
+      - DeFi
+    properties:
+      - type: Documentation
+        url: https://docs.euler.finance/developers/data-querying/subgraphs
+      - type: GitHubRepository
+        url: https://github.com/euler-xyz/euler-subgraph
+    contact:
+      - FN: Euler Finance
+        url: https://euler.finance
+  - name: Euler V2 TypeScript SDK
+    description: The recommended TypeScript entry point for applications, bots, scripts, and operational tooling built on Euler V2. Provides protocol data fetching, EVC batch composition, transaction simulation, approval resolution via standard approve and Permit2, swap operations, pricing, rewards, oracle adapter metadata, and FeeFlow management.
+    image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+    humanURL: https://docs.euler.finance/developers/sdk
+    baseURL: https://docs.euler.finance
+    tags:
+      - SDK
+      - TypeScript
+      - DeFi
+      - Vaults
+      - EVC
+    properties:
+      - type: Documentation
+        url: https://docs.euler.finance/developers/sdk
+      - type: GitHubRepository
+        url: https://github.com/euler-xyz/euler-sdks
+      - type: NPMPackage
+        url: https://www.npmjs.com/package/@eulerxyz/euler-v2-sdk
+    contact:
+      - FN: Euler Finance GitHub
+        url: https://github.com/euler-xyz
+common:
+  - type: Documentation
+    url: https://docs.euler.finance/
+  - type: PrivacyPolicy
+    url: https://www.euler.finance/privacy-policy
+  - type: TermsOfService
+    url: https://www.euler.finance/terms-of-service
+  - type: StatusPage
+    url: https://status.euler.finance
+  - type: GitHubOrganization
+    url: https://github.com/euler-xyz/
+  - type: Discord
+    url: https://discord.com/invite/CdG97VSYGk
+  - type: X
+    url: https://x.com/eulerfinance
+  - type: Blog
+    url: https://www.euler.finance/blog
+  - type: Governance
+    url: https://gov.euler.finance
+  - type: BugBounty
+    url: https://docs.euler.finance/security/bug-bounty
+  - type: LLMsTxt
+    url: https://docs.euler.finance/llms.txt
+  - type: LLMsFullTxt
+    url: https://docs.euler.finance/llms-full.txt
+maintainers:
+  - FN: API Evangelist
+    url: https://apievangelist.com
+    email: info@apievangelist.com

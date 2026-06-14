@@ -1,0 +1,41 @@
+name: Euler V3 Data API Rate Limits
+description: The Euler V3 Data API enforces rate limits based on authentication tier. Unauthenticated requests are limited by IP address. Authenticated requests using an API key or Bearer token receive a higher allowance. Rate limit state is communicated through standard response headers on every request.
+url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+created: '2026-06-14'
+modified: '2026-06-14'
+rateLimits:
+  - name: Unauthenticated Rate Limit
+    description: Default rate limit applied to all requests without an API key, scoped per source IP address.
+    requests: 100
+    period: minute
+    scope: per IP address
+    authentication: None
+  - name: Authenticated Rate Limit
+    description: Rate limit applied to requests authenticated with an API key via X-API-Key header or Authorization Bearer token.
+    requests: 1000
+    period: minute
+    scope: per API key
+    authentication:
+      - type: ApiKey
+        header: X-API-Key
+      - type: BearerToken
+        header: Authorization
+headers:
+  - name: RateLimit-Limit
+    description: The maximum number of requests allowed in the current rate limit window.
+    example: '100'
+  - name: RateLimit-Remaining
+    description: The number of requests remaining in the current rate limit window.
+    example: '87'
+  - name: RateLimit-Reset
+    description: The time at which the current rate limit window resets, expressed as a Unix timestamp.
+    example: '1718400060'
+errorHandling:
+  - code: 429
+    description: Too Many Requests. Returned when the rate limit is exceeded. Clients should back off and retry after the RateLimit-Reset time.
+  - code: 503
+    description: Service Unavailable. Returned when the internal rate-limit enforcement service (Redis) is unavailable. The API defaults to fail-closed in this state.
+notes:
+  - Contact leonard@euler.xyz to request an API key for higher rate limits.
+  - The Subgraph (GraphQL) endpoints on Goldsky do not document explicit rate limits; follow Goldsky platform policies.
+  - The Off-Chain Prices endpoint (app.euler.finance/api/v1/price) is unofficial and may impose undocumented rate limits.
