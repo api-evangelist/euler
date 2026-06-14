@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LtvHistoryItem",
+  "type": "object",
+  "description": "Historical LTV configuration change",
+  "properties": {
+    "collateral": {
+      "type": "string",
+      "description": "Collateral vault address"
+    },
+    "borrowLTV": {
+      "type": "string",
+      "description": "Borrow LTV (basis points as string)"
+    },
+    "liquidationLTV": {
+      "type": "string",
+      "description": "Liquidation LTV (basis points as string)"
+    },
+    "initialLiquidationLTV": {
+      "type": "string",
+      "description": "Initial liquidation LTV before ramping"
+    },
+    "borrowLtv": {
+      "type": "number",
+      "description": "Legacy decimal alias for `borrowLTV`."
+    },
+    "liquidationLtv": {
+      "type": "number",
+      "description": "Legacy decimal alias for `liquidationLTV`."
+    },
+    "initialLiquidationLtv": {
+      "type": "number",
+      "description": "Legacy decimal alias for `initialLiquidationLTV`."
+    },
+    "targetTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "ISO timestamp when LTV ramp completes"
+    },
+    "rampDuration": {
+      "type": "integer",
+      "description": "Duration of LTV ramp in seconds"
+    },
+    "blockNumber": {
+      "type": "string",
+      "description": "Block number of the change"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the change"
+    },
+    "txHash": {
+      "type": "string",
+      "description": "Transaction hash"
+    },
+    "logIndex": {
+      "type": "integer",
+      "description": "Log index within the transaction receipt."
+    }
+  }
+}

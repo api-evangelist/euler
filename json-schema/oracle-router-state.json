@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleRouterState",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "router": {
+      "type": "string"
+    },
+    "deployer": {
+      "type": "string"
+    },
+    "deployedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "configs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/OracleRouterConfig"
+      }
+    },
+    "vaults": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/OracleRouterVault"
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "operationId": "getAccountsByAddressPortfolio",
+  "method": "GET",
+  "path": "/v3/accounts/{address}/portfolio",
+  "summary": "Account portfolio",
+  "description": "Returns a position-first portfolio view for an owner on a single chain.\nThe backend builds SDK Account and Portfolio entities from internal V3\naccount, vault, price, and label data sources; it does not recursively\ncall `/v3/accounts/{address}/positions`. When `forceFresh=true`, the\nendpoint enqueues or promotes account snapshot refresh work and waits\nbriefly for refreshed snapshots before falling back to the current\nindexed portfolio view. Freshness metadata indicates whether the refresh\ncompleted, timed out, or was rate-limited.\n",
+  "tags": [
+    "Accounts"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "labeledVaultsOnly",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": "includeAccount",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": "forceFresh",
+      "in": "query",
+      "required": false,
+      "example": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Account portfolio",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AccountPortfolioResponse"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

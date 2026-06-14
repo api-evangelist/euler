@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubAccount",
+  "type": "object",
+  "required": [
+    "chainId",
+    "owner",
+    "addressPrefix",
+    "blockNumber",
+    "timestamp"
+  ],
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "addressPrefix": {
+      "type": "string"
+    },
+    "blockNumber": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

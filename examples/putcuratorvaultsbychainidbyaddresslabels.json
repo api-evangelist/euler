@@ -1,0 +1,38 @@
+{
+  "operationId": "putCuratorVaultsByChainIdByAddressLabels",
+  "method": "PUT",
+  "path": "/v3/curator/vaults/{chainId}/{address}/labels",
+  "summary": "Submit or update curator label for a vault",
+  "description": "",
+  "tags": [
+    "Curator"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Curator label upserted",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CuratorVaultLabel"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

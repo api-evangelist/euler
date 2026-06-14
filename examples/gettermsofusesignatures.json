@@ -1,0 +1,83 @@
+{
+  "operationId": "getTermsOfUseSignatures",
+  "method": "GET",
+  "path": "/v3/terms-of-use/signatures",
+  "summary": "Terms-of-use signature history",
+  "description": "",
+  "tags": [
+    "TermsOfUse"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "address",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Terms-of-use signatures",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chainId": {
+                  "type": "integer"
+                },
+                "signer": {
+                  "type": "string"
+                },
+                "account": {
+                  "type": "string"
+                },
+                "termsOfUseHash": {
+                  "type": "string"
+                },
+                "signedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "blockNumber": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "txHash": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

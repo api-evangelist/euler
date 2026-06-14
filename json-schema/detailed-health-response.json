@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DetailedHealthResponse",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/HealthResponse"
+    },
+    {
+      "type": "object",
+      "required": [
+        "checks"
+      ],
+      "properties": {
+        "checks": {
+          "type": "object",
+          "properties": {
+            "database": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "error"
+                  ]
+                },
+                "latency": {
+                  "type": "number"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            },
+            "redis": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "error"
+                  ]
+                },
+                "latency": {
+                  "type": "number"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            },
+            "indexer": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "syncing",
+                    "error"
+                  ]
+                },
+                "blocksBehind": {
+                  "type": "integer"
+                },
+                "syncProgress": {
+                  "type": "number"
+                },
+                "latency": {
+                  "type": "number"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

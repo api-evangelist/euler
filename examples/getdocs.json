@@ -1,0 +1,11 @@
+{
+  "operationId": "getDocs",
+  "method": "GET",
+  "path": "/v3/docs",
+  "summary": "Developer documentation UI",
+  "description": "",
+  "tags": [
+    "Protocol"
+  ],
+  "responses": {}
+}

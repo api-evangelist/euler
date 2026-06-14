@@ -1,0 +1,41 @@
+{
+  "operationId": "getHealthLive",
+  "method": "GET",
+  "path": "/v3/health/live",
+  "summary": "Liveness probe",
+  "description": "",
+  "tags": [
+    "Health"
+  ],
+  "responses": {
+    "200": {
+      "description": "OK",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok"
+                ]
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

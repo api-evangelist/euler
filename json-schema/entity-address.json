@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityAddress",
+  "type": "object",
+  "required": [
+    "entityId",
+    "chainId",
+    "address",
+    "label"
+  ],
+  "properties": {
+    "entityId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "chainId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{40}$",
+      "description": "EIP-55 checksummed governance address in API responses."
+    },
+    "label": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Human-readable governance address label."
+    }
+  }
+}

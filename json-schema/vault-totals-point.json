@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultTotalsPoint",
+  "type": "object",
+  "properties": {
+    "totalAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "totalBorrows": {
+      "type": "string",
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "cash": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw cash amount as a bigint string."
+    },
+    "utilization": {
+      "type": "number",
+      "nullable": true,
+      "description": "Utilization ratio number."
+    },
+    "supplyApy": {
+      "type": "number",
+      "nullable": true,
+      "description": "Public supply APY as a percent number."
+    },
+    "borrowApy": {
+      "type": "number",
+      "nullable": true,
+      "description": "Public borrow APY as a percent number."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultApyPoint",
+  "type": "object",
+  "properties": {
+    "supplyApy": {
+      "type": "number",
+      "nullable": true,
+      "description": "Percent number with 6 decimal places."
+    },
+    "borrowApy": {
+      "type": "number",
+      "description": "Percent number with 6 decimal places."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

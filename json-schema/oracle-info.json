@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleInfo",
+  "type": "object",
+  "properties": {
+    "oracle": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "detailedInfo": {
+      "$ref": "#/components/schemas/OracleDetailedInfo"
+    },
+    "adapters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/OracleAdapterEntry"
+      }
+    },
+    "resolvedVaults": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/OracleResolvedVault"
+      }
+    }
+  }
+}

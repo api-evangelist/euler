@@ -1,0 +1,52 @@
+{
+  "operationId": "getAccountsByAddressSubAccounts",
+  "method": "GET",
+  "path": "/v3/accounts/{address}/sub-accounts",
+  "summary": "Sub-accounts for an EVC-enabled account",
+  "description": "",
+  "tags": [
+    "Accounts"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Sub-accounts",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubAccount"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

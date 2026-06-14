@@ -1,0 +1,78 @@
+{
+  "operationId": "createPlatformAdminAccess",
+  "method": "POST",
+  "path": "/v3/platform-admins",
+  "summary": "Grant platform-admin access",
+  "description": "Creates an active platform-admin access row for a Google email address.\nRequires a valid platform session and CSRF token because this is an unsafe\ncookie-authenticated write.\n",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "Existing revoked platform-admin access was reactivated.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PlatformAdminCreateAccessResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "201": {
+      "description": "Platform-admin access was created.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PlatformAdminCreateAccessResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "400": {
+      "description": "Malformed JSON request body.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "409": {
+      "description": "Platform-admin access already exists.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Missing or invalid Google email.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

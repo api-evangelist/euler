@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultCapHealthItem",
+  "type": "object",
+  "description": "Vault cap-usage health row",
+  "properties": {
+    "chainId": {
+      "type": "integer",
+      "description": "Chain ID"
+    },
+    "vault": {
+      "type": "string",
+      "description": "Vault address"
+    },
+    "capUsage": {
+      "type": "number",
+      "description": "Maximum of `supplyCapUsage` and `borrowCapUsage`"
+    },
+    "supplyCap": {
+      "type": "string",
+      "description": "Supply cap in resolved asset units"
+    },
+    "supplyCapUsage": {
+      "type": "number",
+      "description": "Current supply-cap usage ratio"
+    },
+    "borrowCap": {
+      "type": "string",
+      "description": "Borrow cap in resolved asset units"
+    },
+    "borrowCapUsage": {
+      "type": "number",
+      "description": "Current borrow-cap usage ratio"
+    },
+    "totalAssets": {
+      "type": "string",
+      "description": "Current total supplied assets"
+    },
+    "totalBorrows": {
+      "type": "string",
+      "description": "Current total borrowed assets"
+    },
+    "thresholdExceeded": {
+      "type": "boolean",
+      "description": "Whether `capUsage` meets or exceeds the requested threshold"
+    }
+  }
+}

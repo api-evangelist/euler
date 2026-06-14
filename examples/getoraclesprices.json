@@ -1,0 +1,130 @@
+{
+  "operationId": "getOraclesPrices",
+  "method": "GET",
+  "path": "/v3/oracles/prices",
+  "summary": "Vault-scoped oracle prices",
+  "description": "Supports exact mode (`chainId + vault + asset`) and list mode (`chainId` + pagination).\n- Exact mode requires the full key.\n- Exact mode returns `200` with `price: null` when the tuple is known but currently unpriced.\n- Non-null `price` values are exact contract-derived prices encoded as 18-decimal bigint strings in `unitOfAccount` terms.\n- Exact mode returns `404` only when the `(chainId, vault, asset)` tuple is unknown.\n- Partial exact key requests return `400`.\n- List mode returns flat rows sorted by `vault ASC, asset ASC`.\n",
+  "tags": [
+    "Oracles"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "asset",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Oracle prices",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "chainId": {
+                    "type": "integer"
+                  },
+                  "vault": {
+                    "type": "string"
+                  },
+                  "asset": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "unitOfAccount": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "unitOfAccountDecimals": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "source": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  }
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "chainId": {
+                      "type": "integer"
+                    },
+                    "vault": {
+                      "type": "string"
+                    },
+                    "asset": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "unitOfAccount": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "unitOfAccountDecimals": {
+                      "type": "integer",
+                      "nullable": true
+                    },
+                    "source": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

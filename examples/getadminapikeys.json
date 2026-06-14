@@ -1,0 +1,26 @@
+{
+  "operationId": "getAdminApiKeys",
+  "method": "GET",
+  "path": "/v3/admin/api-keys",
+  "summary": "List API keys (admin)",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "API keys",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "operationId": "getOraclesHistoricalAdapters",
+  "method": "GET",
+  "path": "/v3/oracles/historical-adapters",
+  "summary": "Historical oracle adapters",
+  "description": "Distinct oracle adapter addresses ever configured through `ConfigSet` events\non any EulerRouter deployed by OracleRouterFactory for the requested chain.\n- `chainId` is required.\n- Supports `offset` and `limit`.\n",
+  "tags": [
+    "Oracles"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Historical adapter addresses",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chainId": {
+                  "type": "integer"
+                },
+                "adapter": {
+                  "type": "string"
+                },
+                "firstSeenTimestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastSeenTimestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

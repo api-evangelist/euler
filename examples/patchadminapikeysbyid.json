@@ -1,0 +1,31 @@
+{
+  "operationId": "patchAdminApiKeysById",
+  "method": "PATCH",
+  "path": "/v3/admin/api-keys/{id}",
+  "summary": "Update API key (admin)",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Updated",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IrmHistoryItem",
+  "type": "object",
+  "description": "Historical interest rate model change",
+  "properties": {
+    "interestRateModel": {
+      "type": "string",
+      "description": "Interest rate model contract address"
+    },
+    "blockNumber": {
+      "type": "string",
+      "description": "Block number of the change"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the change"
+    },
+    "txHash": {
+      "type": "string",
+      "description": "Transaction hash"
+    },
+    "logIndex": {
+      "type": "integer",
+      "description": "Log index within the transaction receipt."
+    }
+  }
+}

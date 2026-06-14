@@ -1,0 +1,30 @@
+{
+  "operationId": "getHealthDetailed",
+  "method": "GET",
+  "path": "/v3/health/detailed",
+  "summary": "Dependency health check",
+  "description": "",
+  "tags": [
+    "Health"
+  ],
+  "responses": {
+    "200": {
+      "description": "OK",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/DetailedHealthResponse"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

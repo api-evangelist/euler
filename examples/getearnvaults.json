@@ -1,0 +1,46 @@
+{
+  "operationId": "getEarnVaults",
+  "method": "GET",
+  "path": "/v3/earn/vaults",
+  "summary": "Earn vaults",
+  "description": "",
+  "tags": [
+    "Earn"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Earn vaults",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EarnVaultSummary"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

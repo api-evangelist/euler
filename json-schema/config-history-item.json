@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConfigHistoryItem",
+  "type": "object",
+  "description": "Generic configuration change event",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "caps",
+        "ltv",
+        "irm",
+        "governor",
+        "feeReceiver",
+        "hookConfig",
+        "interestFee",
+        "configFlags"
+      ],
+      "description": "Type of configuration change"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The configuration values that changed (varies by type). For `ltv` events, canonical basis-point string fields such as `borrowLTV` may be accompanied by legacy decimal aliases."
+    },
+    "blockNumber": {
+      "type": "string",
+      "description": "Block number of the change"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the change"
+    },
+    "txHash": {
+      "type": "string",
+      "description": "Transaction hash"
+    },
+    "logIndex": {
+      "type": "integer",
+      "description": "Log index within the transaction receipt."
+    }
+  }
+}

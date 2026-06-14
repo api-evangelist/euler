@@ -1,0 +1,33 @@
+{
+  "operationId": "getChainsByChainIdStats",
+  "method": "GET",
+  "path": "/v3/chains/{chainId}/stats",
+  "summary": "Chain-level stats",
+  "description": "Returns chain-scoped EVK lending aggregates. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`.",
+  "tags": [
+    "Chains"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Chain stats",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ChainStats"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

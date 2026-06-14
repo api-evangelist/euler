@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityMemberCreateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "email"
+  ],
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S",
+      "nullable": true
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor"
+      ],
+      "default": "editor"
+    }
+  }
+}

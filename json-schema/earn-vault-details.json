@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultDetails",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/EarnVaultSummary"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "totalShares": {
+          "type": "string",
+          "description": "Raw vault share supply as a bigint string."
+        },
+        "lostAssets": {
+          "type": "string",
+          "description": "Raw lost asset amount as a bigint string."
+        },
+        "exchangeRate": {
+          "type": "string",
+          "description": "Raw exchange rate as a bigint string."
+        },
+        "strategies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/EarnStrategy"
+          }
+        },
+        "governance": {
+          "$ref": "#/components/schemas/EarnVaultGovernance"
+        },
+        "management": {
+          "$ref": "#/components/schemas/EarnVaultManagement"
+        }
+      }
+    }
+  ]
+}

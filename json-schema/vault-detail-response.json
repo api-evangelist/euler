@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultDetailResponse",
+  "type": "object",
+  "description": "Single-vault detail response shape for `GET /v3/evk/vaults/{chainId}/{address}`.",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "vaultType": {
+      "type": "string",
+      "enum": [
+        "evk"
+      ],
+      "description": "Vault family for the `/v3/evk/vaults` EVK surface."
+    },
+    "name": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decimals": {
+      "type": "integer"
+    },
+    "shares": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "asset": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "dToken": {
+      "type": "string"
+    },
+    "oracle": {
+      "$ref": "#/components/schemas/OracleInfo"
+    },
+    "unitOfAccount": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "creator": {
+      "type": "string"
+    },
+    "governor": {
+      "type": "string",
+      "description": "Latest governor admin if available; falls back to creator."
+    },
+    "governorAdmin": {
+      "type": "string",
+      "description": "Latest governor admin if available; falls back to creator."
+    },
+    "supplyCap": {
+      "type": "string",
+      "description": "Resolved supply cap as a bigint string in underlying asset units."
+    },
+    "borrowCap": {
+      "type": "string",
+      "description": "Resolved borrow cap as a bigint string in underlying asset units."
+    },
+    "totalShares": {
+      "type": "string",
+      "description": "Raw vault share supply as a bigint string."
+    },
+    "totalAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "totalBorrowed": {
+      "type": "string",
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "totalCash": {
+      "type": "string",
+      "description": "Raw cash amount as a bigint string."
+    },
+    "cash": {
+      "type": "string",
+      "description": "Raw cash amount as a bigint string."
+    },
+    "interestRate": {
+      "type": "string",
+      "description": "Raw contract interest-rate value as a bigint string."
+    },
+    "interestAccumulator": {
+      "type": "string",
+      "description": "Raw contract interest accumulator as a bigint string."
+    },
+    "accumulatedFees": {
+      "type": "string",
+      "description": "Raw accumulated fee amount as a bigint string."
+    },
+    "balanceTracker": {
+      "type": "string"
+    },
+    "fees": {
+      "$ref": "#/components/schemas/VaultFees"
+    },
+    "hooks": {
+      "$ref": "#/components/schemas/VaultHooks"
+    },
+    "caps": {
+      "$ref": "#/components/schemas/VaultCaps"
+    },
+    "liquidation": {
+      "$ref": "#/components/schemas/VaultLiquidation"
+    },
+    "interestRates": {
+      "$ref": "#/components/schemas/VaultInterestRates"
+    },
+    "interestRateModel": {
+      "$ref": "#/components/schemas/VaultInterestRateModel"
+    },
+    "evcCompatibleAsset": {
+      "type": "boolean"
+    },
+    "oraclePriceRaw": {
+      "$ref": "#/components/schemas/OraclePriceRaw"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "exchangeRate": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw exchange rate as a bigint string."
+    },
+    "totalSupplyUsd": {
+      "type": "number",
+      "description": "Market USD number for total supplied assets."
+    },
+    "totalBorrowsUsd": {
+      "type": "number",
+      "description": "Market USD number for total borrowed assets."
+    },
+    "utilization": {
+      "type": "number",
+      "description": "Utilization ratio number."
+    },
+    "supplyApy": {
+      "type": "number",
+      "description": "Public supply APY as a percent number."
+    },
+    "borrowApy": {
+      "type": "number",
+      "description": "Public borrow APY as a percent number."
+    },
+    "snapshotTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdAtBlock": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

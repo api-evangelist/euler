@@ -1,0 +1,38 @@
+{
+  "operationId": "getGraphql",
+  "method": "GET",
+  "path": "/v3/graphql",
+  "summary": "GraphQL endpoint (GET query mode)",
+  "description": "Lightweight GET mode for development/debugging.\nDisabled in production; use POST `/v3/graphql` there.\nRequires `query` and optionally accepts `variables` (JSON string) and `operationName`.\nPonder LIKE filter operators reject unescaped `%` and `_` wildcard values.\nFor standard GraphQL usage, use POST `/v3/graphql`.\n",
+  "tags": [
+    "GraphQL"
+  ],
+  "parameters": [
+    {
+      "name": "query",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "variables",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "operationName",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "GraphQL response",
+      "schema": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleRouterConfig",
+  "type": "object",
+  "properties": {
+    "asset0": {
+      "type": "string"
+    },
+    "asset1": {
+      "type": "string"
+    },
+    "oracle": {
+      "type": "string"
+    },
+    "blockNumber": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "txHash": {
+      "type": "string"
+    }
+  }
+}

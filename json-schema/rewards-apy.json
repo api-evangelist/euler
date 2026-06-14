@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RewardsApy",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "vault": {
+      "type": "string"
+    },
+    "campaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "apr": {
+            "type": "number",
+            "description": "Reward APR contribution as a public percent number."
+          },
+          "rewardToken": {
+            "$ref": "#/components/schemas/AssetRef"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "merkl",
+              "turtle",
+              "direct"
+            ]
+          },
+          "startTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "upcoming",
+              "ended"
+            ],
+            "description": "Campaign status. 'active' = ongoing, 'upcoming' = not yet started, 'ended' = past."
+          },
+          "campaignType": {
+            "type": "string"
+          },
+          "collateralAsset": {
+            "type": "string"
+          },
+          "requiresCb1Verification": {
+            "type": "boolean"
+          },
+          "merklCampaignId": {
+            "type": "string",
+            "description": "Original Merkl campaign id when the public campaign is fanned out into vault-level instances."
+          },
+          "opportunityType": {
+            "type": "string",
+            "description": "Merkl opportunity type that produced this campaign."
+          },
+          "distributionType": {
+            "type": "string",
+            "description": "Merkl distribution type for the campaign."
+          },
+          "whitelist": {
+            "type": "array",
+            "description": "Lowercase recipient addresses eligible for whitelist-gated campaigns.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blacklist": {
+            "type": "array",
+            "description": "Lowercase recipient addresses excluded from blacklist-gated campaigns.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "totalApr": {
+      "type": "number",
+      "description": "Sum of currently active reward APR contributions as a public percent number."
+    }
+  }
+}

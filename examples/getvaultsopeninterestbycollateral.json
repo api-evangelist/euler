@@ -1,0 +1,79 @@
+{
+  "operationId": "getVaultsOpenInterestByCollateral",
+  "method": "GET",
+  "path": "/v3/evk/vaults/open-interest/by-collateral",
+  "summary": "Collateral-covered debt by collateral vault",
+  "description": "Collateral-covered USD borrow exposure as a nested map keyed by borrow vault, then collateral vault. Underwater debt is capped at current attributable collateral value, so this endpoint is not gross open interest. The expensive account-level debt/collateral composition is worker-computed and stored in a latest projection table; the request path only reads that projection. Redis may cache this response, but PostgreSQL projection rows are the source of truth.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Collateral-covered borrow exposure map",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "format": "double",
+                "description": "USD collateral-covered debt attributable to this collateral vault"
+              }
+            },
+            "description": "Borrow-vault to collateral-vault USD collateral-covered exposure map"
+          },
+          "meta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "refreshedAt": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "calculationTimestamp": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "priceTimestamp": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "ageSeconds": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

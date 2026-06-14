@@ -1,0 +1,83 @@
+{
+  "operationId": "listEntityAddresses",
+  "method": "GET",
+  "path": "/v3/entities/{id}/addresses",
+  "summary": "List entity governance addresses",
+  "description": "Lists chain-scoped governance addresses for a KYBed entity. Requires an active platform-admin session.",
+  "tags": [
+    "Entities"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "example": 20
+    },
+    {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "example": 0
+    },
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": false,
+      "example": 0
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Entity governance address page.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAddress"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Authenticated session exists, but platform-admin access is not active.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Entity profile was not found or chain is unsupported.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Invalid entity id or chain filter.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

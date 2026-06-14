@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultLiquidation",
+  "type": "object",
+  "properties": {
+    "maxLiquidationDiscount": {
+      "type": "number"
+    },
+    "liquidationCoolOffTime": {
+      "type": "integer"
+    },
+    "socializeDebt": {
+      "type": "boolean"
+    }
+  }
+}

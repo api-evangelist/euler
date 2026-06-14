@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnStrategyAllocationCap",
+  "type": "object",
+  "properties": {
+    "current": {
+      "type": "string",
+      "description": "Raw allocation cap as a bigint string in underlying asset units."
+    },
+    "pending": {
+      "type": "string",
+      "description": "Pending raw allocation cap as a bigint string in underlying asset units."
+    },
+    "pendingValidAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

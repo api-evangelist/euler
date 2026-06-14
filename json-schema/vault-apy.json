@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultApy",
+  "type": "object",
+  "properties": {
+    "current": {
+      "$ref": "#/components/schemas/VaultApyPoint"
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/VaultApyPoint"
+      }
+    }
+  }
+}

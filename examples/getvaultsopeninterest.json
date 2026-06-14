@@ -1,0 +1,71 @@
+{
+  "operationId": "getVaultsOpenInterest",
+  "method": "GET",
+  "path": "/v3/evk/vaults/open-interest",
+  "summary": "Open interest across vaults",
+  "description": "Event-based aggregation of total borrows and borrower counts. Uses MV-backed query path (`open_interest_mv`) with safe fallback to raw aggregation when unavailable. Prices should be composed separately via /v3/prices.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Open interest data",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "vault": {
+                  "type": "string"
+                },
+                "asset": {
+                  "type": "string"
+                },
+                "totalBorrows": {
+                  "type": "string"
+                },
+                "borrowerCount": {
+                  "type": "integer"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

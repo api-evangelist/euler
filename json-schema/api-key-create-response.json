@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiKeyCreateResponse",
+  "type": "object",
+  "required": [
+    "message",
+    "key",
+    "keyPrefix",
+    "id",
+    "name",
+    "keyType",
+    "rateLimit"
+  ],
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "keyPrefix": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "keyType": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "curator"
+      ]
+    },
+    "scopeMode": {
+      "type": "string",
+      "enum": [
+        "all_vaults",
+        "allowlist"
+      ],
+      "nullable": true
+    },
+    "vaultAllowlist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "vaultAddress"
+        ],
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "vaultAddress": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rateLimit": {
+      "type": "integer"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

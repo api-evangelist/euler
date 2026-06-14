@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RewardsApyHistoryPoint",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "vault": {
+      "type": "string"
+    },
+    "rewardsApy": {
+      "type": "number",
+      "description": "Rewards APY as a public percent number."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Bucket timestamp as an ISO-8601 UTC string."
+    }
+  }
+}

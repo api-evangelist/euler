@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiKeyCreateRequest",
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "ownerEmail": {
+      "type": "string",
+      "format": "email"
+    },
+    "keyType": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "curator"
+      ],
+      "default": "standard"
+    },
+    "scopeMode": {
+      "type": "string",
+      "enum": [
+        "all_vaults",
+        "allowlist"
+      ]
+    },
+    "vaultAllowlist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "vaultAddress"
+        ],
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "vaultAddress": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rateLimit": {
+      "type": "integer"
+    },
+    "expiresInDays": {
+      "type": "integer"
+    }
+  }
+}

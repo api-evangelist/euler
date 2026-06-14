@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PortfolioSavingsPosition",
+  "type": "object",
+  "properties": {
+    "position": {
+      "$ref": "#/components/schemas/SerializedPortfolioAccountPosition"
+    },
+    "vault": {
+      "$ref": "#/components/schemas/SerializedPortfolioVault"
+    },
+    "subAccount": {
+      "type": "string"
+    },
+    "shares": {
+      "type": "string",
+      "description": "Raw vault share amount as a bigint string."
+    },
+    "assets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "suppliedValueUsd": {
+      "type": "number",
+      "description": "Market USD value number for this savings position."
+    },
+    "apy": {
+      "type": "number",
+      "description": "Public APY as a percent number."
+    },
+    "apyBreakdown": {
+      "$ref": "#/components/schemas/YieldApyBreakdown"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "operationId": "getVaults",
+  "method": "GET",
+  "path": "/v3/evk/vaults",
+  "summary": "List vaults",
+  "description": "Returns a list of vaults.\nNotes:\n  - `fields` and `sort` are accepted but currently ignored.\n  - `minTvl`/`maxTvl` apply to `totalSupplyUsd` where `totalSupplyUsd = (cash + totalBorrows) * price`.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "asset",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "minTvl",
+      "in": "query",
+      "required": false
+    },
+    {
+      "name": "maxTvl",
+      "in": "query",
+      "required": false
+    },
+    {
+      "name": "visibility",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault list",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Vault"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

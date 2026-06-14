@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AccountPosition",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "account": {
+      "type": "string"
+    },
+    "vault": {
+      "type": "string"
+    },
+    "vaultType": {
+      "type": "string",
+      "enum": [
+        "evk",
+        "earn",
+        "securitize"
+      ]
+    },
+    "asset": {
+      "type": "string",
+      "nullable": true
+    },
+    "shares": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw vault share amount as a bigint string."
+    },
+    "assets": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "borrowed": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "assetsValue": {
+      "type": "string",
+      "nullable": true,
+      "description": "Contract-derived account-liquidity asset value, raw 18-decimal bigint string."
+    },
+    "debtValue": {
+      "type": "string",
+      "nullable": true,
+      "description": "Contract-derived account-liquidity debt value, raw 18-decimal bigint string."
+    },
+    "isCollateral": {
+      "type": "boolean",
+      "nullable": true
+    },
+    "balanceForwarderEnabled": {
+      "type": "boolean",
+      "nullable": true
+    },
+    "isController": {
+      "type": "boolean",
+      "nullable": true
+    },
+    "liquidity": {
+      "$ref": "#/components/schemas/AccountPositionLiquidity"
+    },
+    "subAccount": {
+      "type": "object",
+      "nullable": true,
+      "properties": {
+        "owner": {
+          "type": "string",
+          "nullable": true
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        },
+        "lastAccountStatusCheckTimestamp": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        },
+        "enabledControllers": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "enabledCollaterals": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "isLockdownMode": {
+          "type": "boolean",
+          "nullable": true
+        },
+        "isPermitDisabledMode": {
+          "type": "boolean",
+          "nullable": true
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        },
+        "ageSeconds": {
+          "type": "integer",
+          "nullable": true
+        },
+        "source": {
+          "type": "string",
+          "nullable": true
+        },
+        "method": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    }
+  }
+}

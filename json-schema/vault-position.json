@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultPosition",
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": "string"
+    },
+    "shares": {
+      "type": "string",
+      "description": "Raw vault share amount as a bigint string."
+    },
+    "assets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "assetsUsd": {
+      "type": "number",
+      "nullable": true,
+      "description": "Market USD number computed from `assets` and the token price endpoint."
+    },
+    "lastUpdatedBlock": {
+      "type": "string"
+    }
+  }
+}

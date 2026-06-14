@@ -1,0 +1,1429 @@
+{
+  "name": "Euler Finance API Vocabulary",
+  "description": "Terms, concepts, and domain vocabulary used across the Euler Finance DeFi lending protocol APIs.",
+  "source": "https://v3.euler.finance/v3/openapi.json",
+  "terms": [
+    {
+      "term": "Protocol",
+      "type": "concept",
+      "description": "Protocol-wide summary endpoints and aggregate metrics. In v3, these endpoints are explicitly summary-oriented and should be treated as lightweight rollups rather than replacements for full vault list payloads.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Health",
+      "type": "concept",
+      "description": "Liveness, readiness, and dashboard-friendly platform status checks. Use these for operational monitoring, not for reconstructing full portfolio state.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Auth",
+      "type": "concept",
+      "description": "Authentication and authorization conventions used across the API, including API keys, admin secrets, and rate-limit behavior.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Entities",
+      "type": "concept",
+      "description": "Platform-admin managed KYBed organization profiles used as backend-owned label and control-plane resources.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Curator",
+      "type": "concept",
+      "description": "Curator-managed metadata such as labels, descriptions, and visibility controls. This is the operator-owned customization surface in v3.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Usage",
+      "type": "concept",
+      "description": "API usage and API key analytics. These endpoints are intended for operators and consumers tracking traffic, rate limits, and key-level activity.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Chains",
+      "type": "concept",
+      "description": "Chain inventory and per-chain protocol summaries. These replace ad-hoc chain-level aggregates from legacy APIs with explicit, cacheable resources.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Vaults",
+      "type": "concept",
+      "description": "Canonical vault resources, vault history, holders, borrowers, and open-interest views. In v3, vault detail is decomposed into focused endpoints instead of one large legacy response.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Accounts",
+      "type": "concept",
+      "description": "Account activity, discovered positions, and sub-account relationships. Legacy nested account payloads are flattened into account-vault rows in v3.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Tokens",
+      "type": "concept",
+      "description": "Token metadata, protocol classifications, and related static reference data used throughout the API.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Prices",
+      "type": "concept",
+      "description": "Current and historical token prices. Prices follow v3 source priority rules and return the canonical merged value rather than exposing raw provider-specific reads by default.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "APYs",
+      "type": "concept",
+      "description": "Base and intrinsic APY surfaces. In v3, APY families are split into dedicated endpoints instead of being embedded inconsistently across larger payloads.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Rewards",
+      "type": "concept",
+      "description": "Reward campaign APRs and per-account reward breakdowns. Rewards APY is intentionally separate from base vault APY in v3; combine them client-side when you need a legacy-style total supply APY.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Oracles",
+      "type": "concept",
+      "description": "Oracle routing, adapter, and price-source inspection endpoints. These expose pricing/oracle internals that were previously harder to inspect externally.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Earn",
+      "type": "concept",
+      "description": "Euler Earn vault resources and historical data. These endpoints are separate from EVK vaults and should be modeled independently in client code.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "Liquidations",
+      "type": "concept",
+      "description": "Liquidation events and related historical views used for risk analysis and monitoring.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "TermsOfUse",
+      "type": "concept",
+      "description": "Terms-of-use signature state and audit endpoints.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "EVC",
+      "type": "concept",
+      "description": "Ethereum Vault Connector account event resources. These are separate from account position snapshots and are intended for event-level inspection.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "PublicAllocator",
+      "type": "concept",
+      "description": "Public allocator event resources for allocator-level activity and history.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "FeeFlow",
+      "type": "concept",
+      "description": "Fee-flow event resources and fee-related historical activity.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "GraphQL",
+      "type": "concept",
+      "description": "Controlled GraphQL passthrough endpoints for indexer-backed data exploration and compatibility workflows.",
+      "domain": "DeFi"
+    },
+    {
+      "term": "ErrorResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "error"
+      ]
+    },
+    {
+      "term": "HealthResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "status",
+        "version",
+        "uptime",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "DetailedHealthResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "PlatformAuthSession",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "platformAdminId",
+        "googleEmail",
+        "googleSubject",
+        "active",
+        "expiresAt"
+      ]
+    },
+    {
+      "term": "PlatformAdminAccessRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "googleEmail"
+      ]
+    },
+    {
+      "term": "PlatformAdminAccess",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "googleEmail",
+        "createdAt",
+        "revokedAt"
+      ]
+    },
+    {
+      "term": "PlatformAdminCreateAccessResult",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "admin",
+        "state"
+      ]
+    },
+    {
+      "term": "PlatformAdminRevokeAccessResult",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "admin",
+        "state"
+      ]
+    },
+    {
+      "term": "Entity",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "name",
+        "logo",
+        "description",
+        "url",
+        "socialTwitter",
+        "socialYoutube",
+        "socialDiscord",
+        "socialTelegram",
+        "socialGithub"
+      ]
+    },
+    {
+      "term": "EntityCreateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "name",
+        "logo",
+        "description",
+        "url",
+        "socialTwitter",
+        "socialYoutube",
+        "socialDiscord",
+        "socialTelegram",
+        "socialGithub"
+      ]
+    },
+    {
+      "term": "EntityUpdateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "name",
+        "logo",
+        "description",
+        "url",
+        "socialTwitter",
+        "socialYoutube",
+        "socialDiscord",
+        "socialTelegram",
+        "socialGithub"
+      ]
+    },
+    {
+      "term": "EntityMember",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "entityId",
+        "email",
+        "name",
+        "role",
+        "createdAt",
+        "revokedAt"
+      ]
+    },
+    {
+      "term": "EntityMemberCreateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "email",
+        "name",
+        "role"
+      ]
+    },
+    {
+      "term": "EntityAddress",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "entityId",
+        "chainId",
+        "address",
+        "label"
+      ]
+    },
+    {
+      "term": "EntityAddressCreateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "label"
+      ]
+    },
+    {
+      "term": "EntityMemberUpdateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "name",
+        "role"
+      ]
+    },
+    {
+      "term": "PaginationMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "total",
+        "hasMore",
+        "offset",
+        "limit",
+        "timestamp",
+        "chainId"
+      ]
+    },
+    {
+      "term": "Chain",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "name",
+        "status"
+      ]
+    },
+    {
+      "term": "ProtocolStats",
+      "type": "data-type",
+      "description": "EVK lending aggregates across the selected chains, with Earn TVL reported separately.",
+      "properties": [
+        "totalSuppliedUsd",
+        "totalBorrowedUsd",
+        "earnTotalAssetsUsd",
+        "utilization",
+        "vaultCount",
+        "chainCount"
+      ]
+    },
+    {
+      "term": "ChainStats",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "AssetRef",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "address",
+        "symbol",
+        "decimals",
+        "name"
+      ]
+    },
+    {
+      "term": "OraclePriceRaw",
+      "type": "data-type",
+      "description": "Exact oracle quote values returned by contracts, represented as raw integer strings in the oracle unit-of-account scale.",
+      "properties": [
+        "queryFailure",
+        "queryFailureReason",
+        "amountIn",
+        "amountOutMid",
+        "amountOutBid",
+        "amountOutAsk",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "VaultFees",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "interestFee",
+        "accumulatedFeesShares",
+        "accumulatedFeesAssets",
+        "governorFeeReceiver",
+        "protocolFeeReceiver",
+        "protocolFeeShare"
+      ]
+    },
+    {
+      "term": "VaultHookedOperations",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "deposit",
+        "mint",
+        "withdraw",
+        "redeem",
+        "transfer",
+        "skim",
+        "borrow",
+        "repay",
+        "repayWithShares",
+        "pullDebt"
+      ]
+    },
+    {
+      "term": "VaultHooks",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "hookedOperations",
+        "hookTarget"
+      ]
+    },
+    {
+      "term": "VaultCaps",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "supplyCap",
+        "borrowCap"
+      ]
+    },
+    {
+      "term": "VaultLiquidation",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "maxLiquidationDiscount",
+        "liquidationCoolOffTime",
+        "socializeDebt"
+      ]
+    },
+    {
+      "term": "VaultInterestRates",
+      "type": "data-type",
+      "description": "Contract interest-rate values formatted as decimal strings in fraction units, not public percent APY numbers.",
+      "properties": [
+        "borrowSPY",
+        "borrowAPY",
+        "supplyAPY"
+      ]
+    },
+    {
+      "term": "VaultInterestRateModel",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "address",
+        "type",
+        "data"
+      ]
+    },
+    {
+      "term": "SubAccount",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "owner",
+        "addressPrefix",
+        "blockNumber",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "OracleAdapterPythDetail",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "pyth",
+        "base",
+        "quote",
+        "feedId",
+        "maxStaleness",
+        "maxConfWidth"
+      ]
+    },
+    {
+      "term": "OracleAdapterChainlinkDetail",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "oracle"
+      ]
+    },
+    {
+      "term": "OracleDetailedInfo",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "oracle",
+        "name",
+        "oracleInfo"
+      ]
+    },
+    {
+      "term": "OracleAdapterEntry",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "oracle",
+        "name",
+        "base",
+        "quote",
+        "pythDetail",
+        "chainlinkDetail"
+      ]
+    },
+    {
+      "term": "OracleResolvedVault",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "vault",
+        "quote",
+        "asset",
+        "resolvedAssets"
+      ]
+    },
+    {
+      "term": "OracleInfo",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "oracle",
+        "name",
+        "detailedInfo",
+        "adapters",
+        "resolvedVaults"
+      ]
+    },
+    {
+      "term": "Vault",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "vaultType",
+        "name",
+        "symbol",
+        "decimals",
+        "shares",
+        "asset",
+        "totalAssets",
+        "totalBorrows"
+      ]
+    },
+    {
+      "term": "VaultResolveEntry",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "found",
+        "vaultType",
+        "factory",
+        "resource",
+        "snapshotTimestamp"
+      ]
+    },
+    {
+      "term": "VaultDetails",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultApyPoint",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "supplyApy",
+        "borrowApy",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "VaultApy",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "current",
+        "history"
+      ]
+    },
+    {
+      "term": "VaultApyMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vault",
+        "resolution",
+        "startTimestamp",
+        "endTimestamp",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "VaultTotalsPoint",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "totalAssets",
+        "totalBorrows",
+        "cash",
+        "utilization",
+        "supplyApy",
+        "borrowApy",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "VaultTotals",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "current",
+        "history"
+      ]
+    },
+    {
+      "term": "VaultTotalsMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultTotalsFreshness",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "mode",
+        "forceFreshRequested",
+        "refreshTriggered",
+        "refreshCompleted",
+        "timedOut",
+        "rateLimited",
+        "fallbackReason",
+        "waitedMs",
+        "latestSnapshotTimestamp",
+        "ageSeconds"
+      ]
+    },
+    {
+      "term": "OracleRouterConfig",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "asset0",
+        "asset1",
+        "oracle",
+        "blockNumber",
+        "timestamp",
+        "txHash"
+      ]
+    },
+    {
+      "term": "OracleRouterVault",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "vault",
+        "asset",
+        "blockNumber",
+        "timestamp",
+        "txHash"
+      ]
+    },
+    {
+      "term": "OracleRouterState",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "router",
+        "deployer",
+        "deployedAt",
+        "configs",
+        "vaults"
+      ]
+    },
+    {
+      "term": "CollateralConfigWithPrice",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultCollateralDetail",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultIncludePrices",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "asset",
+        "collaterals"
+      ]
+    },
+    {
+      "term": "VaultDetailsWithIncludes",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultDetailResponse",
+      "type": "data-type",
+      "description": "Single-vault detail response shape for `GET /v3/evk/vaults/{chainId}/{address}`.",
+      "properties": [
+        "chainId",
+        "address",
+        "vaultType",
+        "name",
+        "symbol",
+        "decimals",
+        "shares",
+        "asset",
+        "dToken",
+        "oracle"
+      ]
+    },
+    {
+      "term": "VaultDetailResponseWithIncludes",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "EvkVaultBatchRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "addresses",
+        "include"
+      ]
+    },
+    {
+      "term": "EvkVaultBatchMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "count",
+        "requested",
+        "notFound",
+        "timestamp",
+        "chainId"
+      ]
+    },
+    {
+      "term": "EvkVaultBatchResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "data",
+        "meta"
+      ]
+    },
+    {
+      "term": "EarnVaultSummary",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "name",
+        "symbol",
+        "decimals",
+        "asset",
+        "totalAssets",
+        "totalShares",
+        "lostAssets",
+        "exchangeRate"
+      ]
+    },
+    {
+      "term": "EarnVaultBatchRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "addresses",
+        "include"
+      ]
+    },
+    {
+      "term": "EarnVaultBatchMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "count",
+        "requested",
+        "notFound",
+        "timestamp",
+        "chainId"
+      ]
+    },
+    {
+      "term": "EarnVaultBatchItem",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "EarnVaultBatchResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "data",
+        "meta"
+      ]
+    },
+    {
+      "term": "EarnVaultDetails",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "EarnStrategy",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "address",
+        "vaultType",
+        "symbol",
+        "name",
+        "decimals",
+        "suppliedAssets",
+        "withdrawnAssets",
+        "allocatedAssets",
+        "allocatedAssetsUsd",
+        "availableAssets"
+      ]
+    },
+    {
+      "term": "EarnVaultManagement",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "owner",
+        "curator",
+        "guardian",
+        "feeRecipient",
+        "timelockSeconds",
+        "performanceFee"
+      ]
+    },
+    {
+      "term": "EarnVaultGovernance",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "owner",
+        "creator",
+        "curator",
+        "guardian",
+        "feeReceiver",
+        "timelock",
+        "pendingTimelock",
+        "pendingTimelockValidAt",
+        "pendingGuardian",
+        "pendingGuardianValidAt"
+      ]
+    },
+    {
+      "term": "EarnStrategyAllocationCap",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "current",
+        "pending",
+        "pendingValidAt"
+      ]
+    },
+    {
+      "term": "EarnIncludePrices",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "asset"
+      ]
+    },
+    {
+      "term": "EarnVaultDetailsWithIncludes",
+      "type": "data-type",
+      "description": "",
+      "properties": []
+    },
+    {
+      "term": "VaultPosition",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "account",
+        "shares",
+        "assets",
+        "assetsUsd",
+        "lastUpdatedBlock"
+      ]
+    },
+    {
+      "term": "AccountLiquidityValue",
+      "type": "data-type",
+      "description": "Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.",
+      "properties": [
+        "borrowing",
+        "liquidation",
+        "oracleMid"
+      ]
+    },
+    {
+      "term": "AccountPositionLiquidity",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "vaultAddress",
+        "unitOfAccount",
+        "daysToLiquidation",
+        "liabilityValue",
+        "totalCollateralValue",
+        "collaterals",
+        "liabilityValueUsd",
+        "totalCollateralValueUsd"
+      ]
+    },
+    {
+      "term": "AccountPosition",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "account",
+        "vault",
+        "vaultType",
+        "asset",
+        "shares",
+        "assets",
+        "borrowed",
+        "assetsValue",
+        "debtValue"
+      ]
+    },
+    {
+      "term": "AccountPortfolioResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "owner",
+        "portfolio",
+        "account",
+        "errors",
+        "freshness"
+      ]
+    },
+    {
+      "term": "PortfolioSavingsPosition",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "position",
+        "vault",
+        "subAccount",
+        "shares",
+        "assets",
+        "suppliedValueUsd",
+        "apy",
+        "apyBreakdown"
+      ]
+    },
+    {
+      "term": "PortfolioBorrowPosition",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "borrow",
+        "collaterals",
+        "collateral",
+        "borrowVault",
+        "collateralVault",
+        "collateralVaults",
+        "subAccount",
+        "healthFactor",
+        "userLTV",
+        "currentLTV"
+      ]
+    },
+    {
+      "term": "YieldApyBreakdown",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "lending",
+        "borrowing",
+        "rewards",
+        "intrinsicApy",
+        "total"
+      ]
+    },
+    {
+      "term": "SerializedPortfolioAccountPosition",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "account",
+        "vaultAddress",
+        "vault",
+        "asset",
+        "shares",
+        "assets",
+        "borrowed",
+        "isController",
+        "isCollateral",
+        "balanceForwarderEnabled"
+      ]
+    },
+    {
+      "term": "SerializedPortfolioVault",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "address",
+        "type",
+        "asset",
+        "shares",
+        "supplyApy",
+        "borrowApy",
+        "supplyApy1h",
+        "strategyCount"
+      ]
+    },
+    {
+      "term": "DataIssue",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "code",
+        "severity",
+        "message",
+        "locations",
+        "source",
+        "originalValue",
+        "normalizedValue"
+      ]
+    },
+    {
+      "term": "AccountActivity",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "type",
+        "chainId",
+        "vault",
+        "assets",
+        "shares",
+        "txHash",
+        "blockNumber",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "Token",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "name",
+        "symbol",
+        "decimals",
+        "logoURI",
+        "priceUsd",
+        "metadata",
+        "groups",
+        "tags"
+      ]
+    },
+    {
+      "term": "TokenMetadata",
+      "type": "data-type",
+      "description": "Protocol integration metadata for a token.",
+      "properties": [
+        "isPendlePT",
+        "isPendleLP",
+        "pendleMarket"
+      ]
+    },
+    {
+      "term": "Price",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "symbol",
+        "decimals",
+        "priceUsd",
+        "source",
+        "confidence",
+        "blockNumber",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "IntrinsicApy",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "symbol",
+        "apy",
+        "provider",
+        "source",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "RewardsApy",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vault",
+        "campaigns",
+        "totalApr"
+      ]
+    },
+    {
+      "term": "RewardsApyHistoryPoint",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vault",
+        "rewardsApy",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "RewardBreakdown",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vault",
+        "recipient",
+        "rewardToken",
+        "amount",
+        "campaignId",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "OracleAdapter",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "asset0",
+        "asset1",
+        "adapter",
+        "element",
+        "addedAt",
+        "addedAtBlock",
+        "txHash"
+      ]
+    },
+    {
+      "term": "IntrinsicApyHistoryPoint",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "timestamp",
+        "apy",
+        "provider",
+        "apyDuration"
+      ]
+    },
+    {
+      "term": "IntrinsicApyHistoryMeta",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "asset",
+        "symbol",
+        "resolution",
+        "startTimestamp",
+        "endTimestamp",
+        "timestamp"
+      ]
+    },
+    {
+      "term": "SwapPool",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "address",
+        "token0",
+        "token1",
+        "tvlUsd"
+      ]
+    },
+    {
+      "term": "CollateralConfig",
+      "type": "data-type",
+      "description": "Current LTV configuration for a collateral vault",
+      "properties": [
+        "collateral",
+        "vaultType",
+        "collateralName",
+        "collateralSymbol",
+        "asset",
+        "assetSymbol",
+        "assetDecimals",
+        "borrowLTV",
+        "liquidationLTV",
+        "initialLiquidationLTV"
+      ]
+    },
+    {
+      "term": "LtvHistoryItem",
+      "type": "data-type",
+      "description": "Historical LTV configuration change",
+      "properties": [
+        "collateral",
+        "borrowLTV",
+        "liquidationLTV",
+        "initialLiquidationLTV",
+        "borrowLtv",
+        "liquidationLtv",
+        "initialLiquidationLtv",
+        "targetTimestamp",
+        "rampDuration",
+        "blockNumber"
+      ]
+    },
+    {
+      "term": "CapHistoryItem",
+      "type": "data-type",
+      "description": "Historical cap configuration change",
+      "properties": [
+        "supplyCap",
+        "borrowCap",
+        "blockNumber",
+        "timestamp",
+        "txHash",
+        "logIndex"
+      ]
+    },
+    {
+      "term": "VaultCapHealthItem",
+      "type": "data-type",
+      "description": "Vault cap-usage health row",
+      "properties": [
+        "chainId",
+        "vault",
+        "capUsage",
+        "supplyCap",
+        "supplyCapUsage",
+        "borrowCap",
+        "borrowCapUsage",
+        "totalAssets",
+        "totalBorrows",
+        "thresholdExceeded"
+      ]
+    },
+    {
+      "term": "IrmHistoryItem",
+      "type": "data-type",
+      "description": "Historical interest rate model change",
+      "properties": [
+        "interestRateModel",
+        "blockNumber",
+        "timestamp",
+        "txHash",
+        "logIndex"
+      ]
+    },
+    {
+      "term": "ConfigHistoryItem",
+      "type": "data-type",
+      "description": "Generic configuration change event",
+      "properties": [
+        "type",
+        "data",
+        "blockNumber",
+        "timestamp",
+        "txHash",
+        "logIndex"
+      ]
+    },
+    {
+      "term": "ApiKeyCreateRequest",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "name",
+        "ownerEmail",
+        "keyType",
+        "scopeMode",
+        "vaultAllowlist",
+        "rateLimit",
+        "expiresInDays"
+      ]
+    },
+    {
+      "term": "ApiKeyCreateResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "message",
+        "key",
+        "keyPrefix",
+        "id",
+        "name",
+        "keyType",
+        "scopeMode",
+        "vaultAllowlist",
+        "rateLimit",
+        "expiresAt"
+      ]
+    },
+    {
+      "term": "ApiKeyResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "id",
+        "keyPrefix",
+        "name",
+        "ownerEmail",
+        "keyType",
+        "scopeMode",
+        "vaultAllowlist",
+        "rateLimit",
+        "isActive",
+        "createdAt"
+      ]
+    },
+    {
+      "term": "ApiKeyUsageResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "period",
+        "summary",
+        "endpoints"
+      ]
+    },
+    {
+      "term": "UsageStatsResponse",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "identifier",
+        "key",
+        "stats",
+        "rateLimit"
+      ]
+    },
+    {
+      "term": "CuratorInfo",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "apiKeyId",
+        "name",
+        "keyPrefix"
+      ]
+    },
+    {
+      "term": "CuratorVaultLabel",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vaultAddress",
+        "curator",
+        "displayName",
+        "description",
+        "productCategory",
+        "riskTier",
+        "strategyDescription",
+        "updatedAt"
+      ]
+    },
+    {
+      "term": "PublicVaultLabel",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vaultAddress",
+        "displayName",
+        "description",
+        "productCategory",
+        "riskTier",
+        "strategyDescription",
+        "updatedAt"
+      ]
+    },
+    {
+      "term": "VaultVisibility",
+      "type": "data-type",
+      "description": "",
+      "properties": [
+        "chainId",
+        "vaultAddress",
+        "status",
+        "checks",
+        "source",
+        "evaluatedAt"
+      ]
+    }
+  ]
+}

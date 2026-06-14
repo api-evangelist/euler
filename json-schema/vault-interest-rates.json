@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultInterestRates",
+  "type": "object",
+  "description": "Contract interest-rate values formatted as decimal strings in fraction units, not public percent APY numbers.",
+  "properties": {
+    "borrowSPY": {
+      "type": "string",
+      "description": "Borrow rate per second as an exact decimal string."
+    },
+    "borrowAPY": {
+      "type": "string",
+      "description": "Borrow APY as an exact decimal fraction string; `1` means 100%."
+    },
+    "supplyAPY": {
+      "type": "string",
+      "description": "Supply APY as an exact decimal fraction string; `1` means 100%."
+    }
+  }
+}

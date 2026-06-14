@@ -1,0 +1,104 @@
+{
+  "operationId": "getAccountsByAddressPositions",
+  "method": "GET",
+  "path": "/v3/accounts/{address}/positions",
+  "summary": "Account positions across chains",
+  "description": "Returns paginated account positions across the selected chain scope.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n",
+  "tags": [
+    "Accounts"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "forceFresh",
+      "in": "query",
+      "required": false,
+      "example": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Account positions",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountPosition"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          },
+          "freshness": {
+            "type": "object",
+            "properties": {
+              "latestSnapshotTimestamp": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "ageSeconds": {
+                "type": "integer",
+                "nullable": true
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "fresh",
+                  "cached"
+                ]
+              },
+              "forceFreshRequested": {
+                "type": "boolean"
+              },
+              "refreshTriggered": {
+                "type": "boolean"
+              },
+              "refreshCompleted": {
+                "type": "boolean"
+              },
+              "timedOut": {
+                "type": "boolean"
+              },
+              "rateLimited": {
+                "type": "boolean"
+              },
+              "fallbackReason": {
+                "type": "string",
+                "nullable": true
+              },
+              "waitedMs": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

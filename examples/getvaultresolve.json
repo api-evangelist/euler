@@ -1,0 +1,40 @@
+{
+  "operationId": "getVaultResolve",
+  "method": "GET",
+  "path": "/v3/resolve/vaults",
+  "summary": "Resolve a vault address to its family",
+  "description": "Resolve a single `(chainId, address)` pair to `vaultType`, `factory`, and the canonical resource path when one exists.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "address",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Resolved vault family",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VaultResolveEntry"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

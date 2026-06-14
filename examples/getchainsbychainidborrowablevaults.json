@@ -1,0 +1,36 @@
+{
+  "operationId": "getChainsByChainIdBorrowableVaults",
+  "method": "GET",
+  "path": "/v3/chains/{chainId}/borrowable-vaults",
+  "summary": "Borrowable vaults for a chain",
+  "description": "Legacy location for this collection.",
+  "tags": [
+    "Chains"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Borrowable vaults",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

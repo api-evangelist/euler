@@ -1,0 +1,67 @@
+{
+  "operationId": "getVaultsByChainIdByAddressLtvHistory",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/ltv-history",
+  "summary": "Vault LTV history",
+  "description": "",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "collateral",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault LTV history",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LtvHistoryItem"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

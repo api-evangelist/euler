@@ -1,0 +1,63 @@
+{
+  "operationId": "getVaultsByChainIdByAddressTotals",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/totals",
+  "summary": "Vault totals with historical series",
+  "description": "Returns totalAssets, totalBorrows, utilization, APY from dynamic snapshots. Historical values are raw amounts - compose with /v3/prices for USD conversion.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "resolution",
+      "in": "query",
+      "required": false,
+      "example": "1d"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "forceFresh",
+      "in": "query",
+      "required": false,
+      "example": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault totals with current + historical data",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VaultTotals"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/VaultTotalsMeta"
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/VaultTotalsFreshness"
+          }
+        }
+      }
+    }
+  }
+}

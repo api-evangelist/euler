@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleAdapterEntry",
+  "type": "object",
+  "properties": {
+    "oracle": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "base": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "pythDetail": {
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/OracleAdapterPythDetail"
+        }
+      ],
+      "nullable": true
+    },
+    "chainlinkDetail": {
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/OracleAdapterChainlinkDetail"
+        }
+      ],
+      "nullable": true
+    }
+  }
+}

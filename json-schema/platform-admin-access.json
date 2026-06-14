@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlatformAdminAccess",
+  "type": "object",
+  "required": [
+    "id",
+    "googleEmail",
+    "createdAt",
+    "revokedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "googleEmail": {
+      "type": "string",
+      "format": "email"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revokedAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

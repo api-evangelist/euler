@@ -1,0 +1,69 @@
+{
+  "operationId": "getVaultsByChainIdByAddressConfigHistory",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/config-history",
+  "summary": "Vault configuration history",
+  "description": "Returns a unified timeline of all configuration changes for this vault,\nincluding caps, LTV, IRM, governor, fee receiver, hook config, and other settings.\nFor specific config types, use the dedicated endpoints (cap-history, ltv-history, irm-history).\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault config history",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigHistoryItem"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

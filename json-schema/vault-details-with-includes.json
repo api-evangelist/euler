@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultDetailsWithIncludes",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/VaultDetails"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "collaterals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/VaultCollateralDetail"
+          },
+          "nullable": true
+        },
+        "apy": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/VaultApy"
+            }
+          ],
+          "nullable": true
+        },
+        "totals": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/VaultTotals"
+            }
+          ],
+          "nullable": true
+        },
+        "prices": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/VaultIncludePrices"
+            }
+          ],
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

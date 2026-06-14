@@ -1,0 +1,23 @@
+{
+  "operationId": "postAdminApiKeys",
+  "method": "POST",
+  "path": "/v3/admin/api-keys",
+  "summary": "Create an API key (admin)",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "201": {
+      "description": "API key created",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ApiKeyCreateResponse"
+          }
+        }
+      }
+    }
+  }
+}

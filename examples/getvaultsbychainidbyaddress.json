@@ -1,0 +1,45 @@
+{
+  "operationId": "getVaultsByChainIdByAddress",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}",
+  "summary": "Vault details",
+  "description": "Returns vault detail. Optional `include` expands related resources in a single response.\nSupported values: `collaterals`, `apy`, `totals`, `prices`.\nThe single-vault detail response uses `totalBorrowed` as the canonical borrow-total field.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault details",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VaultDetailResponseWithIncludes"
+          }
+        }
+      }
+    }
+  }
+}

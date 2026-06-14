@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleAdapter",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "asset0": {
+      "type": "string"
+    },
+    "asset1": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": "string",
+      "description": "Preferred public field name for the whitelisted oracle adapter address."
+    },
+    "element": {
+      "type": "string",
+      "description": "Legacy internal field name for the adapter address.",
+      "deprecated": true
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "addedAtBlock": {
+      "type": "string"
+    },
+    "txHash": {
+      "type": "string"
+    }
+  }
+}

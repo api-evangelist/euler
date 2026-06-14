@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AssetRef",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decimals": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string",
+      "nullable": true
+    }
+  }
+}

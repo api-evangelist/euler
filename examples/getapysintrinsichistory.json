@@ -1,0 +1,58 @@
+{
+  "operationId": "getApysIntrinsicHistory",
+  "method": "GET",
+  "path": "/v3/apys/intrinsic/history",
+  "summary": "Intrinsic APY history",
+  "description": "",
+  "tags": [
+    "APYs"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "asset",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "resolution",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Intrinsic APY history",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntrinsicApyHistoryPoint"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/IntrinsicApyHistoryMeta"
+          }
+        }
+      }
+    }
+  }
+}

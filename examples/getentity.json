@@ -1,0 +1,62 @@
+{
+  "operationId": "getEntity",
+  "method": "GET",
+  "path": "/v3/entities/{id}",
+  "summary": "Get entity profile",
+  "description": "Reads one KYBed entity profile. Requires an active platform-admin session.",
+  "tags": [
+    "Entities"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Entity profile.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Entity"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Authenticated session exists, but platform-admin access is not active.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Entity profile was not found.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Invalid entity id.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

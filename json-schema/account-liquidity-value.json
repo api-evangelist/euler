@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AccountLiquidityValue",
+  "type": "object",
+  "description": "Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.",
+  "properties": {
+    "borrowing": {
+      "type": "string",
+      "description": "Borrowing value, raw 18-decimal bigint string."
+    },
+    "liquidation": {
+      "type": "string",
+      "description": "Liquidation value, raw 18-decimal bigint string."
+    },
+    "oracleMid": {
+      "type": "string",
+      "description": "Oracle midpoint value, raw 18-decimal bigint string."
+    }
+  }
+}

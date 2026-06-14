@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AccountPortfolioResponse",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "portfolio": {
+      "type": "object",
+      "properties": {
+        "savings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/PortfolioSavingsPosition"
+          }
+        },
+        "borrows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/PortfolioBorrowPosition"
+          }
+        },
+        "positions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SerializedPortfolioAccountPosition"
+          }
+        },
+        "managedLending": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/PortfolioSavingsPosition"
+          }
+        },
+        "directLending": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/PortfolioSavingsPosition"
+          }
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "suppliedValueUsd": {
+              "type": "number",
+              "description": "Market USD number for total supplied value."
+            },
+            "borrowedValueUsd": {
+              "type": "number",
+              "description": "Market USD number for total borrowed value."
+            },
+            "netAssetValueUsd": {
+              "type": "number",
+              "description": "Market USD number for supplied minus borrowed value."
+            },
+            "netApy": {
+              "type": "number",
+              "description": "Public net APY as a percent number."
+            },
+            "roe": {
+              "type": "number",
+              "description": "Return-on-equity ratio number."
+            },
+            "apyBreakdown": {
+              "$ref": "#/components/schemas/YieldApyBreakdown"
+            },
+            "roeBreakdown": {
+              "$ref": "#/components/schemas/YieldApyBreakdown"
+            }
+          }
+        }
+      }
+    },
+    "account": {
+      "type": "object",
+      "nullable": true,
+      "additionalProperties": true
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/DataIssue"
+      }
+    },
+    "freshness": {
+      "type": "object",
+      "properties": {
+        "latestSnapshotTimestamp": {
+          "type": "integer",
+          "nullable": true
+        },
+        "ageSeconds": {
+          "type": "integer",
+          "nullable": true
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "fresh",
+            "cached"
+          ]
+        },
+        "forceFreshRequested": {
+          "type": "boolean"
+        },
+        "refreshTriggered": {
+          "type": "boolean"
+        },
+        "refreshCompleted": {
+          "type": "boolean"
+        },
+        "timedOut": {
+          "type": "boolean"
+        },
+        "rateLimited": {
+          "type": "boolean"
+        },
+        "fallbackReason": {
+          "type": "string",
+          "nullable": true
+        },
+        "waitedMs": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "operationId": "getVaultsByChainIdByAddressApy",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/apy",
+  "summary": "Vault APY (current + historical)",
+  "description": "",
+  "tags": [
+    "APYs"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "resolution",
+      "in": "query",
+      "required": false,
+      "example": "1d"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault APY",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VaultApy"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/VaultApyMeta"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CollateralConfig",
+  "type": "object",
+  "description": "Current LTV configuration for a collateral vault",
+  "properties": {
+    "collateral": {
+      "type": "string",
+      "description": "Collateral vault address"
+    },
+    "vaultType": {
+      "type": "string",
+      "enum": [
+        "evk",
+        "earn",
+        "securitize"
+      ],
+      "description": "Vault family for the collateral address"
+    },
+    "collateralName": {
+      "type": "string",
+      "description": "Collateral vault name"
+    },
+    "collateralSymbol": {
+      "type": "string",
+      "description": "Collateral vault symbol"
+    },
+    "asset": {
+      "type": "string",
+      "description": "Underlying asset address of the collateral vault"
+    },
+    "assetSymbol": {
+      "type": "string",
+      "description": "Underlying asset symbol"
+    },
+    "assetDecimals": {
+      "type": "integer",
+      "description": "Underlying asset decimals"
+    },
+    "borrowLTV": {
+      "type": "string",
+      "description": "Maximum LTV for borrowing (basis points as string, e.g., \"8500\" = 85%)"
+    },
+    "liquidationLTV": {
+      "type": "string",
+      "description": "LTV at which liquidation can occur (basis points as string)"
+    },
+    "initialLiquidationLTV": {
+      "type": "string",
+      "description": "Initial liquidation LTV before ramping"
+    },
+    "targetTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "ISO timestamp when LTV ramp completes"
+    },
+    "rampDuration": {
+      "type": "integer",
+      "description": "Duration of LTV ramp in seconds"
+    }
+  }
+}

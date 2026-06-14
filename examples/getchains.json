@@ -1,0 +1,29 @@
+{
+  "operationId": "getChains",
+  "method": "GET",
+  "path": "/v3/chains",
+  "summary": "List supported chains",
+  "description": "",
+  "tags": [
+    "Chains"
+  ],
+  "responses": {
+    "200": {
+      "description": "Chains",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chain"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

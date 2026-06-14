@@ -1,0 +1,3394 @@
+{
+  "@context": {
+    "@vocab": "https://docs.euler.finance/vocabulary/",
+    "euler": "https://docs.euler.finance/vocabulary/",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "name": "schema:name",
+    "description": "schema:description",
+    "url": {
+      "@id": "schema:url",
+      "@type": "@id"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "https://v3.euler.finance/v3",
+      "@type": "schema:WebAPI",
+      "name": "Euler Data API (V3)",
+      "description": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability,",
+      "schema:version": "3.0.0",
+      "schema:documentation": "https://docs.euler.finance/developers/data-querying/euler-v3-api"
+    },
+    {
+      "@id": "euler:ErrorResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "ErrorResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ErrorResponse/error",
+          "name": "error"
+        }
+      ]
+    },
+    {
+      "@id": "euler:HealthResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "HealthResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:HealthResponse/status",
+          "name": "status"
+        },
+        {
+          "@id": "euler:HealthResponse/version",
+          "name": "version"
+        },
+        {
+          "@id": "euler:HealthResponse/uptime",
+          "name": "uptime"
+        },
+        {
+          "@id": "euler:HealthResponse/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:DetailedHealthResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "DetailedHealthResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:PlatformAuthSession",
+      "@type": "schema:DefinedTerm",
+      "name": "PlatformAuthSession",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PlatformAuthSession/platformAdminId",
+          "name": "platformAdminId"
+        },
+        {
+          "@id": "euler:PlatformAuthSession/googleEmail",
+          "name": "googleEmail"
+        },
+        {
+          "@id": "euler:PlatformAuthSession/googleSubject",
+          "name": "googleSubject"
+        },
+        {
+          "@id": "euler:PlatformAuthSession/active",
+          "name": "active"
+        },
+        {
+          "@id": "euler:PlatformAuthSession/expiresAt",
+          "name": "expiresAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PlatformAdminAccessRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "PlatformAdminAccessRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PlatformAdminAccessRequest/googleEmail",
+          "name": "googleEmail"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PlatformAdminAccess",
+      "@type": "schema:DefinedTerm",
+      "name": "PlatformAdminAccess",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PlatformAdminAccess/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:PlatformAdminAccess/googleEmail",
+          "name": "googleEmail"
+        },
+        {
+          "@id": "euler:PlatformAdminAccess/createdAt",
+          "name": "createdAt"
+        },
+        {
+          "@id": "euler:PlatformAdminAccess/revokedAt",
+          "name": "revokedAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PlatformAdminCreateAccessResult",
+      "@type": "schema:DefinedTerm",
+      "name": "PlatformAdminCreateAccessResult",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PlatformAdminCreateAccessResult/admin",
+          "name": "admin"
+        },
+        {
+          "@id": "euler:PlatformAdminCreateAccessResult/state",
+          "name": "state"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PlatformAdminRevokeAccessResult",
+      "@type": "schema:DefinedTerm",
+      "name": "PlatformAdminRevokeAccessResult",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PlatformAdminRevokeAccessResult/admin",
+          "name": "admin"
+        },
+        {
+          "@id": "euler:PlatformAdminRevokeAccessResult/state",
+          "name": "state"
+        }
+      ]
+    },
+    {
+      "@id": "euler:Entity",
+      "@type": "schema:DefinedTerm",
+      "name": "Entity",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:Entity/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:Entity/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:Entity/logo",
+          "name": "logo"
+        },
+        {
+          "@id": "euler:Entity/description",
+          "name": "description"
+        },
+        {
+          "@id": "euler:Entity/url",
+          "name": "url"
+        },
+        {
+          "@id": "euler:Entity/socialTwitter",
+          "name": "socialTwitter"
+        },
+        {
+          "@id": "euler:Entity/socialYoutube",
+          "name": "socialYoutube"
+        },
+        {
+          "@id": "euler:Entity/socialDiscord",
+          "name": "socialDiscord"
+        },
+        {
+          "@id": "euler:Entity/socialTelegram",
+          "name": "socialTelegram"
+        },
+        {
+          "@id": "euler:Entity/socialGithub",
+          "name": "socialGithub"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityCreateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityCreateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityCreateRequest/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/logo",
+          "name": "logo"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/description",
+          "name": "description"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/url",
+          "name": "url"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/socialTwitter",
+          "name": "socialTwitter"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/socialYoutube",
+          "name": "socialYoutube"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/socialDiscord",
+          "name": "socialDiscord"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/socialTelegram",
+          "name": "socialTelegram"
+        },
+        {
+          "@id": "euler:EntityCreateRequest/socialGithub",
+          "name": "socialGithub"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityUpdateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityUpdateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityUpdateRequest/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/logo",
+          "name": "logo"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/description",
+          "name": "description"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/url",
+          "name": "url"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/socialTwitter",
+          "name": "socialTwitter"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/socialYoutube",
+          "name": "socialYoutube"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/socialDiscord",
+          "name": "socialDiscord"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/socialTelegram",
+          "name": "socialTelegram"
+        },
+        {
+          "@id": "euler:EntityUpdateRequest/socialGithub",
+          "name": "socialGithub"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityMember",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityMember",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityMember/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:EntityMember/entityId",
+          "name": "entityId"
+        },
+        {
+          "@id": "euler:EntityMember/email",
+          "name": "email"
+        },
+        {
+          "@id": "euler:EntityMember/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EntityMember/role",
+          "name": "role"
+        },
+        {
+          "@id": "euler:EntityMember/createdAt",
+          "name": "createdAt"
+        },
+        {
+          "@id": "euler:EntityMember/revokedAt",
+          "name": "revokedAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityMemberCreateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityMemberCreateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityMemberCreateRequest/email",
+          "name": "email"
+        },
+        {
+          "@id": "euler:EntityMemberCreateRequest/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EntityMemberCreateRequest/role",
+          "name": "role"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityAddress",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityAddress",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityAddress/entityId",
+          "name": "entityId"
+        },
+        {
+          "@id": "euler:EntityAddress/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:EntityAddress/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:EntityAddress/label",
+          "name": "label"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityAddressCreateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityAddressCreateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityAddressCreateRequest/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:EntityAddressCreateRequest/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:EntityAddressCreateRequest/label",
+          "name": "label"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EntityMemberUpdateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EntityMemberUpdateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EntityMemberUpdateRequest/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EntityMemberUpdateRequest/role",
+          "name": "role"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PaginationMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "PaginationMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PaginationMeta/total",
+          "name": "total"
+        },
+        {
+          "@id": "euler:PaginationMeta/hasMore",
+          "name": "hasMore"
+        },
+        {
+          "@id": "euler:PaginationMeta/offset",
+          "name": "offset"
+        },
+        {
+          "@id": "euler:PaginationMeta/limit",
+          "name": "limit"
+        },
+        {
+          "@id": "euler:PaginationMeta/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:PaginationMeta/chainId",
+          "name": "chainId"
+        }
+      ]
+    },
+    {
+      "@id": "euler:Chain",
+      "@type": "schema:DefinedTerm",
+      "name": "Chain",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:Chain/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:Chain/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:Chain/status",
+          "name": "status"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ProtocolStats",
+      "@type": "schema:DefinedTerm",
+      "name": "ProtocolStats",
+      "description": "EVK lending aggregates across the selected chains, with Earn TVL reported separately.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ProtocolStats/totalSuppliedUsd",
+          "name": "totalSuppliedUsd"
+        },
+        {
+          "@id": "euler:ProtocolStats/totalBorrowedUsd",
+          "name": "totalBorrowedUsd"
+        },
+        {
+          "@id": "euler:ProtocolStats/earnTotalAssetsUsd",
+          "name": "earnTotalAssetsUsd"
+        },
+        {
+          "@id": "euler:ProtocolStats/utilization",
+          "name": "utilization"
+        },
+        {
+          "@id": "euler:ProtocolStats/vaultCount",
+          "name": "vaultCount"
+        },
+        {
+          "@id": "euler:ProtocolStats/chainCount",
+          "name": "chainCount"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ChainStats",
+      "@type": "schema:DefinedTerm",
+      "name": "ChainStats",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:AssetRef",
+      "@type": "schema:DefinedTerm",
+      "name": "AssetRef",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AssetRef/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:AssetRef/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:AssetRef/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:AssetRef/name",
+          "name": "name"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OraclePriceRaw",
+      "@type": "schema:DefinedTerm",
+      "name": "OraclePriceRaw",
+      "description": "Exact oracle quote values returned by contracts, represented as raw integer strings in the oracle unit-of-account scale.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OraclePriceRaw/queryFailure",
+          "name": "queryFailure"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/queryFailureReason",
+          "name": "queryFailureReason"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/amountIn",
+          "name": "amountIn"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/amountOutMid",
+          "name": "amountOutMid"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/amountOutBid",
+          "name": "amountOutBid"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/amountOutAsk",
+          "name": "amountOutAsk"
+        },
+        {
+          "@id": "euler:OraclePriceRaw/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultFees",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultFees",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultFees/interestFee",
+          "name": "interestFee"
+        },
+        {
+          "@id": "euler:VaultFees/accumulatedFeesShares",
+          "name": "accumulatedFeesShares"
+        },
+        {
+          "@id": "euler:VaultFees/accumulatedFeesAssets",
+          "name": "accumulatedFeesAssets"
+        },
+        {
+          "@id": "euler:VaultFees/governorFeeReceiver",
+          "name": "governorFeeReceiver"
+        },
+        {
+          "@id": "euler:VaultFees/protocolFeeReceiver",
+          "name": "protocolFeeReceiver"
+        },
+        {
+          "@id": "euler:VaultFees/protocolFeeShare",
+          "name": "protocolFeeShare"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultHookedOperations",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultHookedOperations",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultHookedOperations/deposit",
+          "name": "deposit"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/mint",
+          "name": "mint"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/withdraw",
+          "name": "withdraw"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/redeem",
+          "name": "redeem"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/transfer",
+          "name": "transfer"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/skim",
+          "name": "skim"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/borrow",
+          "name": "borrow"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/repay",
+          "name": "repay"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/repayWithShares",
+          "name": "repayWithShares"
+        },
+        {
+          "@id": "euler:VaultHookedOperations/pullDebt",
+          "name": "pullDebt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultHooks",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultHooks",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultHooks/hookedOperations",
+          "name": "hookedOperations"
+        },
+        {
+          "@id": "euler:VaultHooks/hookTarget",
+          "name": "hookTarget"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultCaps",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultCaps",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultCaps/supplyCap",
+          "name": "supplyCap"
+        },
+        {
+          "@id": "euler:VaultCaps/borrowCap",
+          "name": "borrowCap"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultLiquidation",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultLiquidation",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultLiquidation/maxLiquidationDiscount",
+          "name": "maxLiquidationDiscount"
+        },
+        {
+          "@id": "euler:VaultLiquidation/liquidationCoolOffTime",
+          "name": "liquidationCoolOffTime"
+        },
+        {
+          "@id": "euler:VaultLiquidation/socializeDebt",
+          "name": "socializeDebt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultInterestRates",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultInterestRates",
+      "description": "Contract interest-rate values formatted as decimal strings in fraction units, not public percent APY numbers.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultInterestRates/borrowSPY",
+          "name": "borrowSPY"
+        },
+        {
+          "@id": "euler:VaultInterestRates/borrowAPY",
+          "name": "borrowAPY"
+        },
+        {
+          "@id": "euler:VaultInterestRates/supplyAPY",
+          "name": "supplyAPY"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultInterestRateModel",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultInterestRateModel",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultInterestRateModel/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:VaultInterestRateModel/type",
+          "name": "type"
+        },
+        {
+          "@id": "euler:VaultInterestRateModel/data",
+          "name": "data"
+        }
+      ]
+    },
+    {
+      "@id": "euler:SubAccount",
+      "@type": "schema:DefinedTerm",
+      "name": "SubAccount",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:SubAccount/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:SubAccount/owner",
+          "name": "owner"
+        },
+        {
+          "@id": "euler:SubAccount/addressPrefix",
+          "name": "addressPrefix"
+        },
+        {
+          "@id": "euler:SubAccount/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:SubAccount/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleAdapterPythDetail",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleAdapterPythDetail",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleAdapterPythDetail/pyth",
+          "name": "pyth"
+        },
+        {
+          "@id": "euler:OracleAdapterPythDetail/base",
+          "name": "base"
+        },
+        {
+          "@id": "euler:OracleAdapterPythDetail/quote",
+          "name": "quote"
+        },
+        {
+          "@id": "euler:OracleAdapterPythDetail/feedId",
+          "name": "feedId"
+        },
+        {
+          "@id": "euler:OracleAdapterPythDetail/maxStaleness",
+          "name": "maxStaleness"
+        },
+        {
+          "@id": "euler:OracleAdapterPythDetail/maxConfWidth",
+          "name": "maxConfWidth"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleAdapterChainlinkDetail",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleAdapterChainlinkDetail",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleAdapterChainlinkDetail/oracle",
+          "name": "oracle"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleDetailedInfo",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleDetailedInfo",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleDetailedInfo/oracle",
+          "name": "oracle"
+        },
+        {
+          "@id": "euler:OracleDetailedInfo/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:OracleDetailedInfo/oracleInfo",
+          "name": "oracleInfo"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleAdapterEntry",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleAdapterEntry",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleAdapterEntry/oracle",
+          "name": "oracle"
+        },
+        {
+          "@id": "euler:OracleAdapterEntry/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:OracleAdapterEntry/base",
+          "name": "base"
+        },
+        {
+          "@id": "euler:OracleAdapterEntry/quote",
+          "name": "quote"
+        },
+        {
+          "@id": "euler:OracleAdapterEntry/pythDetail",
+          "name": "pythDetail"
+        },
+        {
+          "@id": "euler:OracleAdapterEntry/chainlinkDetail",
+          "name": "chainlinkDetail"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleResolvedVault",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleResolvedVault",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleResolvedVault/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:OracleResolvedVault/quote",
+          "name": "quote"
+        },
+        {
+          "@id": "euler:OracleResolvedVault/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:OracleResolvedVault/resolvedAssets",
+          "name": "resolvedAssets"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleInfo",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleInfo",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleInfo/oracle",
+          "name": "oracle"
+        },
+        {
+          "@id": "euler:OracleInfo/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:OracleInfo/detailedInfo",
+          "name": "detailedInfo"
+        },
+        {
+          "@id": "euler:OracleInfo/adapters",
+          "name": "adapters"
+        },
+        {
+          "@id": "euler:OracleInfo/resolvedVaults",
+          "name": "resolvedVaults"
+        }
+      ]
+    },
+    {
+      "@id": "euler:Vault",
+      "@type": "schema:DefinedTerm",
+      "name": "Vault",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:Vault/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:Vault/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:Vault/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:Vault/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:Vault/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:Vault/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:Vault/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:Vault/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:Vault/totalAssets",
+          "name": "totalAssets"
+        },
+        {
+          "@id": "euler:Vault/totalBorrows",
+          "name": "totalBorrows"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultResolveEntry",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultResolveEntry",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultResolveEntry/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/found",
+          "name": "found"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/factory",
+          "name": "factory"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/resource",
+          "name": "resource"
+        },
+        {
+          "@id": "euler:VaultResolveEntry/snapshotTimestamp",
+          "name": "snapshotTimestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultDetails",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultDetails",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultApyPoint",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultApyPoint",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultApyPoint/supplyApy",
+          "name": "supplyApy"
+        },
+        {
+          "@id": "euler:VaultApyPoint/borrowApy",
+          "name": "borrowApy"
+        },
+        {
+          "@id": "euler:VaultApyPoint/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultApy",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultApy",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultApy/current",
+          "name": "current"
+        },
+        {
+          "@id": "euler:VaultApy/history",
+          "name": "history"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultApyMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultApyMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultApyMeta/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:VaultApyMeta/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:VaultApyMeta/resolution",
+          "name": "resolution"
+        },
+        {
+          "@id": "euler:VaultApyMeta/startTimestamp",
+          "name": "startTimestamp"
+        },
+        {
+          "@id": "euler:VaultApyMeta/endTimestamp",
+          "name": "endTimestamp"
+        },
+        {
+          "@id": "euler:VaultApyMeta/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultTotalsPoint",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultTotalsPoint",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultTotalsPoint/totalAssets",
+          "name": "totalAssets"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/totalBorrows",
+          "name": "totalBorrows"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/cash",
+          "name": "cash"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/utilization",
+          "name": "utilization"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/supplyApy",
+          "name": "supplyApy"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/borrowApy",
+          "name": "borrowApy"
+        },
+        {
+          "@id": "euler:VaultTotalsPoint/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultTotals",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultTotals",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultTotals/current",
+          "name": "current"
+        },
+        {
+          "@id": "euler:VaultTotals/history",
+          "name": "history"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultTotalsMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultTotalsMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultTotalsFreshness",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultTotalsFreshness",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultTotalsFreshness/mode",
+          "name": "mode"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/forceFreshRequested",
+          "name": "forceFreshRequested"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/refreshTriggered",
+          "name": "refreshTriggered"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/refreshCompleted",
+          "name": "refreshCompleted"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/timedOut",
+          "name": "timedOut"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/rateLimited",
+          "name": "rateLimited"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/fallbackReason",
+          "name": "fallbackReason"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/waitedMs",
+          "name": "waitedMs"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/latestSnapshotTimestamp",
+          "name": "latestSnapshotTimestamp"
+        },
+        {
+          "@id": "euler:VaultTotalsFreshness/ageSeconds",
+          "name": "ageSeconds"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleRouterConfig",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleRouterConfig",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleRouterConfig/asset0",
+          "name": "asset0"
+        },
+        {
+          "@id": "euler:OracleRouterConfig/asset1",
+          "name": "asset1"
+        },
+        {
+          "@id": "euler:OracleRouterConfig/oracle",
+          "name": "oracle"
+        },
+        {
+          "@id": "euler:OracleRouterConfig/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:OracleRouterConfig/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:OracleRouterConfig/txHash",
+          "name": "txHash"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleRouterVault",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleRouterVault",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleRouterVault/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:OracleRouterVault/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:OracleRouterVault/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:OracleRouterVault/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:OracleRouterVault/txHash",
+          "name": "txHash"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleRouterState",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleRouterState",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleRouterState/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:OracleRouterState/router",
+          "name": "router"
+        },
+        {
+          "@id": "euler:OracleRouterState/deployer",
+          "name": "deployer"
+        },
+        {
+          "@id": "euler:OracleRouterState/deployedAt",
+          "name": "deployedAt"
+        },
+        {
+          "@id": "euler:OracleRouterState/configs",
+          "name": "configs"
+        },
+        {
+          "@id": "euler:OracleRouterState/vaults",
+          "name": "vaults"
+        }
+      ]
+    },
+    {
+      "@id": "euler:CollateralConfigWithPrice",
+      "@type": "schema:DefinedTerm",
+      "name": "CollateralConfigWithPrice",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultCollateralDetail",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultCollateralDetail",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultIncludePrices",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultIncludePrices",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultIncludePrices/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:VaultIncludePrices/collaterals",
+          "name": "collaterals"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultDetailsWithIncludes",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultDetailsWithIncludes",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultDetailResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultDetailResponse",
+      "description": "Single-vault detail response shape for `GET /v3/evk/vaults/{chainId}/{address}`.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultDetailResponse/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/dToken",
+          "name": "dToken"
+        },
+        {
+          "@id": "euler:VaultDetailResponse/oracle",
+          "name": "oracle"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultDetailResponseWithIncludes",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultDetailResponseWithIncludes",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:EvkVaultBatchRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EvkVaultBatchRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EvkVaultBatchRequest/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:EvkVaultBatchRequest/addresses",
+          "name": "addresses"
+        },
+        {
+          "@id": "euler:EvkVaultBatchRequest/include",
+          "name": "include"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EvkVaultBatchMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "EvkVaultBatchMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EvkVaultBatchMeta/count",
+          "name": "count"
+        },
+        {
+          "@id": "euler:EvkVaultBatchMeta/requested",
+          "name": "requested"
+        },
+        {
+          "@id": "euler:EvkVaultBatchMeta/notFound",
+          "name": "notFound"
+        },
+        {
+          "@id": "euler:EvkVaultBatchMeta/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:EvkVaultBatchMeta/chainId",
+          "name": "chainId"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EvkVaultBatchResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "EvkVaultBatchResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EvkVaultBatchResponse/data",
+          "name": "data"
+        },
+        {
+          "@id": "euler:EvkVaultBatchResponse/meta",
+          "name": "meta"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultSummary",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultSummary",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultSummary/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/totalAssets",
+          "name": "totalAssets"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/totalShares",
+          "name": "totalShares"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/lostAssets",
+          "name": "lostAssets"
+        },
+        {
+          "@id": "euler:EarnVaultSummary/exchangeRate",
+          "name": "exchangeRate"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultBatchRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultBatchRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultBatchRequest/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:EarnVaultBatchRequest/addresses",
+          "name": "addresses"
+        },
+        {
+          "@id": "euler:EarnVaultBatchRequest/include",
+          "name": "include"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultBatchMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultBatchMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultBatchMeta/count",
+          "name": "count"
+        },
+        {
+          "@id": "euler:EarnVaultBatchMeta/requested",
+          "name": "requested"
+        },
+        {
+          "@id": "euler:EarnVaultBatchMeta/notFound",
+          "name": "notFound"
+        },
+        {
+          "@id": "euler:EarnVaultBatchMeta/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:EarnVaultBatchMeta/chainId",
+          "name": "chainId"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultBatchItem",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultBatchItem",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:EarnVaultBatchResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultBatchResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultBatchResponse/data",
+          "name": "data"
+        },
+        {
+          "@id": "euler:EarnVaultBatchResponse/meta",
+          "name": "meta"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultDetails",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultDetails",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:EarnStrategy",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnStrategy",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnStrategy/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:EarnStrategy/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:EarnStrategy/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:EarnStrategy/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:EarnStrategy/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:EarnStrategy/suppliedAssets",
+          "name": "suppliedAssets"
+        },
+        {
+          "@id": "euler:EarnStrategy/withdrawnAssets",
+          "name": "withdrawnAssets"
+        },
+        {
+          "@id": "euler:EarnStrategy/allocatedAssets",
+          "name": "allocatedAssets"
+        },
+        {
+          "@id": "euler:EarnStrategy/allocatedAssetsUsd",
+          "name": "allocatedAssetsUsd"
+        },
+        {
+          "@id": "euler:EarnStrategy/availableAssets",
+          "name": "availableAssets"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultManagement",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultManagement",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultManagement/owner",
+          "name": "owner"
+        },
+        {
+          "@id": "euler:EarnVaultManagement/curator",
+          "name": "curator"
+        },
+        {
+          "@id": "euler:EarnVaultManagement/guardian",
+          "name": "guardian"
+        },
+        {
+          "@id": "euler:EarnVaultManagement/feeRecipient",
+          "name": "feeRecipient"
+        },
+        {
+          "@id": "euler:EarnVaultManagement/timelockSeconds",
+          "name": "timelockSeconds"
+        },
+        {
+          "@id": "euler:EarnVaultManagement/performanceFee",
+          "name": "performanceFee"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultGovernance",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultGovernance",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnVaultGovernance/owner",
+          "name": "owner"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/creator",
+          "name": "creator"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/curator",
+          "name": "curator"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/guardian",
+          "name": "guardian"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/feeReceiver",
+          "name": "feeReceiver"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/timelock",
+          "name": "timelock"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/pendingTimelock",
+          "name": "pendingTimelock"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/pendingTimelockValidAt",
+          "name": "pendingTimelockValidAt"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/pendingGuardian",
+          "name": "pendingGuardian"
+        },
+        {
+          "@id": "euler:EarnVaultGovernance/pendingGuardianValidAt",
+          "name": "pendingGuardianValidAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnStrategyAllocationCap",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnStrategyAllocationCap",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnStrategyAllocationCap/current",
+          "name": "current"
+        },
+        {
+          "@id": "euler:EarnStrategyAllocationCap/pending",
+          "name": "pending"
+        },
+        {
+          "@id": "euler:EarnStrategyAllocationCap/pendingValidAt",
+          "name": "pendingValidAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnIncludePrices",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnIncludePrices",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:EarnIncludePrices/asset",
+          "name": "asset"
+        }
+      ]
+    },
+    {
+      "@id": "euler:EarnVaultDetailsWithIncludes",
+      "@type": "schema:DefinedTerm",
+      "name": "EarnVaultDetailsWithIncludes",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      }
+    },
+    {
+      "@id": "euler:VaultPosition",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultPosition",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultPosition/account",
+          "name": "account"
+        },
+        {
+          "@id": "euler:VaultPosition/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:VaultPosition/assets",
+          "name": "assets"
+        },
+        {
+          "@id": "euler:VaultPosition/assetsUsd",
+          "name": "assetsUsd"
+        },
+        {
+          "@id": "euler:VaultPosition/lastUpdatedBlock",
+          "name": "lastUpdatedBlock"
+        }
+      ]
+    },
+    {
+      "@id": "euler:AccountLiquidityValue",
+      "@type": "schema:DefinedTerm",
+      "name": "AccountLiquidityValue",
+      "description": "Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AccountLiquidityValue/borrowing",
+          "name": "borrowing"
+        },
+        {
+          "@id": "euler:AccountLiquidityValue/liquidation",
+          "name": "liquidation"
+        },
+        {
+          "@id": "euler:AccountLiquidityValue/oracleMid",
+          "name": "oracleMid"
+        }
+      ]
+    },
+    {
+      "@id": "euler:AccountPositionLiquidity",
+      "@type": "schema:DefinedTerm",
+      "name": "AccountPositionLiquidity",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AccountPositionLiquidity/vaultAddress",
+          "name": "vaultAddress"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/unitOfAccount",
+          "name": "unitOfAccount"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/daysToLiquidation",
+          "name": "daysToLiquidation"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/liabilityValue",
+          "name": "liabilityValue"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/totalCollateralValue",
+          "name": "totalCollateralValue"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/collaterals",
+          "name": "collaterals"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/liabilityValueUsd",
+          "name": "liabilityValueUsd"
+        },
+        {
+          "@id": "euler:AccountPositionLiquidity/totalCollateralValueUsd",
+          "name": "totalCollateralValueUsd"
+        }
+      ]
+    },
+    {
+      "@id": "euler:AccountPosition",
+      "@type": "schema:DefinedTerm",
+      "name": "AccountPosition",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AccountPosition/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:AccountPosition/account",
+          "name": "account"
+        },
+        {
+          "@id": "euler:AccountPosition/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:AccountPosition/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:AccountPosition/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:AccountPosition/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:AccountPosition/assets",
+          "name": "assets"
+        },
+        {
+          "@id": "euler:AccountPosition/borrowed",
+          "name": "borrowed"
+        },
+        {
+          "@id": "euler:AccountPosition/assetsValue",
+          "name": "assetsValue"
+        },
+        {
+          "@id": "euler:AccountPosition/debtValue",
+          "name": "debtValue"
+        }
+      ]
+    },
+    {
+      "@id": "euler:AccountPortfolioResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "AccountPortfolioResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AccountPortfolioResponse/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:AccountPortfolioResponse/owner",
+          "name": "owner"
+        },
+        {
+          "@id": "euler:AccountPortfolioResponse/portfolio",
+          "name": "portfolio"
+        },
+        {
+          "@id": "euler:AccountPortfolioResponse/account",
+          "name": "account"
+        },
+        {
+          "@id": "euler:AccountPortfolioResponse/errors",
+          "name": "errors"
+        },
+        {
+          "@id": "euler:AccountPortfolioResponse/freshness",
+          "name": "freshness"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PortfolioSavingsPosition",
+      "@type": "schema:DefinedTerm",
+      "name": "PortfolioSavingsPosition",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PortfolioSavingsPosition/position",
+          "name": "position"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/subAccount",
+          "name": "subAccount"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/assets",
+          "name": "assets"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/suppliedValueUsd",
+          "name": "suppliedValueUsd"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/apy",
+          "name": "apy"
+        },
+        {
+          "@id": "euler:PortfolioSavingsPosition/apyBreakdown",
+          "name": "apyBreakdown"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PortfolioBorrowPosition",
+      "@type": "schema:DefinedTerm",
+      "name": "PortfolioBorrowPosition",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PortfolioBorrowPosition/borrow",
+          "name": "borrow"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/collaterals",
+          "name": "collaterals"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/collateral",
+          "name": "collateral"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/borrowVault",
+          "name": "borrowVault"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/collateralVault",
+          "name": "collateralVault"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/collateralVaults",
+          "name": "collateralVaults"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/subAccount",
+          "name": "subAccount"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/healthFactor",
+          "name": "healthFactor"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/userLTV",
+          "name": "userLTV"
+        },
+        {
+          "@id": "euler:PortfolioBorrowPosition/currentLTV",
+          "name": "currentLTV"
+        }
+      ]
+    },
+    {
+      "@id": "euler:YieldApyBreakdown",
+      "@type": "schema:DefinedTerm",
+      "name": "YieldApyBreakdown",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:YieldApyBreakdown/lending",
+          "name": "lending"
+        },
+        {
+          "@id": "euler:YieldApyBreakdown/borrowing",
+          "name": "borrowing"
+        },
+        {
+          "@id": "euler:YieldApyBreakdown/rewards",
+          "name": "rewards"
+        },
+        {
+          "@id": "euler:YieldApyBreakdown/intrinsicApy",
+          "name": "intrinsicApy"
+        },
+        {
+          "@id": "euler:YieldApyBreakdown/total",
+          "name": "total"
+        }
+      ]
+    },
+    {
+      "@id": "euler:SerializedPortfolioAccountPosition",
+      "@type": "schema:DefinedTerm",
+      "name": "SerializedPortfolioAccountPosition",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/account",
+          "name": "account"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/vaultAddress",
+          "name": "vaultAddress"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/assets",
+          "name": "assets"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/borrowed",
+          "name": "borrowed"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/isController",
+          "name": "isController"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/isCollateral",
+          "name": "isCollateral"
+        },
+        {
+          "@id": "euler:SerializedPortfolioAccountPosition/balanceForwarderEnabled",
+          "name": "balanceForwarderEnabled"
+        }
+      ]
+    },
+    {
+      "@id": "euler:SerializedPortfolioVault",
+      "@type": "schema:DefinedTerm",
+      "name": "SerializedPortfolioVault",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:SerializedPortfolioVault/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/type",
+          "name": "type"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/supplyApy",
+          "name": "supplyApy"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/borrowApy",
+          "name": "borrowApy"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/supplyApy1h",
+          "name": "supplyApy1h"
+        },
+        {
+          "@id": "euler:SerializedPortfolioVault/strategyCount",
+          "name": "strategyCount"
+        }
+      ]
+    },
+    {
+      "@id": "euler:DataIssue",
+      "@type": "schema:DefinedTerm",
+      "name": "DataIssue",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:DataIssue/code",
+          "name": "code"
+        },
+        {
+          "@id": "euler:DataIssue/severity",
+          "name": "severity"
+        },
+        {
+          "@id": "euler:DataIssue/message",
+          "name": "message"
+        },
+        {
+          "@id": "euler:DataIssue/locations",
+          "name": "locations"
+        },
+        {
+          "@id": "euler:DataIssue/source",
+          "name": "source"
+        },
+        {
+          "@id": "euler:DataIssue/originalValue",
+          "name": "originalValue"
+        },
+        {
+          "@id": "euler:DataIssue/normalizedValue",
+          "name": "normalizedValue"
+        }
+      ]
+    },
+    {
+      "@id": "euler:AccountActivity",
+      "@type": "schema:DefinedTerm",
+      "name": "AccountActivity",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:AccountActivity/type",
+          "name": "type"
+        },
+        {
+          "@id": "euler:AccountActivity/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:AccountActivity/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:AccountActivity/assets",
+          "name": "assets"
+        },
+        {
+          "@id": "euler:AccountActivity/shares",
+          "name": "shares"
+        },
+        {
+          "@id": "euler:AccountActivity/txHash",
+          "name": "txHash"
+        },
+        {
+          "@id": "euler:AccountActivity/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:AccountActivity/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:Token",
+      "@type": "schema:DefinedTerm",
+      "name": "Token",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:Token/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:Token/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:Token/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:Token/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:Token/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:Token/logoURI",
+          "name": "logoURI"
+        },
+        {
+          "@id": "euler:Token/priceUsd",
+          "name": "priceUsd"
+        },
+        {
+          "@id": "euler:Token/metadata",
+          "name": "metadata"
+        },
+        {
+          "@id": "euler:Token/groups",
+          "name": "groups"
+        },
+        {
+          "@id": "euler:Token/tags",
+          "name": "tags"
+        }
+      ]
+    },
+    {
+      "@id": "euler:TokenMetadata",
+      "@type": "schema:DefinedTerm",
+      "name": "TokenMetadata",
+      "description": "Protocol integration metadata for a token.",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:TokenMetadata/isPendlePT",
+          "name": "isPendlePT"
+        },
+        {
+          "@id": "euler:TokenMetadata/isPendleLP",
+          "name": "isPendleLP"
+        },
+        {
+          "@id": "euler:TokenMetadata/pendleMarket",
+          "name": "pendleMarket"
+        }
+      ]
+    },
+    {
+      "@id": "euler:Price",
+      "@type": "schema:DefinedTerm",
+      "name": "Price",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:Price/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:Price/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:Price/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:Price/decimals",
+          "name": "decimals"
+        },
+        {
+          "@id": "euler:Price/priceUsd",
+          "name": "priceUsd"
+        },
+        {
+          "@id": "euler:Price/source",
+          "name": "source"
+        },
+        {
+          "@id": "euler:Price/confidence",
+          "name": "confidence"
+        },
+        {
+          "@id": "euler:Price/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:Price/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:IntrinsicApy",
+      "@type": "schema:DefinedTerm",
+      "name": "IntrinsicApy",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:IntrinsicApy/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:IntrinsicApy/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:IntrinsicApy/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:IntrinsicApy/apy",
+          "name": "apy"
+        },
+        {
+          "@id": "euler:IntrinsicApy/provider",
+          "name": "provider"
+        },
+        {
+          "@id": "euler:IntrinsicApy/source",
+          "name": "source"
+        },
+        {
+          "@id": "euler:IntrinsicApy/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:RewardsApy",
+      "@type": "schema:DefinedTerm",
+      "name": "RewardsApy",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:RewardsApy/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:RewardsApy/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:RewardsApy/campaigns",
+          "name": "campaigns"
+        },
+        {
+          "@id": "euler:RewardsApy/totalApr",
+          "name": "totalApr"
+        }
+      ]
+    },
+    {
+      "@id": "euler:RewardsApyHistoryPoint",
+      "@type": "schema:DefinedTerm",
+      "name": "RewardsApyHistoryPoint",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:RewardsApyHistoryPoint/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:RewardsApyHistoryPoint/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:RewardsApyHistoryPoint/rewardsApy",
+          "name": "rewardsApy"
+        },
+        {
+          "@id": "euler:RewardsApyHistoryPoint/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:RewardBreakdown",
+      "@type": "schema:DefinedTerm",
+      "name": "RewardBreakdown",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:RewardBreakdown/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:RewardBreakdown/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:RewardBreakdown/recipient",
+          "name": "recipient"
+        },
+        {
+          "@id": "euler:RewardBreakdown/rewardToken",
+          "name": "rewardToken"
+        },
+        {
+          "@id": "euler:RewardBreakdown/amount",
+          "name": "amount"
+        },
+        {
+          "@id": "euler:RewardBreakdown/campaignId",
+          "name": "campaignId"
+        },
+        {
+          "@id": "euler:RewardBreakdown/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:OracleAdapter",
+      "@type": "schema:DefinedTerm",
+      "name": "OracleAdapter",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:OracleAdapter/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:OracleAdapter/asset0",
+          "name": "asset0"
+        },
+        {
+          "@id": "euler:OracleAdapter/asset1",
+          "name": "asset1"
+        },
+        {
+          "@id": "euler:OracleAdapter/adapter",
+          "name": "adapter"
+        },
+        {
+          "@id": "euler:OracleAdapter/element",
+          "name": "element"
+        },
+        {
+          "@id": "euler:OracleAdapter/addedAt",
+          "name": "addedAt"
+        },
+        {
+          "@id": "euler:OracleAdapter/addedAtBlock",
+          "name": "addedAtBlock"
+        },
+        {
+          "@id": "euler:OracleAdapter/txHash",
+          "name": "txHash"
+        }
+      ]
+    },
+    {
+      "@id": "euler:IntrinsicApyHistoryPoint",
+      "@type": "schema:DefinedTerm",
+      "name": "IntrinsicApyHistoryPoint",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:IntrinsicApyHistoryPoint/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryPoint/apy",
+          "name": "apy"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryPoint/provider",
+          "name": "provider"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryPoint/apyDuration",
+          "name": "apyDuration"
+        }
+      ]
+    },
+    {
+      "@id": "euler:IntrinsicApyHistoryMeta",
+      "@type": "schema:DefinedTerm",
+      "name": "IntrinsicApyHistoryMeta",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/symbol",
+          "name": "symbol"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/resolution",
+          "name": "resolution"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/startTimestamp",
+          "name": "startTimestamp"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/endTimestamp",
+          "name": "endTimestamp"
+        },
+        {
+          "@id": "euler:IntrinsicApyHistoryMeta/timestamp",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "@id": "euler:SwapPool",
+      "@type": "schema:DefinedTerm",
+      "name": "SwapPool",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:SwapPool/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:SwapPool/address",
+          "name": "address"
+        },
+        {
+          "@id": "euler:SwapPool/token0",
+          "name": "token0"
+        },
+        {
+          "@id": "euler:SwapPool/token1",
+          "name": "token1"
+        },
+        {
+          "@id": "euler:SwapPool/tvlUsd",
+          "name": "tvlUsd"
+        }
+      ]
+    },
+    {
+      "@id": "euler:CollateralConfig",
+      "@type": "schema:DefinedTerm",
+      "name": "CollateralConfig",
+      "description": "Current LTV configuration for a collateral vault",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:CollateralConfig/collateral",
+          "name": "collateral"
+        },
+        {
+          "@id": "euler:CollateralConfig/vaultType",
+          "name": "vaultType"
+        },
+        {
+          "@id": "euler:CollateralConfig/collateralName",
+          "name": "collateralName"
+        },
+        {
+          "@id": "euler:CollateralConfig/collateralSymbol",
+          "name": "collateralSymbol"
+        },
+        {
+          "@id": "euler:CollateralConfig/asset",
+          "name": "asset"
+        },
+        {
+          "@id": "euler:CollateralConfig/assetSymbol",
+          "name": "assetSymbol"
+        },
+        {
+          "@id": "euler:CollateralConfig/assetDecimals",
+          "name": "assetDecimals"
+        },
+        {
+          "@id": "euler:CollateralConfig/borrowLTV",
+          "name": "borrowLTV"
+        },
+        {
+          "@id": "euler:CollateralConfig/liquidationLTV",
+          "name": "liquidationLTV"
+        },
+        {
+          "@id": "euler:CollateralConfig/initialLiquidationLTV",
+          "name": "initialLiquidationLTV"
+        }
+      ]
+    },
+    {
+      "@id": "euler:LtvHistoryItem",
+      "@type": "schema:DefinedTerm",
+      "name": "LtvHistoryItem",
+      "description": "Historical LTV configuration change",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:LtvHistoryItem/collateral",
+          "name": "collateral"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/borrowLTV",
+          "name": "borrowLTV"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/liquidationLTV",
+          "name": "liquidationLTV"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/initialLiquidationLTV",
+          "name": "initialLiquidationLTV"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/borrowLtv",
+          "name": "borrowLtv"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/liquidationLtv",
+          "name": "liquidationLtv"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/initialLiquidationLtv",
+          "name": "initialLiquidationLtv"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/targetTimestamp",
+          "name": "targetTimestamp"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/rampDuration",
+          "name": "rampDuration"
+        },
+        {
+          "@id": "euler:LtvHistoryItem/blockNumber",
+          "name": "blockNumber"
+        }
+      ]
+    },
+    {
+      "@id": "euler:CapHistoryItem",
+      "@type": "schema:DefinedTerm",
+      "name": "CapHistoryItem",
+      "description": "Historical cap configuration change",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:CapHistoryItem/supplyCap",
+          "name": "supplyCap"
+        },
+        {
+          "@id": "euler:CapHistoryItem/borrowCap",
+          "name": "borrowCap"
+        },
+        {
+          "@id": "euler:CapHistoryItem/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:CapHistoryItem/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:CapHistoryItem/txHash",
+          "name": "txHash"
+        },
+        {
+          "@id": "euler:CapHistoryItem/logIndex",
+          "name": "logIndex"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultCapHealthItem",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultCapHealthItem",
+      "description": "Vault cap-usage health row",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultCapHealthItem/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/vault",
+          "name": "vault"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/capUsage",
+          "name": "capUsage"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/supplyCap",
+          "name": "supplyCap"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/supplyCapUsage",
+          "name": "supplyCapUsage"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/borrowCap",
+          "name": "borrowCap"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/borrowCapUsage",
+          "name": "borrowCapUsage"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/totalAssets",
+          "name": "totalAssets"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/totalBorrows",
+          "name": "totalBorrows"
+        },
+        {
+          "@id": "euler:VaultCapHealthItem/thresholdExceeded",
+          "name": "thresholdExceeded"
+        }
+      ]
+    },
+    {
+      "@id": "euler:IrmHistoryItem",
+      "@type": "schema:DefinedTerm",
+      "name": "IrmHistoryItem",
+      "description": "Historical interest rate model change",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:IrmHistoryItem/interestRateModel",
+          "name": "interestRateModel"
+        },
+        {
+          "@id": "euler:IrmHistoryItem/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:IrmHistoryItem/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:IrmHistoryItem/txHash",
+          "name": "txHash"
+        },
+        {
+          "@id": "euler:IrmHistoryItem/logIndex",
+          "name": "logIndex"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ConfigHistoryItem",
+      "@type": "schema:DefinedTerm",
+      "name": "ConfigHistoryItem",
+      "description": "Generic configuration change event",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ConfigHistoryItem/type",
+          "name": "type"
+        },
+        {
+          "@id": "euler:ConfigHistoryItem/data",
+          "name": "data"
+        },
+        {
+          "@id": "euler:ConfigHistoryItem/blockNumber",
+          "name": "blockNumber"
+        },
+        {
+          "@id": "euler:ConfigHistoryItem/timestamp",
+          "name": "timestamp"
+        },
+        {
+          "@id": "euler:ConfigHistoryItem/txHash",
+          "name": "txHash"
+        },
+        {
+          "@id": "euler:ConfigHistoryItem/logIndex",
+          "name": "logIndex"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ApiKeyCreateRequest",
+      "@type": "schema:DefinedTerm",
+      "name": "ApiKeyCreateRequest",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ApiKeyCreateRequest/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/ownerEmail",
+          "name": "ownerEmail"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/keyType",
+          "name": "keyType"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/scopeMode",
+          "name": "scopeMode"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/vaultAllowlist",
+          "name": "vaultAllowlist"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/rateLimit",
+          "name": "rateLimit"
+        },
+        {
+          "@id": "euler:ApiKeyCreateRequest/expiresInDays",
+          "name": "expiresInDays"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ApiKeyCreateResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "ApiKeyCreateResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ApiKeyCreateResponse/message",
+          "name": "message"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/key",
+          "name": "key"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/keyPrefix",
+          "name": "keyPrefix"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/keyType",
+          "name": "keyType"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/scopeMode",
+          "name": "scopeMode"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/vaultAllowlist",
+          "name": "vaultAllowlist"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/rateLimit",
+          "name": "rateLimit"
+        },
+        {
+          "@id": "euler:ApiKeyCreateResponse/expiresAt",
+          "name": "expiresAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ApiKeyResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "ApiKeyResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ApiKeyResponse/id",
+          "name": "id"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/keyPrefix",
+          "name": "keyPrefix"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/ownerEmail",
+          "name": "ownerEmail"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/keyType",
+          "name": "keyType"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/scopeMode",
+          "name": "scopeMode"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/vaultAllowlist",
+          "name": "vaultAllowlist"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/rateLimit",
+          "name": "rateLimit"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/isActive",
+          "name": "isActive"
+        },
+        {
+          "@id": "euler:ApiKeyResponse/createdAt",
+          "name": "createdAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:ApiKeyUsageResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "ApiKeyUsageResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:ApiKeyUsageResponse/period",
+          "name": "period"
+        },
+        {
+          "@id": "euler:ApiKeyUsageResponse/summary",
+          "name": "summary"
+        },
+        {
+          "@id": "euler:ApiKeyUsageResponse/endpoints",
+          "name": "endpoints"
+        }
+      ]
+    },
+    {
+      "@id": "euler:UsageStatsResponse",
+      "@type": "schema:DefinedTerm",
+      "name": "UsageStatsResponse",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:UsageStatsResponse/identifier",
+          "name": "identifier"
+        },
+        {
+          "@id": "euler:UsageStatsResponse/key",
+          "name": "key"
+        },
+        {
+          "@id": "euler:UsageStatsResponse/stats",
+          "name": "stats"
+        },
+        {
+          "@id": "euler:UsageStatsResponse/rateLimit",
+          "name": "rateLimit"
+        }
+      ]
+    },
+    {
+      "@id": "euler:CuratorInfo",
+      "@type": "schema:DefinedTerm",
+      "name": "CuratorInfo",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:CuratorInfo/apiKeyId",
+          "name": "apiKeyId"
+        },
+        {
+          "@id": "euler:CuratorInfo/name",
+          "name": "name"
+        },
+        {
+          "@id": "euler:CuratorInfo/keyPrefix",
+          "name": "keyPrefix"
+        }
+      ]
+    },
+    {
+      "@id": "euler:CuratorVaultLabel",
+      "@type": "schema:DefinedTerm",
+      "name": "CuratorVaultLabel",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:CuratorVaultLabel/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/vaultAddress",
+          "name": "vaultAddress"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/curator",
+          "name": "curator"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/displayName",
+          "name": "displayName"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/description",
+          "name": "description"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/productCategory",
+          "name": "productCategory"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/riskTier",
+          "name": "riskTier"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/strategyDescription",
+          "name": "strategyDescription"
+        },
+        {
+          "@id": "euler:CuratorVaultLabel/updatedAt",
+          "name": "updatedAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:PublicVaultLabel",
+      "@type": "schema:DefinedTerm",
+      "name": "PublicVaultLabel",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:PublicVaultLabel/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/vaultAddress",
+          "name": "vaultAddress"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/displayName",
+          "name": "displayName"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/description",
+          "name": "description"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/productCategory",
+          "name": "productCategory"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/riskTier",
+          "name": "riskTier"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/strategyDescription",
+          "name": "strategyDescription"
+        },
+        {
+          "@id": "euler:PublicVaultLabel/updatedAt",
+          "name": "updatedAt"
+        }
+      ]
+    },
+    {
+      "@id": "euler:VaultVisibility",
+      "@type": "schema:DefinedTerm",
+      "name": "VaultVisibility",
+      "description": "",
+      "schema:inDefinedTermSet": {
+        "@id": "euler:EulerFinanceVocabulary"
+      },
+      "schema:hasProperty": [
+        {
+          "@id": "euler:VaultVisibility/chainId",
+          "name": "chainId"
+        },
+        {
+          "@id": "euler:VaultVisibility/vaultAddress",
+          "name": "vaultAddress"
+        },
+        {
+          "@id": "euler:VaultVisibility/status",
+          "name": "status"
+        },
+        {
+          "@id": "euler:VaultVisibility/checks",
+          "name": "checks"
+        },
+        {
+          "@id": "euler:VaultVisibility/source",
+          "name": "source"
+        },
+        {
+          "@id": "euler:VaultVisibility/evaluatedAt",
+          "name": "evaluatedAt"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultInterestRateModel",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "kink",
+        "adaptive_curve",
+        "kinky",
+        "fixed_cyclical_binary",
+        "fixed_cyclical_binary_monthly"
+      ]
+    },
+    "data": {
+      "type": "object",
+      "nullable": true,
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

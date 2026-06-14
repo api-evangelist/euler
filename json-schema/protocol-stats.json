@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolStats",
+  "type": "object",
+  "description": "EVK lending aggregates across the selected chains, with Earn TVL reported separately.",
+  "properties": {
+    "totalSuppliedUsd": {
+      "type": "number",
+      "description": "Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets."
+    },
+    "totalBorrowedUsd": {
+      "type": "number",
+      "description": "Total EVK lending borrows in USD across the selected chains."
+    },
+    "earnTotalAssetsUsd": {
+      "type": "number",
+      "description": "Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`."
+    },
+    "utilization": {
+      "type": "number",
+      "description": "EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator."
+    },
+    "vaultCount": {
+      "type": "integer"
+    },
+    "chainCount": {
+      "type": "integer"
+    }
+  }
+}

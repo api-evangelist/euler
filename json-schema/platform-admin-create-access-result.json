@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlatformAdminCreateAccessResult",
+  "type": "object",
+  "required": [
+    "admin",
+    "state"
+  ],
+  "properties": {
+    "admin": {
+      "$ref": "#/components/schemas/PlatformAdminAccess"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "created",
+        "reactivated"
+      ]
+    }
+  }
+}

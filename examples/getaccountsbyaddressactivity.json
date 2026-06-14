@@ -1,0 +1,51 @@
+{
+  "operationId": "getAccountsByAddressActivity",
+  "method": "GET",
+  "path": "/v3/accounts/{address}/activity",
+  "summary": "Account vault activity discovery",
+  "description": "Discovers vault tuples an account interacts with (shares and/or controller-enabled debt),\nincluding sub-accounts when available.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n",
+  "tags": [
+    "Accounts"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Account activity",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountActivity"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

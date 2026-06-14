@@ -1,0 +1,97 @@
+{
+  "operationId": "getHealthReady",
+  "method": "GET",
+  "path": "/v3/health/ready",
+  "summary": "Readiness probe",
+  "description": "",
+  "tags": [
+    "Health"
+  ],
+  "responses": {
+    "200": {
+      "description": "Ready",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ready"
+                ]
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "503": {
+      "description": "Not ready",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "status",
+              "reasons",
+              "checks"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "not_ready"
+                ]
+              },
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "checks": {
+                "type": "object",
+                "properties": {
+                  "database": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "error"
+                    ]
+                  },
+                  "redis": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "error"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

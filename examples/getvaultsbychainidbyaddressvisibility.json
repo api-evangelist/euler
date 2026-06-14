@@ -1,0 +1,38 @@
+{
+  "operationId": "getVaultsByChainIdByAddressVisibility",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/visibility",
+  "summary": "Deterministic visibility status for a vault",
+  "description": "",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Current visibility status and check results",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VaultVisibility"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

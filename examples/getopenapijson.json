@@ -1,0 +1,11 @@
+{
+  "operationId": "getOpenapiJson",
+  "method": "GET",
+  "path": "/v3/openapi.json",
+  "summary": "OpenAPI document",
+  "description": "",
+  "tags": [
+    "Protocol"
+  ],
+  "responses": {}
+}

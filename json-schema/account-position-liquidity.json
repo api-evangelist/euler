@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AccountPositionLiquidity",
+  "type": "object",
+  "nullable": true,
+  "properties": {
+    "vaultAddress": {
+      "type": "string"
+    },
+    "unitOfAccount": {
+      "type": "string"
+    },
+    "daysToLiquidation": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Infinity",
+            "MoreThanAYear"
+          ]
+        }
+      ]
+    },
+    "liabilityValue": {
+      "$ref": "#/components/schemas/AccountLiquidityValue"
+    },
+    "totalCollateralValue": {
+      "$ref": "#/components/schemas/AccountLiquidityValue"
+    },
+    "collaterals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/AccountLiquidityValue"
+          },
+          "marketPriceUsd": {
+            "type": "number",
+            "description": "Market USD price number for the collateral asset."
+          },
+          "valueUsd": {
+            "type": "number",
+            "description": "Market USD value number for this collateral."
+          }
+        }
+      }
+    },
+    "liabilityValueUsd": {
+      "type": "number",
+      "description": "Market USD liability value number."
+    },
+    "totalCollateralValueUsd": {
+      "type": "number",
+      "description": "Market USD collateral value number."
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "operationId": "getApysRewards",
+  "method": "GET",
+  "path": "/v3/apys/rewards",
+  "summary": "Rewards APYs",
+  "description": "",
+  "tags": [
+    "Rewards"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Rewards APYs",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RewardsApy"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

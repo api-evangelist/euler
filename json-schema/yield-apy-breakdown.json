@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "YieldApyBreakdown",
+  "type": "object",
+  "properties": {
+    "lending": {
+      "type": "number",
+      "description": "Lending APY contribution as a percent number."
+    },
+    "borrowing": {
+      "type": "number",
+      "description": "Borrowing APY contribution as a percent number."
+    },
+    "rewards": {
+      "type": "number",
+      "description": "Rewards APY contribution as a percent number."
+    },
+    "intrinsicApy": {
+      "type": "number",
+      "description": "Intrinsic APY contribution as a percent number."
+    },
+    "total": {
+      "type": "number",
+      "description": "Total APY as a percent number."
+    }
+  }
+}

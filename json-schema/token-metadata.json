@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TokenMetadata",
+  "type": "object",
+  "description": "Protocol integration metadata for a token.",
+  "properties": {
+    "isPendlePT": {
+      "type": "boolean"
+    },
+    "isPendleLP": {
+      "type": "boolean"
+    },
+    "pendleMarket": {
+      "type": "string",
+      "nullable": true
+    }
+  },
+  "additionalProperties": true
+}

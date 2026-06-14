@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlatformAuthSession",
+  "type": "object",
+  "required": [
+    "platformAdminId",
+    "googleEmail",
+    "googleSubject",
+    "active",
+    "expiresAt"
+  ],
+  "properties": {
+    "platformAdminId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "googleEmail": {
+      "type": "string",
+      "format": "email"
+    },
+    "googleSubject": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "const": true
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

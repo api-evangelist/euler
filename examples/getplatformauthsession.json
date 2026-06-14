@@ -1,0 +1,42 @@
+{
+  "operationId": "getPlatformAuthSession",
+  "method": "GET",
+  "path": "/v3/auth/session",
+  "summary": "Get current platform-operator session",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "Active platform-admin session identity.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PlatformAuthSession"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Authenticated session exists, but platform-admin access is not active.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

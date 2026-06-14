@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultVisibility",
+  "type": "object",
+  "required": [
+    "chainId",
+    "vaultAddress",
+    "status",
+    "checks",
+    "source",
+    "evaluatedAt"
+  ],
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "vaultAddress": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "visible",
+        "warning",
+        "hidden",
+        "pending_review"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "string"
+    },
+    "evaluatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "operationId": "revokePlatformAdminAccess",
+  "method": "POST",
+  "path": "/v3/platform-admins/revoke",
+  "summary": "Revoke platform-admin access",
+  "description": "Soft-revokes platform-admin access for a Google email address. Requires a\nvalid platform session and CSRF token because this is an unsafe\ncookie-authenticated write.\n",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "Platform-admin access was revoked.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PlatformAdminRevokeAccessResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "400": {
+      "description": "Malformed JSON request body.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Platform-admin access was not found.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "409": {
+      "description": "Platform-admin access was already revoked.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Missing or invalid Google email.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnStrategy",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "vaultType": {
+      "type": "string",
+      "enum": [
+        "evk",
+        "earn",
+        "securitize",
+        "unknown"
+      ]
+    },
+    "symbol": {
+      "type": "string",
+      "nullable": true
+    },
+    "name": {
+      "type": "string",
+      "nullable": true
+    },
+    "decimals": {
+      "type": "integer",
+      "nullable": true
+    },
+    "suppliedAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount supplied to the strategy."
+    },
+    "withdrawnAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount withdrawn from the strategy."
+    },
+    "allocatedAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount allocated to the strategy."
+    },
+    "allocatedAssetsUsd": {
+      "type": "number",
+      "description": "Market USD number for assets allocated to this strategy."
+    },
+    "availableAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount available from the strategy."
+    },
+    "inSupplyQueue": {
+      "type": "boolean"
+    },
+    "inWithdrawQueue": {
+      "type": "boolean"
+    },
+    "supplyQueueIndex": {
+      "type": "integer",
+      "nullable": true
+    },
+    "withdrawQueueIndex": {
+      "type": "integer",
+      "nullable": true
+    },
+    "allocationCap": {
+      "$ref": "#/components/schemas/EarnStrategyAllocationCap"
+    },
+    "removableAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "pending_removal"
+      ]
+    },
+    "lastRebalancedAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

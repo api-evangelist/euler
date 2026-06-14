@@ -1,0 +1,29 @@
+{
+  "operationId": "postVaultResolve",
+  "method": "POST",
+  "path": "/v3/resolve/vaults",
+  "summary": "Resolve multiple vault addresses to their families",
+  "description": "Bulk resolver for SDK/meta-routing use cases. Supports up to 500 addresses per request.",
+  "tags": [
+    "Vaults"
+  ],
+  "responses": {
+    "200": {
+      "description": "Resolved vault families",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VaultResolveEntry"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

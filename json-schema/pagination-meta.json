@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaginationMeta",
+  "type": "object",
+  "required": [
+    "timestamp"
+  ],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "description": "Exact total count when the endpoint provides one."
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "Indicates whether another page exists beyond the current page."
+    },
+    "offset": {
+      "type": "integer"
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Echoed page size after endpoint-side clamping."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "chainId": {
+      "type": "string",
+      "description": "Comma-separated chain IDs for multi-chain responses."
+    }
+  }
+}

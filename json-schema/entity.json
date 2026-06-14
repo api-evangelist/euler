@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Entity",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "logo",
+    "description",
+    "url",
+    "socialTwitter",
+    "socialYoutube",
+    "socialDiscord",
+    "socialTelegram",
+    "socialGithub",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Stable lowercase slug identifier."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "logo": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "description": {
+      "type": "string",
+      "nullable": true
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialTwitter": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialYoutube": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialDiscord": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialTelegram": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialGithub": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

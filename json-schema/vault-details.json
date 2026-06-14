@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultDetails",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/Vault"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "dToken": {
+          "type": "string"
+        },
+        "oracle": {
+          "$ref": "#/components/schemas/OracleInfo"
+        },
+        "unitOfAccount": {
+          "$ref": "#/components/schemas/AssetRef"
+        },
+        "creator": {
+          "type": "string"
+        },
+        "governor": {
+          "type": "string",
+          "description": "Latest governor admin if available; falls back to creator."
+        },
+        "governorAdmin": {
+          "type": "string",
+          "description": "Latest governor admin if available; falls back to creator."
+        },
+        "supplyCap": {
+          "type": "string",
+          "description": "Resolved supply cap as a bigint string in underlying asset units."
+        },
+        "borrowCap": {
+          "type": "string",
+          "description": "Resolved borrow cap as a bigint string in underlying asset units."
+        },
+        "totalShares": {
+          "type": "string",
+          "description": "Raw vault share supply as a bigint string."
+        },
+        "totalBorrowed": {
+          "type": "string",
+          "description": "Raw borrowed asset amount as a bigint string."
+        },
+        "totalCash": {
+          "type": "string",
+          "description": "Raw cash amount as a bigint string."
+        },
+        "cash": {
+          "type": "string",
+          "description": "Raw cash amount as a bigint string."
+        },
+        "interestRate": {
+          "type": "string",
+          "description": "Raw contract interest-rate value as a bigint string."
+        },
+        "interestAccumulator": {
+          "type": "string",
+          "description": "Raw contract interest accumulator as a bigint string."
+        },
+        "accumulatedFees": {
+          "type": "string",
+          "description": "Raw accumulated fee amount as a bigint string."
+        },
+        "balanceTracker": {
+          "type": "string"
+        },
+        "fees": {
+          "$ref": "#/components/schemas/VaultFees"
+        },
+        "hooks": {
+          "$ref": "#/components/schemas/VaultHooks"
+        },
+        "caps": {
+          "$ref": "#/components/schemas/VaultCaps"
+        },
+        "liquidation": {
+          "$ref": "#/components/schemas/VaultLiquidation"
+        },
+        "interestRates": {
+          "$ref": "#/components/schemas/VaultInterestRates"
+        },
+        "interestRateModel": {
+          "$ref": "#/components/schemas/VaultInterestRateModel"
+        },
+        "evcCompatibleAsset": {
+          "type": "boolean"
+        },
+        "oraclePriceRaw": {
+          "$ref": "#/components/schemas/OraclePriceRaw"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exchangeRate": {
+          "type": "string",
+          "nullable": true,
+          "description": "Raw exchange rate as a bigint string."
+        },
+        "createdAtBlock": {
+          "type": "string",
+          "description": "Block number as a bigint string."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "operationId": "getVaultsByChainIdByAddressCapHistory",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/cap-history",
+  "summary": "Vault cap history (supply/borrow)",
+  "description": "Returns historical changes to supply and borrow caps for this vault.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault cap history",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapHistoryItem"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

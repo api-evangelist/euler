@@ -1,0 +1,30 @@
+{
+  "operationId": "getHealth",
+  "method": "GET",
+  "path": "/v3/health",
+  "summary": "Basic health check",
+  "description": "",
+  "tags": [
+    "Health"
+  ],
+  "responses": {
+    "200": {
+      "description": "OK",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HealthResponse"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Price",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decimals": {
+      "type": "integer"
+    },
+    "priceUsd": {
+      "type": "number",
+      "description": "Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values."
+    },
+    "source": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number",
+      "nullable": true
+    },
+    "blockNumber": {
+      "type": "string",
+      "nullable": true
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

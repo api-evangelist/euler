@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PublicVaultLabel",
+  "type": "object",
+  "required": [
+    "chainId",
+    "vaultAddress",
+    "displayName",
+    "updatedAt"
+  ],
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "vaultAddress": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F<>]+$",
+      "description": "Plain text only; clients must render as text, not HTML or Markdown."
+    },
+    "description": {
+      "type": "string",
+      "nullable": true,
+      "maxLength": 1024,
+      "pattern": "^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F-\\u009F<>]*$",
+      "description": "Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed."
+    },
+    "productCategory": {
+      "type": "string",
+      "nullable": true,
+      "maxLength": 120,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F<>]*$",
+      "description": "Plain text only; clients must render as text, not HTML or Markdown."
+    },
+    "riskTier": {
+      "type": "string",
+      "nullable": true,
+      "maxLength": 64,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F<>]*$",
+      "description": "Plain text only; clients must render as text, not HTML or Markdown."
+    },
+    "strategyDescription": {
+      "type": "string",
+      "nullable": true,
+      "maxLength": 2048,
+      "pattern": "^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F-\\u009F<>]*$",
+      "description": "Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

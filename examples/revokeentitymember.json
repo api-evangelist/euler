@@ -1,0 +1,74 @@
+{
+  "operationId": "revokeEntityMember",
+  "method": "DELETE",
+  "path": "/v3/entities/{id}/members/{memberId}",
+  "summary": "Revoke entity member",
+  "description": "Soft-revokes an entity member. Requires a platform-admin session and CSRF token.",
+  "tags": [
+    "Entities"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "memberId",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Entity member was revoked.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EntityMember"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Entity member was not found.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "409": {
+      "description": "Entity member was already revoked.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Invalid entity or member id.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

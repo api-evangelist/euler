@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultBatchResponse",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/EarnVaultBatchItem"
+      }
+    },
+    "meta": {
+      "$ref": "#/components/schemas/EarnVaultBatchMeta"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "operationId": "getTokensByChainIdByAddressPrice",
+  "method": "GET",
+  "path": "/v3/tokens/{chainId}/{address}/price",
+  "summary": "Token price",
+  "description": "",
+  "tags": [
+    "Prices"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Token price",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

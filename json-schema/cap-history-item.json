@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CapHistoryItem",
+  "type": "object",
+  "description": "Historical cap configuration change",
+  "properties": {
+    "supplyCap": {
+      "type": "string",
+      "description": "Resolved supply cap as a bigint string in underlying asset units."
+    },
+    "borrowCap": {
+      "type": "string",
+      "description": "Resolved borrow cap as a bigint string in underlying asset units."
+    },
+    "blockNumber": {
+      "type": "string",
+      "description": "Block number of the change"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the change"
+    },
+    "txHash": {
+      "type": "string",
+      "description": "Transaction hash"
+    },
+    "logIndex": {
+      "type": "integer",
+      "description": "Log index within the transaction receipt."
+    }
+  }
+}

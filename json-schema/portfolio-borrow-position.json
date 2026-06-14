@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PortfolioBorrowPosition",
+  "type": "object",
+  "properties": {
+    "borrow": {
+      "$ref": "#/components/schemas/SerializedPortfolioAccountPosition"
+    },
+    "collaterals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/SerializedPortfolioAccountPosition"
+      }
+    },
+    "collateral": {
+      "$ref": "#/components/schemas/SerializedPortfolioAccountPosition"
+    },
+    "borrowVault": {
+      "$ref": "#/components/schemas/SerializedPortfolioVault"
+    },
+    "collateralVault": {
+      "$ref": "#/components/schemas/SerializedPortfolioVault"
+    },
+    "collateralVaults": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "subAccount": {
+      "type": "string"
+    },
+    "healthFactor": {
+      "type": "string"
+    },
+    "userLTV": {
+      "type": "string",
+      "description": "Contract-derived account LTV ratio, raw 18-decimal bigint string."
+    },
+    "currentLTV": {
+      "type": "string",
+      "description": "Contract-derived current LTV ratio, raw 18-decimal bigint string."
+    },
+    "borrowed": {
+      "type": "string",
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "supplied": {
+      "type": "string",
+      "description": "Raw supplied asset amount as a bigint string."
+    },
+    "price": {
+      "type": "number",
+      "description": "Borrow liquidation price in USD."
+    },
+    "borrowLiquidationPriceUsd": {
+      "type": "number",
+      "description": "Borrow liquidation price in USD."
+    },
+    "collateralLiquidationPricesUsd": {
+      "type": "object",
+      "description": "Liquidation prices in USD keyed by collateral address.",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "borrowLTV": {
+      "type": "number",
+      "description": "Borrow LTV ratio number."
+    },
+    "liquidationLTV": {
+      "type": "number",
+      "description": "Liquidation LTV ratio number."
+    },
+    "accountLiquidationLTV": {
+      "type": "number",
+      "description": "Account liquidation LTV ratio number."
+    },
+    "liabilityValueBorrowing": {
+      "type": "string",
+      "description": "Contract-derived liability value for borrowing, raw 18-decimal bigint string."
+    },
+    "liabilityValueLiquidation": {
+      "type": "string",
+      "description": "Contract-derived liability value for liquidation, raw 18-decimal bigint string."
+    },
+    "liabilityValueUsd": {
+      "type": "number",
+      "description": "Market USD liability value number."
+    },
+    "totalCollateralValueUsd": {
+      "type": "number",
+      "description": "Market USD total collateral value number."
+    },
+    "collateralValueLiquidation": {
+      "type": "string",
+      "description": "Contract-derived collateral liquidation value, raw 18-decimal bigint string."
+    },
+    "timeToLiquidation": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Infinity",
+            "MoreThanAYear"
+          ]
+        }
+      ]
+    },
+    "multiplier": {
+      "type": "number",
+      "description": "Leverage multiplier ratio number."
+    },
+    "netApy": {
+      "type": "number",
+      "description": "Public net APY as a percent number."
+    },
+    "roe": {
+      "type": "number",
+      "description": "Return-on-equity ratio number."
+    },
+    "apyBreakdown": {
+      "$ref": "#/components/schemas/YieldApyBreakdown"
+    },
+    "roeBreakdown": {
+      "$ref": "#/components/schemas/YieldApyBreakdown"
+    }
+  }
+}

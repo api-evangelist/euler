@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultIncludePrices",
+  "type": "object",
+  "properties": {
+    "asset": {
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/Price"
+        }
+      ],
+      "nullable": true
+    },
+    "collaterals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/CollateralConfigWithPrice"
+      }
+    }
+  }
+}

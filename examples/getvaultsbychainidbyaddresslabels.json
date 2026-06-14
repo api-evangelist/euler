@@ -1,0 +1,41 @@
+{
+  "operationId": "getVaultsByChainIdByAddressLabels",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/labels",
+  "summary": "Public curator labels for a vault",
+  "description": "",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Curator-submitted labels for this vault",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicVaultLabel"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

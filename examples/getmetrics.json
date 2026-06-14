@@ -1,0 +1,11 @@
+{
+  "operationId": "getMetrics",
+  "method": "GET",
+  "path": "/v3/metrics",
+  "summary": "Prometheus metrics endpoint",
+  "description": "Internal observability endpoint for Prometheus scraping.",
+  "tags": [
+    "Health"
+  ],
+  "responses": {}
+}

@@ -1,0 +1,48 @@
+{
+  "operationId": "getPrices",
+  "method": "GET",
+  "path": "/v3/prices",
+  "summary": "Batch prices for tokens",
+  "description": "",
+  "tags": [
+    "Prices"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "addresses",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "assets",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Prices",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Price"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SwapPool",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "token0": {
+      "type": "string"
+    },
+    "token1": {
+      "type": "string"
+    },
+    "tvlUsd": {
+      "type": "number",
+      "description": "Market USD total value locked number."
+    }
+  }
+}

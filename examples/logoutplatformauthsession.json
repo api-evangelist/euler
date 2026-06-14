@@ -1,0 +1,50 @@
+{
+  "operationId": "logoutPlatformAuthSession",
+  "method": "POST",
+  "path": "/v3/auth/logout",
+  "summary": "End current platform-operator session",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "Session cookies were cleared.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "loggedOut"
+            ],
+            "properties": {
+              "loggedOut": {
+                "type": "boolean"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Invalid signed platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Missing or mismatched CSRF token, or inactive platform-admin access.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

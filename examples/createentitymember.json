@@ -1,0 +1,74 @@
+{
+  "operationId": "createEntityMember",
+  "method": "POST",
+  "path": "/v3/entities/{id}/members",
+  "summary": "Create entity member",
+  "description": "Creates or reactivates an entity member. Requires a platform-admin session and CSRF token.",
+  "tags": [
+    "Entities"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "201": {
+      "description": "Entity member was created or reactivated.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EntityMember"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "400": {
+      "description": "Malformed JSON request body.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Entity profile was not found.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "409": {
+      "description": "Entity member email already exists.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Missing or invalid member field.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

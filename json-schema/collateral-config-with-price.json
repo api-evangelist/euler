@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CollateralConfigWithPrice",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/CollateralConfig"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "price": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/Price"
+            }
+          ],
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

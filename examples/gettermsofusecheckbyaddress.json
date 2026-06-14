@@ -1,0 +1,47 @@
+{
+  "operationId": "getTermsOfUseCheckByAddress",
+  "method": "GET",
+  "path": "/v3/terms-of-use/check/{address}",
+  "summary": "Check whether an address signed terms of use",
+  "description": "",
+  "tags": [
+    "TermsOfUse"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Terms-of-use signature status",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "signed": {
+                "type": "boolean"
+              },
+              "signature": {
+                "type": "object",
+                "nullable": true
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

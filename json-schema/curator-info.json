@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CuratorInfo",
+  "type": "object",
+  "required": [
+    "apiKeyId",
+    "name",
+    "keyPrefix"
+  ],
+  "properties": {
+    "apiKeyId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "keyPrefix": {
+      "type": "string"
+    }
+  }
+}

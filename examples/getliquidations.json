@@ -1,0 +1,81 @@
+{
+  "operationId": "getLiquidations",
+  "method": "GET",
+  "path": "/v3/liquidations",
+  "summary": "Liquidation events",
+  "description": "",
+  "tags": [
+    "Liquidations"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "violator",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "liquidator",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Liquidations",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

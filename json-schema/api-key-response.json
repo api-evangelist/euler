@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiKeyResponse",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "keyType",
+    "rateLimit",
+    "isActive",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "keyPrefix": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "ownerEmail": {
+      "type": "string",
+      "nullable": true
+    },
+    "keyType": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "curator"
+      ]
+    },
+    "scopeMode": {
+      "type": "string",
+      "enum": [
+        "all_vaults",
+        "allowlist"
+      ],
+      "nullable": true
+    },
+    "vaultAllowlist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "vaultAddress"
+        ],
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "vaultAddress": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rateLimit": {
+      "type": "integer"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastUsedAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

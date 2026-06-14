@@ -1,0 +1,84 @@
+{
+  "operationId": "getVaultsByChainIdByAddressHolders",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/holders",
+  "summary": "Vault share holders",
+  "description": "Returns all holders with non-zero share balances via transfer aggregation (raw holder set). This endpoint does not unwrap Euler Earn depositors and therefore aligns with legacy behavior when `resolveEulerEarn=false`. Supports 4-byte `addressPrefix` filter for wallet-scoped scans. Balance values are integer strings in raw mode; when resolve flags are enabled, balances may be proportional decimal strings.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "addressPrefix",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "resolveEulerEarn",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": "resolveSubAccounts",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault share holders",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "holder": {
+                  "type": "string"
+                },
+                "balance": {
+                  "type": "string",
+                  "description": "Numeric string; integer in raw mode, may be decimal when resolve flags are enabled."
+                },
+                "lastTransferBlock": {
+                  "type": "string"
+                },
+                "lastTransferTimestamp": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

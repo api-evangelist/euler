@@ -1,0 +1,63 @@
+{
+  "operationId": "getVaultsByChainIdByAddressPositions",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/positions",
+  "summary": "Positions in a vault",
+  "description": "",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "addressPrefix",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "blockNumber",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault positions",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VaultPosition"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

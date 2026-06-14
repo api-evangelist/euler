@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChainStats",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/ProtocolStats"
+    },
+    {
+      "type": "object",
+      "required": [
+        "chainId"
+      ],
+      "properties": {
+        "chainId": {
+          "type": "integer",
+          "description": "Chain ID for the returned chain-scoped aggregate."
+        }
+      }
+    }
+  ]
+}

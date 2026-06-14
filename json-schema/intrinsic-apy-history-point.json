@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntrinsicApyHistoryPoint",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "apy": {
+      "type": "number",
+      "description": "Intrinsic APY as a percent number."
+    },
+    "provider": {
+      "type": "string"
+    },
+    "apyDuration": {
+      "type": "number",
+      "description": "Duration in seconds used to compute the APY."
+    }
+  }
+}

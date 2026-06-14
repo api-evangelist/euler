@@ -1,0 +1,57 @@
+{
+  "operationId": "getApysIntrinsic",
+  "method": "GET",
+  "path": "/v3/apys/intrinsic",
+  "summary": "Intrinsic APYs",
+  "description": "",
+  "tags": [
+    "APYs"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "assets",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Intrinsic APYs",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntrinsicApy"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

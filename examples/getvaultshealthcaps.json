@@ -1,0 +1,58 @@
+{
+  "operationId": "getVaultsHealthCaps",
+  "method": "GET",
+  "path": "/v3/evk/vaults/health/caps",
+  "summary": "Vault cap usage health",
+  "description": "Lists vaults ordered by cap-usage severity (descending).\nCap usage is computed as `max(supplyCapUsage, borrowCapUsage)`, and the\nresponse includes both supply-cap and borrow-cap fields.\n- `chainId` is required.\n- If `threshold` is omitted, returns all vaults.\n- Threshold filter is inclusive (`capUsage >= threshold`).\n- `onlyOverThreshold` is accepted for compatibility and currently does not alter filtering.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "threshold",
+      "in": "query",
+      "required": false
+    },
+    {
+      "name": "onlyOverThreshold",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault cap health list",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VaultCapHealthItem"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

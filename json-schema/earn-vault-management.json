@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultManagement",
+  "type": "object",
+  "properties": {
+    "owner": {
+      "type": "string"
+    },
+    "curator": {
+      "type": "string"
+    },
+    "guardian": {
+      "type": "string"
+    },
+    "feeRecipient": {
+      "type": "string"
+    },
+    "timelockSeconds": {
+      "type": "integer",
+      "description": "Timelock duration in seconds."
+    },
+    "performanceFee": {
+      "type": "string",
+      "description": "Raw contract performance fee value as a bigint string."
+    }
+  }
+}

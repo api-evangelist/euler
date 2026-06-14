@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultDetailsWithIncludes",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/EarnVaultDetails"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apy": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/VaultApy"
+            }
+          ],
+          "nullable": true
+        },
+        "totals": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/VaultTotals"
+            }
+          ],
+          "nullable": true
+        },
+        "prices": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/EarnIncludePrices"
+            }
+          ],
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

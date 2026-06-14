@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SerializedPortfolioVault",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "evk",
+        "earn",
+        "securitize",
+        "unknown"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "decimals": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "shares": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "decimals": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "supplyApy": {
+      "type": "number",
+      "description": "Public supply APY as a percent number."
+    },
+    "borrowApy": {
+      "type": "number",
+      "description": "Public borrow APY as a percent number."
+    },
+    "supplyApy1h": {
+      "type": "number",
+      "description": "One-hour public supply APY as a percent number."
+    },
+    "strategyCount": {
+      "type": "integer"
+    }
+  }
+}

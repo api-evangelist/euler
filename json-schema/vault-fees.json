@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultFees",
+  "type": "object",
+  "properties": {
+    "interestFee": {
+      "type": "number",
+      "description": "Interest fee ratio number."
+    },
+    "accumulatedFeesShares": {
+      "type": "string",
+      "description": "Raw accumulated fee shares as a bigint string."
+    },
+    "accumulatedFeesAssets": {
+      "type": "string",
+      "description": "Raw accumulated fee assets as a bigint string."
+    },
+    "governorFeeReceiver": {
+      "type": "string"
+    },
+    "protocolFeeReceiver": {
+      "type": "string"
+    },
+    "protocolFeeShare": {
+      "type": "number",
+      "description": "Protocol fee share ratio number."
+    }
+  }
+}

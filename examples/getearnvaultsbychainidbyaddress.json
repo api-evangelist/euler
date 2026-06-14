@@ -1,0 +1,43 @@
+{
+  "operationId": "getEarnVaultsByChainIdByAddress",
+  "method": "GET",
+  "path": "/v3/earn/vaults/{chainId}/{address}",
+  "summary": "Earn vault detail",
+  "description": "Returns earn vault detail. Optional `include` expands related resources.\nSupported values: `apy`, `totals`, `prices`.\n",
+  "tags": [
+    "Earn"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Earn vault detail",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EarnVaultDetailsWithIncludes"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

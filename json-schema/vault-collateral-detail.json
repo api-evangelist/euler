@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultCollateralDetail",
+  "allOf": [
+    {
+      "$ref": "#/components/schemas/CollateralConfig"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "oraclePriceRaw": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/OraclePriceRaw"
+            }
+          ],
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

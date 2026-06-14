@@ -1,0 +1,23 @@
+{
+  "operationId": "getUsageStats",
+  "method": "GET",
+  "path": "/v3/usage/stats",
+  "summary": "Usage statistics for the authenticated API key",
+  "description": "",
+  "tags": [
+    "Usage"
+  ],
+  "responses": {
+    "200": {
+      "description": "Usage statistics",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UsageStatsResponse"
+          }
+        }
+      }
+    }
+  }
+}

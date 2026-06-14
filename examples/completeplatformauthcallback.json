@@ -1,0 +1,38 @@
+{
+  "operationId": "completePlatformAuthCallback",
+  "method": "GET",
+  "path": "/v3/auth/callback",
+  "summary": "Complete platform-operator Google SSO callback",
+  "description": "Validates state, nonce, Google ID-token claims, and active platform-admin access.",
+  "tags": [
+    "Auth"
+  ],
+  "parameters": [
+    {
+      "name": "code",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "state",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "400": {
+      "description": "Invalid callback, state, nonce, or ID token.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Google identity is not an active platform admin.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

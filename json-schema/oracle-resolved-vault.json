@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleResolvedVault",
+  "type": "object",
+  "properties": {
+    "vault": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "asset": {
+      "type": "string"
+    },
+    "resolvedAssets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

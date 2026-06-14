@@ -1,0 +1,89 @@
+{
+  "operationId": "listEntityMembers",
+  "method": "GET",
+  "path": "/v3/entities/{id}/members",
+  "summary": "List entity members",
+  "description": "Lists entity members for a KYBed entity. Requires an active platform-admin session.",
+  "tags": [
+    "Entities"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "example": 20
+    },
+    {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "example": 0
+    },
+    {
+      "name": "query",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "includeRevoked",
+      "in": "query",
+      "required": false,
+      "example": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Entity member page.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityMember"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Missing, invalid, or expired platform-admin session.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "403": {
+      "description": "Authenticated session exists, but platform-admin access is not active.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "404": {
+      "description": "Entity profile was not found.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    },
+    "422": {
+      "description": "Invalid entity id.",
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+}

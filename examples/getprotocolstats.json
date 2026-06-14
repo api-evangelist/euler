@@ -1,0 +1,33 @@
+{
+  "operationId": "getProtocolStats",
+  "method": "GET",
+  "path": "/v3/protocol/stats",
+  "summary": "Protocol-wide EVK lending stats across chains",
+  "description": "Returns EVK lending aggregates across the selected chains. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`.",
+  "tags": [
+    "Protocol"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Protocol stats",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProtocolStats"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

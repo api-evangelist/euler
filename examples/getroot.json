@@ -1,0 +1,47 @@
+{
+  "operationId": "getRoot",
+  "method": "GET",
+  "path": "/v3",
+  "summary": "Service metadata",
+  "description": "",
+  "tags": [
+    "Protocol"
+  ],
+  "responses": {
+    "200": {
+      "description": "Service metadata",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "docs": {
+                "type": "string"
+              },
+              "openapi": {
+                "type": "string"
+              },
+              "health": {
+                "type": "string"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

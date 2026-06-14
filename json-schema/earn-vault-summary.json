@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultSummary",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decimals": {
+      "type": "integer"
+    },
+    "asset": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "totalAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "totalShares": {
+      "type": "string",
+      "description": "Raw vault share supply as a bigint string."
+    },
+    "lostAssets": {
+      "type": "string",
+      "description": "Raw lost asset amount as a bigint string."
+    },
+    "exchangeRate": {
+      "type": "string",
+      "description": "Raw exchange rate as a bigint string."
+    },
+    "totalSupplyUsd": {
+      "type": "number",
+      "description": "Market USD number for total Earn vault assets."
+    },
+    "availableAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "availableAssetsUsd": {
+      "type": "number",
+      "description": "Market USD number for currently available assets."
+    },
+    "supplyApy": {
+      "type": "number",
+      "nullable": true,
+      "description": "Public supply APY as a percent number."
+    },
+    "apyCurrent": {
+      "type": "number",
+      "nullable": true,
+      "description": "Current public APY as a percent number."
+    },
+    "apy7d": {
+      "type": "number",
+      "nullable": true,
+      "description": "Seven-day public APY as a percent number."
+    },
+    "apy30d": {
+      "type": "number",
+      "nullable": true,
+      "description": "Thirty-day public APY as a percent number."
+    },
+    "apy90d": {
+      "type": "number",
+      "nullable": true,
+      "description": "Ninety-day public APY as a percent number."
+    },
+    "utilization": {
+      "type": "number",
+      "description": "Utilization ratio number."
+    },
+    "strategyCount": {
+      "type": "integer"
+    },
+    "snapshotTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SerializedPortfolioAccountPosition",
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": "string"
+    },
+    "vaultAddress": {
+      "type": "string"
+    },
+    "vault": {
+      "$ref": "#/components/schemas/SerializedPortfolioVault"
+    },
+    "asset": {
+      "type": "string"
+    },
+    "shares": {
+      "type": "string",
+      "description": "Raw vault share amount as a bigint string."
+    },
+    "assets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "borrowed": {
+      "type": "string",
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "isController": {
+      "type": "boolean"
+    },
+    "isCollateral": {
+      "type": "boolean"
+    },
+    "balanceForwarderEnabled": {
+      "type": "boolean"
+    },
+    "marketPriceUsd": {
+      "type": "number",
+      "description": "Market USD price number for this position's asset."
+    },
+    "suppliedValueUsd": {
+      "type": "number",
+      "description": "Market USD value number for this supplied position."
+    },
+    "borrowedValueUsd": {
+      "type": "number",
+      "description": "Market USD value number for this borrowed position."
+    },
+    "liquidity": {
+      "$ref": "#/components/schemas/AccountPositionLiquidity"
+    },
+    "borrowLiquidationPriceUsd": {
+      "type": "number",
+      "description": "Borrow liquidation price in USD."
+    },
+    "collateralLiquidationPricesUsd": {
+      "type": "object",
+      "description": "Liquidation prices in USD keyed by collateral address.",
+      "additionalProperties": {
+        "type": "number"
+      }
+    }
+  }
+}

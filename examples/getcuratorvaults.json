@@ -1,0 +1,46 @@
+{
+  "operationId": "getCuratorVaults",
+  "method": "GET",
+  "path": "/v3/curator/vaults",
+  "summary": "List vaults labeled by the authenticated curator",
+  "description": "",
+  "tags": [
+    "Curator"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Curator-labeled vaults",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OracleRouterState"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

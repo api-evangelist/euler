@@ -1,0 +1,70 @@
+{
+  "operationId": "getEvcAccountsByAddressEvents",
+  "method": "GET",
+  "path": "/v3/evc/accounts/{address}/events",
+  "summary": "Unified EVC account event timeline",
+  "description": "Account-primary EVC event stream. `chainId`, `from`, and `to` are required.\n",
+  "tags": [
+    "EVC"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "EVC account events",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

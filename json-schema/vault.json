@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vault",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "vaultType": {
+      "type": "string",
+      "enum": [
+        "evk"
+      ],
+      "description": "Vault family for the `/v3/evk/vaults` EVK surface."
+    },
+    "name": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "decimals": {
+      "type": "integer"
+    },
+    "shares": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "asset": {
+      "$ref": "#/components/schemas/AssetRef"
+    },
+    "totalAssets": {
+      "type": "string",
+      "description": "Raw underlying asset amount as a bigint string."
+    },
+    "totalBorrows": {
+      "type": "string",
+      "description": "Raw borrowed asset amount as a bigint string."
+    },
+    "totalSupplyUsd": {
+      "type": "number",
+      "description": "Market USD number for total supplied assets."
+    },
+    "totalBorrowsUsd": {
+      "type": "number",
+      "description": "Market USD number for total borrowed assets."
+    },
+    "utilization": {
+      "type": "number",
+      "description": "Utilization ratio number, computed from market-normalized totals."
+    },
+    "supplyApy": {
+      "type": "number",
+      "description": "Public supply APY as a percent number."
+    },
+    "borrowApy": {
+      "type": "number",
+      "description": "Public borrow APY as a percent number."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

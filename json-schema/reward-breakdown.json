@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RewardBreakdown",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "vault": {
+      "type": "string"
+    },
+    "recipient": {
+      "type": "string"
+    },
+    "rewardToken": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "string",
+      "description": "Raw reward token amount as a bigint string."
+    },
+    "campaignId": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

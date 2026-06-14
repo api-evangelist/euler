@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultCaps",
+  "type": "object",
+  "properties": {
+    "supplyCap": {
+      "type": "string",
+      "description": "Resolved supply cap as a bigint string in underlying asset units."
+    },
+    "borrowCap": {
+      "type": "string",
+      "description": "Resolved borrow cap as a bigint string in underlying asset units."
+    }
+  }
+}

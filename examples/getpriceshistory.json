@@ -1,0 +1,71 @@
+{
+  "operationId": "getPricesHistory",
+  "method": "GET",
+  "path": "/v3/prices/history",
+  "summary": "Historical prices",
+  "description": "Historical prices for explicit token addresses over a bounded time range.\nRequired query params: `chainId`, `addresses`, `from`, `to`.\nMaximum allowed window is 30 days per request.\n",
+  "tags": [
+    "Prices"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "addresses",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "assets",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Historical prices",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Price"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

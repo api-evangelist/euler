@@ -1,0 +1,11 @@
+{
+  "operationId": "startPlatformAuthLogin",
+  "method": "GET",
+  "path": "/v3/auth/login",
+  "summary": "Start platform-operator Google SSO",
+  "description": "Redirects the browser to Google OAuth/OIDC and sets a signed OAuth state cookie.",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {}
+}

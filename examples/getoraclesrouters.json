@@ -1,0 +1,59 @@
+{
+  "operationId": "getOraclesRouters",
+  "method": "GET",
+  "path": "/v3/oracles/routers",
+  "summary": "Oracle router state",
+  "description": "Factory-deployed EulerRouter list with latest indexed config and resolved-vault state.\n- `chainId` is required.\n- Optional filters: `vault`, `adapter`, `offset`, `limit`.\n",
+  "tags": [
+    "Oracles"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "adapter",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Router states",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

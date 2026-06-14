@@ -1,0 +1,41 @@
+{
+  "operationId": "getVaultsByChainIdByAddressCollaterals",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/collaterals",
+  "summary": "Current accepted collaterals with LTV configurations",
+  "description": "Returns the list of vaults accepted as collateral for this vault,\nalong with their current LTV configurations. Use this to understand\nwhat assets can be used as collateral when borrowing from this vault.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Accepted collaterals with LTV configs",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollateralConfig"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

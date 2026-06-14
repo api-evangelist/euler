@@ -1,0 +1,18 @@
+{
+  "operationId": "postEarnVaultBatch",
+  "method": "POST",
+  "path": "/v3/earn/vaults/batch",
+  "summary": "Earn vault batch",
+  "description": "Returns earn vault summaries for explicit addresses on one chain.\nPass `include: [\"strategies\"]` to add the same strategy objects\nreturned by earn vault detail.\nResponse preserves request order after address deduplication.\nRequest cap: 1000 vault addresses and 256 KiB of JSON body.\n",
+  "tags": [
+    "Earn"
+  ],
+  "responses": {
+    "200": {
+      "description": "Earn vault batch",
+      "schema": {
+        "$ref": "#/components/schemas/EarnVaultBatchResponse"
+      }
+    }
+  }
+}

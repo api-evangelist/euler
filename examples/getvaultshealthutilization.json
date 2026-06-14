@@ -1,0 +1,58 @@
+{
+  "operationId": "getVaultsHealthUtilization",
+  "method": "GET",
+  "path": "/v3/evk/vaults/health/utilization",
+  "summary": "Vault utilization health",
+  "description": "Lists vaults ordered by utilization severity (descending).\n- `chainId` is required.\n- If `threshold` is omitted, returns all vaults.\n- Threshold filter is inclusive (`utilization >= threshold`).\n- `onlyOverThreshold` is accepted for compatibility and currently does not alter filtering.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "threshold",
+      "in": "query",
+      "required": false
+    },
+    {
+      "name": "onlyOverThreshold",
+      "in": "query",
+      "required": false,
+      "example": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault utilization health list",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubAccount"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

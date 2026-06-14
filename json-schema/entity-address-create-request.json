@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityAddressCreateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chainId",
+    "address",
+    "label"
+  ],
+  "properties": {
+    "chainId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{40}$",
+      "description": "Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted."
+    },
+    "label": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Human-readable governance address label."
+    }
+  }
+}

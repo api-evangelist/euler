@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityUpdateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "logo": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "description": {
+      "type": "string",
+      "nullable": true
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialTwitter": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialYoutube": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialDiscord": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialTelegram": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    },
+    "socialGithub": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+      "nullable": true
+    }
+  }
+}

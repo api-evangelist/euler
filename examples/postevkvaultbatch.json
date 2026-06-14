@@ -1,0 +1,18 @@
+{
+  "operationId": "postEvkVaultBatch",
+  "method": "POST",
+  "path": "/v3/evk/vaults/batch",
+  "summary": "Batch vault details",
+  "description": "Returns canonical EVK vault detail entities for an explicit address set.\nUse this to avoid high client-side fanout when you already know the vault\naddresses you want to render.\n\nNotes:\n  - Request order is preserved for found vaults.\n  - `meta.notFound` returns requested addresses that were not resolved.\n  - `include=[\"collaterals\"]` expands collateral detail for every returned vault.\n  - The request cap is 1000 vault addresses and 256 KiB of JSON body.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "responses": {
+    "200": {
+      "description": "Batched EVK vault details",
+      "schema": {
+        "$ref": "#/components/schemas/EvkVaultBatchResponse"
+      }
+    }
+  }
+}

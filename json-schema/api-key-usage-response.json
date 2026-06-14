@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiKeyUsageResponse",
+  "type": "object",
+  "required": [
+    "period",
+    "summary",
+    "endpoints"
+  ],
+  "properties": {
+    "period": {
+      "type": "object",
+      "required": [
+        "days",
+        "since"
+      ],
+      "properties": {
+        "days": {
+          "type": "integer"
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "totalRequests",
+        "avgResponseTimeMs",
+        "errorCount"
+      ],
+      "properties": {
+        "totalRequests": {
+          "type": "integer"
+        },
+        "avgResponseTimeMs": {
+          "type": "integer"
+        },
+        "errorCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "endpoint",
+          "method",
+          "count",
+          "avgResponseTime"
+        ],
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "avgResponseTime": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

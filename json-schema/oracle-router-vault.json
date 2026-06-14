@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleRouterVault",
+  "type": "object",
+  "properties": {
+    "vault": {
+      "type": "string"
+    },
+    "asset": {
+      "type": "string"
+    },
+    "blockNumber": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "txHash": {
+      "type": "string"
+    }
+  }
+}

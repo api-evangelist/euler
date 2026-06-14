@@ -1,0 +1,31 @@
+{
+  "operationId": "deleteAdminApiKeysById",
+  "method": "DELETE",
+  "path": "/v3/admin/api-keys/{id}",
+  "summary": "Revoke API key (admin)",
+  "description": "",
+  "tags": [
+    "Auth"
+  ],
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "example": "string"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Revoked",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EarnVaultGovernance",
+  "type": "object",
+  "properties": {
+    "owner": {
+      "type": "string"
+    },
+    "creator": {
+      "type": "string"
+    },
+    "curator": {
+      "type": "string"
+    },
+    "guardian": {
+      "type": "string"
+    },
+    "feeReceiver": {
+      "type": "string"
+    },
+    "timelock": {
+      "type": "integer",
+      "description": "Timelock duration in seconds."
+    },
+    "pendingTimelock": {
+      "type": "integer",
+      "description": "Pending timelock duration in seconds."
+    },
+    "pendingTimelockValidAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pendingGuardian": {
+      "type": "string"
+    },
+    "pendingGuardianValidAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

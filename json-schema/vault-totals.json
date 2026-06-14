@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultTotals",
+  "type": "object",
+  "properties": {
+    "current": {
+      "$ref": "#/components/schemas/VaultTotalsPoint"
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/VaultTotalsPoint"
+      }
+    }
+  }
+}

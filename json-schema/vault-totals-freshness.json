@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultTotalsFreshness",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "fresh",
+        "cached"
+      ]
+    },
+    "forceFreshRequested": {
+      "type": "boolean"
+    },
+    "refreshTriggered": {
+      "type": "boolean"
+    },
+    "refreshCompleted": {
+      "type": "boolean"
+    },
+    "timedOut": {
+      "type": "boolean"
+    },
+    "rateLimited": {
+      "type": "boolean"
+    },
+    "fallbackReason": {
+      "type": "string",
+      "nullable": true
+    },
+    "waitedMs": {
+      "type": "integer"
+    },
+    "latestSnapshotTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ageSeconds": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultResolveEntry",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "found": {
+      "type": "boolean"
+    },
+    "vaultType": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "evk",
+            "earn",
+            "securitize"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "factory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "snapshotTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

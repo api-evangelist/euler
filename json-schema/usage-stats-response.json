@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UsageStatsResponse",
+  "type": "object",
+  "required": [
+    "identifier",
+    "key",
+    "stats",
+    "rateLimit"
+  ],
+  "properties": {
+    "identifier": {
+      "type": "string"
+    },
+    "key": {
+      "type": "object",
+      "required": [
+        "id",
+        "prefix",
+        "name",
+        "rateLimit",
+        "createdAt",
+        "lastUsedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rateLimit": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        }
+      }
+    },
+    "stats": {
+      "type": "object",
+      "required": [
+        "daily",
+        "weekly",
+        "topEndpoints"
+      ],
+      "properties": {
+        "daily": {
+          "type": "object",
+          "required": [
+            "totalRequests",
+            "avgResponseTimeMs",
+            "errorCount"
+          ],
+          "properties": {
+            "totalRequests": {
+              "type": "integer"
+            },
+            "avgResponseTimeMs": {
+              "type": "integer"
+            },
+            "errorCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "weekly": {
+          "type": "object",
+          "required": [
+            "totalRequests",
+            "avgResponseTimeMs",
+            "errorCount"
+          ],
+          "properties": {
+            "totalRequests": {
+              "type": "integer"
+            },
+            "avgResponseTimeMs": {
+              "type": "integer"
+            },
+            "errorCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "topEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "method",
+              "count",
+              "avgResponseTimeMs"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "avgResponseTimeMs": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "rateLimit": {
+      "type": "object",
+      "required": [
+        "limit",
+        "window"
+      ],
+      "properties": {
+        "limit": {
+          "type": "integer"
+        },
+        "window": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

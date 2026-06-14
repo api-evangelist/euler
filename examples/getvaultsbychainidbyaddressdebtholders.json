@@ -1,0 +1,62 @@
+{
+  "operationId": "getVaultsByChainIdByAddressDebtHolders",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/debt-holders",
+  "summary": "Vault debt holder candidates",
+  "description": "Returns addresses that have the vault enabled as a controller. Optimistic set - some may have zero debt.",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault debt holder candidates",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "account": {
+                  "type": "string"
+                },
+                "enabledAtBlock": {
+                  "type": "string"
+                },
+                "enabledAtTimestamp": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

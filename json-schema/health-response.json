@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HealthResponse",
+  "type": "object",
+  "required": [
+    "status",
+    "version",
+    "uptime",
+    "timestamp"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "degraded",
+        "unhealthy"
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "uptime": {
+      "type": "integer"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityMember",
+  "type": "object",
+  "required": [
+    "id",
+    "entityId",
+    "email",
+    "name",
+    "role",
+    "createdAt",
+    "revokedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "entityId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "description": "Normalized lowercase email address."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S",
+      "nullable": true
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor"
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revokedAt": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

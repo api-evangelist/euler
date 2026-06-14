@@ -1,0 +1,71 @@
+{
+  "operationId": "getApysRewardsHistory",
+  "method": "GET",
+  "path": "/v3/apys/rewards/history",
+  "summary": "Rewards APY history",
+  "description": "Rewards APY history for a required time range.\nRequired query params: `chainId`, `from`, `to`.\nOptional filters: `vault`, `resolution`, `offset`, `limit`.\nMaximum allowed window is 30 days per request.\n",
+  "tags": [
+    "Rewards"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "resolution",
+      "in": "query",
+      "required": false,
+      "example": "1d"
+    },
+    {
+      "name": "vault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Rewards APY history",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RewardsApyHistoryPoint"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

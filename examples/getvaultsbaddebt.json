@@ -1,0 +1,145 @@
+{
+  "operationId": "getVaultsBadDebt",
+  "method": "GET",
+  "path": "/v3/evk/vaults/bad-debt",
+  "summary": "Bad debt by borrow vault",
+  "description": "Borrow-vault aggregate of asset-value bad debt. Rows include only underwater account/borrow-vault positions where gross debt value exceeds the current value of enabled collateral considered for that debt position. Healthy accounts are omitted and no chain-level bad-debt total is exposed. Values use asset-value insolvency, not risk-adjusted LTV shortfall.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "borrowVault",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": "minBadDebtUsd",
+      "in": "query",
+      "required": false,
+      "example": 0
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Borrow-vault bad-debt rows",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chainId": {
+                  "type": "integer"
+                },
+                "borrowVault": {
+                  "type": "string"
+                },
+                "borrowAsset": {
+                  "type": "string"
+                },
+                "accountCount": {
+                  "type": "integer",
+                  "description": "Number of underwater accounts contributing to this borrow-vault row."
+                },
+                "debtUsd": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Gross USD debt for underwater account/borrow-vault positions."
+                },
+                "collateralUsd": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Current enabled collateral value considered for those underwater positions."
+                },
+                "coveredDebtUsd": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Portion of debt covered by current collateral value."
+                },
+                "badDebtUsd": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Uncovered debt, equal to debtUsd minus coveredDebtUsd within tolerance."
+                },
+                "calculationTimestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "priceTimestamp": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "refreshedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "meta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "refreshedAt": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "calculationTimestamp": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "priceTimestamp": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "ageSeconds": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

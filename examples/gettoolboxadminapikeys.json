@@ -1,0 +1,33 @@
+{
+  "operationId": "getToolboxAdminApiKeys",
+  "method": "GET",
+  "path": "/v3/toolbox/admin/api-keys",
+  "summary": "List API keys for toolbox Admin",
+  "description": "Lists API key metadata for the toolbox Admin screen. Requires an active platform-admin session and a Google email present in `TOOLBOX_ADMIN_EMAILS`.",
+  "tags": [
+    "Auth"
+  ],
+  "responses": {
+    "200": {
+      "description": "API key metadata visible to toolbox admins.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyResponse"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

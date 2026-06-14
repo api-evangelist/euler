@@ -1,0 +1,88 @@
+{
+  "operationId": "getVaultsByChainIdByAddressEvents",
+  "method": "GET",
+  "path": "/v3/evk/vaults/{chainId}/{address}/events",
+  "summary": "Unified core vault event timeline",
+  "description": "Unified stream of deposit, withdraw, borrow, repay, and transfer events for one vault.\nRequires a bounded time window (`from` + `to`), max 30 days.\n",
+  "tags": [
+    "Vaults"
+  ],
+  "parameters": [
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Vault events",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chainId": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "blockNumber": {
+                  "type": "string"
+                },
+                "txHash": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VaultHookedOperations",
+  "type": "object",
+  "properties": {
+    "deposit": {
+      "type": "boolean"
+    },
+    "mint": {
+      "type": "boolean"
+    },
+    "withdraw": {
+      "type": "boolean"
+    },
+    "redeem": {
+      "type": "boolean"
+    },
+    "transfer": {
+      "type": "boolean"
+    },
+    "skim": {
+      "type": "boolean"
+    },
+    "borrow": {
+      "type": "boolean"
+    },
+    "repay": {
+      "type": "boolean"
+    },
+    "repayWithShares": {
+      "type": "boolean"
+    },
+    "pullDebt": {
+      "type": "boolean"
+    },
+    "convertFees": {
+      "type": "boolean"
+    },
+    "liquidate": {
+      "type": "boolean"
+    },
+    "flashloan": {
+      "type": "boolean"
+    },
+    "touch": {
+      "type": "boolean"
+    },
+    "vaultStatusCheck": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntityMemberUpdateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "\\S",
+      "nullable": true
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor"
+      ]
+    }
+  }
+}

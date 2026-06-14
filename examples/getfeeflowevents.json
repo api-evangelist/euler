@@ -1,0 +1,65 @@
+{
+  "operationId": "getFeeFlowEvents",
+  "method": "GET",
+  "path": "/v3/fee-flow/events",
+  "summary": "Unified fee-flow event timeline",
+  "description": "Unified stream of fee-flow events with current indexed coverage (`buy`).\n`chainId`, `from`, and `to` are required.\n",
+  "tags": [
+    "FeeFlow"
+  ],
+  "parameters": [
+    {
+      "name": "chainId",
+      "in": "query",
+      "required": true,
+      "example": "string"
+    },
+    {
+      "name": "from",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "to",
+      "in": "query",
+      "required": true,
+      "example": 0
+    },
+    {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "example": "string"
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    },
+    {
+      "name": null,
+      "in": null,
+      "required": false
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Fee-flow events",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      }
+    }
+  }
+}

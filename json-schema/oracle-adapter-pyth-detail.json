@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OracleAdapterPythDetail",
+  "type": "object",
+  "properties": {
+    "pyth": {
+      "type": "string"
+    },
+    "base": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "feedId": {
+      "type": "string"
+    },
+    "maxStaleness": {
+      "type": "string"
+    },
+    "maxConfWidth": {
+      "type": "string"
+    }
+  }
+}

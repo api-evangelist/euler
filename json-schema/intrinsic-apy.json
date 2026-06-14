@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntrinsicApy",
+  "type": "object",
+  "properties": {
+    "chainId": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "apy": {
+      "type": "number",
+      "description": "Percent number with 6 decimal places."
+    },
+    "provider": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
