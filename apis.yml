@@ -4,7 +4,7 @@ description: Euler is a permissionless modular lending protocol that enables use
   REST APIs for querying vaults, account positions, interest rates, liquidation thresholds,
   token prices, APYs, reward campaigns, and lending market analytics across multiple
   EVM-compatible networks.
-image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
 url: https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/apis.yml
 created: '2026-06-14'
 modified: '2026-06-14'
@@ -26,7 +26,7 @@ apis:
     vaults, account positions, token prices, APYs, reward campaigns, liquidation events,
     oracle routing, and chain-level analytics. Supports unauthenticated and API-key-authenticated
     access with higher rate limits.
-  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
   baseURL: https://v3.euler.finance/v3
   tags:
@@ -58,7 +58,7 @@ apis:
     for ERC-20 tokens across supported networks. Accepts chainId and comma-separated
     asset addresses. Returns prices with 18-decimal precision. Users should validate
     returned prices and maintain fallback sources.
-  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
   baseURL: https://app.euler.finance/api/v1
   tags:
@@ -78,7 +78,7 @@ apis:
     history, interest rates, collateral relationships, EulerEarn strategies, and swap
     pools across Mainnet, Base, Arbitrum, Optimism, Berachain, Avalanche, BSC, Sonic,
     and additional networks.
-  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/data-querying/subgraphs
   baseURL: https://api.goldsky.com/api/public/project_cm4iagnemt1wp01xn4gh1agft/subgraphs
   tags:
@@ -105,7 +105,7 @@ apis:
     batch composition, transaction simulation, approval resolution via standard approve
     and Permit2, swap operations, pricing, rewards, oracle adapter metadata, and FeeFlow
     management.
-  image: https://kinlane-productions2.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/sdk
   baseURL: https://docs.euler.finance
   tags:
