@@ -145,9 +145,9 @@ common:
   url: https://gov.euler.finance
 - type: BugBounty
   url: https://docs.euler.finance/security/bug-bounty
-- type: LLMsTxt
+- type: LlmsText
   url: https://docs.euler.finance/llms.txt
-- type: LLMsFullTxt
+- type: LlmsText
   url: https://docs.euler.finance/llms-full.txt
 maintainers:
 - FN: API Evangelist
