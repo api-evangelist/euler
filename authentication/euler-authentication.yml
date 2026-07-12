@@ -1,0 +1,46 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/euler-v3-data-api.json
+summary:
+  types:
+  - apiKey
+  - http
+  api_key_in:
+  - cookie
+  - header
+schemes:
+- name: ApiKeyAuth
+  type: apiKey
+  in: header
+  parameter: X-API-Key
+  description: API key authentication (optional; higher rate limits).
+  sources:
+  - openapi/euler-v3-data-api.json
+- name: BearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: API key
+  description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+  sources:
+  - openapi/euler-v3-data-api.json
+- name: AdminSecret
+  type: apiKey
+  in: header
+  parameter: X-Admin-Secret
+  description: Admin secret (server-to-server) for API key management.
+  sources:
+  - openapi/euler-v3-data-api.json
+- name: PlatformSession
+  type: apiKey
+  in: cookie
+  parameter: euler_platform_session
+  description: Signed, httpOnly platform-operator browser session cookie.
+  sources:
+  - openapi/euler-v3-data-api.json
+- name: PlatformCsrf
+  type: apiKey
+  in: header
+  parameter: X-CSRF-Token
+  description: Double-submit CSRF token required for unsafe cookie-authenticated methods.
+  sources:
+  - openapi/euler-v3-data-api.json
