@@ -125,6 +125,8 @@ apis:
   - FN: Euler Finance GitHub
     url: https://github.com/euler-xyz
 common:
+- type: AgenticAccess
+  url: agentic-access/euler-agentic-access.yml
 - type: VulnerabilityDisclosure
   url: security/euler-vulnerability-disclosure.yml
 - type: DomainSecurity
