@@ -1,0 +1,209 @@
+openapi: 3.1.0
+info:
+  title: Euler Data API (V3) Accounts Chains API
+  version: 3.0.0
+  description: "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n"
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Chains
+  description: Chain inventory and per-chain protocol summaries. These replace ad-hoc chain-level aggregates from legacy APIs with explicit, cacheable resources.
+paths:
+  /v3/chains:
+    get:
+      tags:
+      - Chains
+      summary: List supported chains
+      x-status: implemented
+      x-cache-ttl: 300
+      responses:
+        '200':
+          description: Chains
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chain'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChains
+  /v3/chains/{chainId}/stats:
+    get:
+      tags:
+      - Chains
+      summary: Chain-level stats
+      description: Returns chain-scoped EVK lending aggregates. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`.
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      responses:
+        '200':
+          description: Chain stats
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChainStats'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChainsByChainIdStats
+  /v3/chains/{chainId}/borrowable-vaults:
+    get:
+      tags:
+      - Chains
+      summary: Borrowable vaults for a chain
+      deprecated: true
+      description: Legacy location for this collection.
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      responses:
+        '200':
+          description: Borrowable vaults
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChainsByChainIdBorrowableVaults
+components:
+  parameters:
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    ProtocolStats:
+      type: object
+      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
+      properties:
+        totalSuppliedUsd:
+          type: number
+          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
+        totalBorrowedUsd:
+          type: number
+          description: Total EVK lending borrows in USD across the selected chains.
+        earnTotalAssetsUsd:
+          type: number
+          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
+        utilization:
+          type: number
+          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
+        vaultCount:
+          type: integer
+        chainCount:
+          type: integer
+    Chain:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          nullable: true
+          description: Optional chain health status.
+    ChainStats:
+      allOf:
+      - $ref: '#/components/schemas/ProtocolStats'
+      - type: object
+        required:
+        - chainId
+        properties:
+          chainId:
+            type: integer
+            description: Chain ID for the returned chain-scoped aggregate.
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.
