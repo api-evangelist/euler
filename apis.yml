@@ -4,7 +4,20 @@ description: Euler is a permissionless modular lending protocol that enables use
   REST APIs for querying vaults, account positions, interest rates, liquidation thresholds,
   token prices, APYs, reward campaigns, and lending market analytics across multiple
   EVM-compatible networks.
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: free
+  onboarding: self-serve
+  trial: false
+  try_now: true
+  public: false
+  label: Free · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/euler.png
 url: https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/apis.yml
 created: '2026-06-14'
 modified: '2026-06-14'
@@ -21,43 +34,11 @@ tags:
 - Interest Rates
 - Permissionless
 apis:
-- name: Euler V3 Data API
-  description: The primary REST API for querying indexed Euler protocol data including
-    vaults, account positions, token prices, APYs, reward campaigns, liquidation events,
-    oracle routing, and chain-level analytics. Supports unauthenticated and API-key-authenticated
-    access with higher rate limits.
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  baseURL: https://v3.euler.finance/v3
-  tags:
-  - Vaults
-  - Lending
-  - Positions
-  - Liquidation
-  - Interest Rates
-  - Analytics
-  - DeFi
-  properties:
-  - type: Documentation
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: OpenAPI
-    url: https://v3.euler.finance/v3/openapi.json
-  - type: SwaggerUI
-    url: https://v3.euler.finance/v3/docs
-  - type: PricingPage
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: RateLimits
-    url: https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
-  - url: graphql/euler-graphql.md
-    type: GraphQL
-  contact:
-  - FN: Euler Finance Developer Support
-    email: leonard@euler.xyz
 - name: Euler Off-Chain Prices API
-  description: An unofficial REST endpoint for fetching USD-denominated asset prices
-    for ERC-20 tokens across supported networks. Accepts chainId and comma-separated
-    asset addresses. Returns prices with 18-decimal precision. Users should validate
-    returned prices and maintain fallback sources.
+  description: >-
+    An unofficial REST endpoint for fetching USD-denominated asset prices for ERC-20 tokens across supported
+    networks. Accepts chainId and comma-separated asset addresses. Returns prices with 18-decimal precision.
+    Users should validate returned prices and maintain fallback sources.
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
   baseURL: https://app.euler.finance/api/v1
@@ -73,11 +54,11 @@ apis:
   - FN: Euler Finance
     url: https://euler.finance
 - name: Euler Subgraphs (GraphQL)
-  description: GraphQL-based subgraph endpoints hosted on Goldsky for querying indexed
-    Euler V2 protocol data including vault states, account positions, borrow/supply
-    history, interest rates, collateral relationships, EulerEarn strategies, and swap
-    pools across Mainnet, Base, Arbitrum, Optimism, Berachain, Avalanche, BSC, Sonic,
-    and additional networks.
+  description: >-
+    GraphQL-based subgraph endpoints hosted on Goldsky for querying indexed Euler V2 protocol data including
+    vault states, account positions, borrow/supply history, interest rates, collateral relationships,
+    EulerEarn strategies, and swap pools across Mainnet, Base, Arbitrum, Optimism, Berachain, Avalanche,
+    BSC, Sonic, and additional networks.
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/data-querying/subgraphs
   baseURL: https://api.goldsky.com/api/public/project_cm4iagnemt1wp01xn4gh1agft/subgraphs
@@ -100,11 +81,11 @@ apis:
   - FN: Euler Finance
     url: https://euler.finance
 - name: Euler V2 TypeScript SDK
-  description: The recommended TypeScript entry point for applications, bots, scripts,
-    and operational tooling built on Euler V2. Provides protocol data fetching, EVC
-    batch composition, transaction simulation, approval resolution via standard approve
-    and Permit2, swap operations, pricing, rewards, oracle adapter metadata, and FeeFlow
-    management.
+  description: >-
+    The recommended TypeScript entry point for applications, bots, scripts, and operational tooling built
+    on Euler V2. Provides protocol data fetching, EVC batch composition, transaction simulation, approval
+    resolution via standard approve and Permit2, swap operations, pricing, rewards, oracle adapter metadata,
+    and FeeFlow management.
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
   humanURL: https://docs.euler.finance/developers/sdk
   baseURL: https://docs.euler.finance
@@ -124,6 +105,478 @@ apis:
   contact:
   - FN: Euler Finance GitHub
     url: https://github.com/euler-xyz
+- aid: euler:euler-accounts-api
+  name: Euler Finance Accounts API
+  description: >-
+    Account activity, discovered positions, and sub-account relationships. Legacy nested account payloads
+    are flattened into account-vault rows in v3.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Accounts
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-accounts-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-apys-api
+  name: Euler Finance APYs API
+  description: >-
+    Base and intrinsic APY surfaces. In v3, APY families are split into dedicated endpoints instead of
+    being embedded inconsistently across larger payloads.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - APYs
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-apys-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-auth-api
+  name: Euler Finance Auth API
+  description: >-
+    Authentication and authorization conventions used across the API, including API keys, admin secrets,
+    and rate-limit behavior.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Auth
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-auth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-chains-api
+  name: Euler Finance Chains API
+  description: >-
+    Chain inventory and per-chain protocol summaries. These replace ad-hoc chain-level aggregates from
+    legacy APIs with explicit, cacheable resources.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Chains
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-chains-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-curator-api
+  name: Euler Finance Curator API
+  description: >-
+    Curator-managed metadata such as labels, descriptions, and visibility controls. This is the operator-owned
+    customization surface in v3.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Curator
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-curator-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-earn-api
+  name: Euler Finance Earn API
+  description: >-
+    Euler Earn vault resources and historical data. These endpoints are separate from EVK vaults and should
+    be modeled independently in client code.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Earn
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-earn-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-entities-api
+  name: Euler Finance Entities API
+  description: >-
+    Platform-admin managed KYBed organization profiles used as backend-owned label and control-plane resources.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Entities
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-entities-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-evc-api
+  name: Euler Finance EVC API
+  description: >-
+    Ethereum Vault Connector account event resources. These are separate from account position snapshots
+    and are intended for event-level inspection.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - EVC
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-evc-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-feeflow-api
+  name: Euler Finance FeeFlow API
+  description: Fee-flow event resources and fee-related historical activity.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - FeeFlow
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-feeflow-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-graphql-api
+  name: Euler Finance GraphQL API
+  description: >-
+    Controlled GraphQL passthrough endpoints for indexer-backed data exploration and compatibility workflows.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - GraphQL
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-graphql-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-health-api
+  name: Euler Finance Health API
+  description: >-
+    Liveness, readiness, and dashboard-friendly platform status checks. Use these for operational monitoring,
+    not for reconstructing full portfolio state.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Health
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-health-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-liquidations-api
+  name: Euler Finance Liquidations API
+  description: Liquidation events and related historical views used for risk analysis and monitoring.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Liquidations
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-liquidations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-oracles-api
+  name: Euler Finance Oracles API
+  description: >-
+    Oracle routing, adapter, and price-source inspection endpoints. These expose pricing/oracle internals
+    that were previously harder to inspect externally.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Oracles
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-oracles-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-prices-api
+  name: Euler Finance Prices API
+  description: >-
+    Current and historical token prices. Prices follow v3 source priority rules and return the canonical
+    merged value rather than exposing raw provider-specific reads by default.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Prices
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-prices-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-protocol-api
+  name: Euler Finance Protocol API
+  description: >-
+    Protocol-wide summary endpoints and aggregate metrics. In v3, these endpoints are explicitly summary-oriented
+    and should be treated as lightweight rollups rather than replacements for full vault list payloads.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Protocol
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-protocol-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-publicallocator-api
+  name: Euler Finance PublicAllocator API
+  description: Public allocator event resources for allocator-level activity and history.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - PublicAllocator
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-publicallocator-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-rewards-api
+  name: Euler Finance Rewards API
+  description: >-
+    Reward campaign APRs and per-account reward breakdowns. Rewards APY is intentionally separate from
+    base vault APY in v3; combine them client-side when you need a legacy-style total supply APY.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Rewards
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-rewards-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-termsofuse-api
+  name: Euler Finance TermsOfUse API
+  description: Terms-of-use signature state and audit endpoints.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - TermsOfUse
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-termsofuse-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-tokens-api
+  name: Euler Finance Tokens API
+  description: >-
+    Token metadata, protocol classifications, and related static reference data used throughout the API.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Tokens
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-tokens-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-usage-api
+  name: Euler Finance Usage API
+  description: >-
+    API usage and API key analytics. These endpoints are intended for operators and consumers tracking
+    traffic, rate limits, and key-level activity.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Usage
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-usage-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-vaults-api
+  name: Euler Finance Vaults API
+  description: >-
+    Canonical vault resources, vault history, holders, borrowers, and open-interest views. In v3, vault
+    detail is decomposed into focused endpoints instead of one large legacy response.
+  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  baseURL: https://v3.euler.finance/v3
+  tags:
+  - Vaults
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-vaults-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
 common:
 - type: AgenticAccess
   url: agentic-access/euler-agentic-access.yml
