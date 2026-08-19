@@ -1,0 +1,125 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Prices API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Prices",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Token price",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/tokens/:chainId/:address/price",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Token price"
+        },
+        {
+          "info": {
+            "name": "Batch prices for tokens",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/prices",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "addresses",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated token addresses (max 100)."
+              },
+              {
+                "name": "assets",
+                "value": "",
+                "type": "query",
+                "description": "Deprecated alias for `addresses`."
+              }
+            ]
+          },
+          "docs": "Batch prices for tokens"
+        },
+        {
+          "info": {
+            "name": "Historical prices",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/prices/history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "addresses",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated token addresses."
+              },
+              {
+                "name": "assets",
+                "value": "",
+                "type": "query",
+                "description": "Deprecated alias for `addresses`."
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Inclusive start of the history window as a unix timestamp in seconds (UTC)."
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Inclusive end of the history window as a unix timestamp in seconds (UTC)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Historical prices for explicit token addresses over a bounded time range.\nRequired query params: `chainId`, `addresses`, `from`, `to`.\nMaximum allowed window is 30 days per request.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

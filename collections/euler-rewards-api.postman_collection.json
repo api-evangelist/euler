@@ -1,0 +1,699 @@
+{
+  "item": [
+    {
+      "id": "2a2c7aa4-8b80-46f5-ab6e-3e623d765c73",
+      "name": "Rewards",
+      "description": {
+        "content": "Reward campaign APRs and per-account reward breakdowns. Rewards APY is intentionally separate from base vault APY in v3; combine them client-side when you need a legacy-style total supply APY.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "cc56a648-a18f-44b4-80db-32e1a946c17a",
+          "name": "Rewards APYs",
+          "request": {
+            "name": "Rewards APYs",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "apys",
+                "rewards"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "vault",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "993aa28f-fb82-422e-bded-1fb1f3ffae28",
+              "name": "Rewards APYs",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"chainId\": 8771,\n      \"vault\": \"string\",\n      \"campaigns\": [\n        {\n          \"id\": \"string\",\n          \"provider\": \"string\",\n          \"apr\": 9728.603302159441,\n          \"rewardToken\": {\n            \"address\": \"string\",\n            \"symbol\": \"string\",\n            \"decimals\": 6531,\n            \"name\": \"string\"\n          },\n          \"source\": \"turtle\",\n          \"startTimestamp\": \"2013-09-20T01:05:32.374Z\",\n          \"endTimestamp\": \"1953-08-11T07:38:34.720Z\",\n          \"status\": \"upcoming\",\n          \"campaignType\": \"string\",\n          \"collateralAsset\": \"string\",\n          \"requiresCb1Verification\": true,\n          \"merklCampaignId\": \"string\",\n          \"opportunityType\": \"string\",\n          \"distributionType\": \"string\",\n          \"whitelist\": [\n            \"string\",\n            \"string\"\n          ],\n          \"blacklist\": [\n            \"string\",\n            \"string\"\n          ]\n        },\n        {\n          \"id\": \"string\",\n          \"provider\": \"string\",\n          \"apr\": 954.0871550605401,\n          \"rewardToken\": {\n            \"address\": \"string\",\n            \"symbol\": \"string\",\n            \"decimals\": 4796,\n            \"name\": \"string\"\n          },\n          \"source\": \"direct\",\n          \"startTimestamp\": \"2008-10-12T14:15:32.161Z\",\n          \"endTimestamp\": \"1994-12-31T21:29:11.357Z\",\n          \"status\": \"active\",\n          \"campaignType\": \"string\",\n          \"collateralAsset\": \"string\",\n          \"requiresCb1Verification\": false,\n          \"merklCampaignId\": \"string\",\n          \"opportunityType\": \"string\",\n          \"distributionType\": \"string\",\n          \"whitelist\": [\n            \"string\",\n            \"string\"\n          ],\n          \"blacklist\": [\n            \"string\",\n            \"string\"\n          ]\n        }\n      ],\n      \"totalApr\": 1609.5227976404913\n    },\n    {\n      \"chainId\": 2703,\n      \"vault\": \"string\",\n      \"campaigns\": [\n        {\n          \"id\": \"string\",\n          \"provider\": \"string\",\n          \"apr\": 9175.437932945135,\n          \"rewardToken\": {\n            \"address\": \"string\",\n            \"symbol\": \"string\",\n            \"decimals\": 234,\n            \"name\": \"string\"\n          },\n          \"source\": \"turtle\",\n          \"startTimestamp\": \"2010-02-17T06:46:31.174Z\",\n          \"endTimestamp\": \"1954-01-20T23:17:53.815Z\",\n          \"status\": \"upcoming\",\n          \"campaignType\": \"string\",\n          \"collateralAsset\": \"string\",\n          \"requiresCb1Verification\": false,\n          \"merklCampaignId\": \"string\",\n          \"opportunityType\": \"string\",\n          \"distributionType\": \"string\",\n          \"whitelist\": [\n            \"string\",\n            \"string\"\n          ],\n          \"blacklist\": [\n            \"string\",\n            \"string\"\n          ]\n        },\n        {\n          \"id\": \"string\",\n          \"provider\": \"string\",\n          \"apr\": 3823.1451229345303,\n          \"rewardToken\": {\n            \"address\": \"string\",\n            \"symbol\": \"string\",\n            \"decimals\": 7231,\n            \"name\": \"string\"\n          },\n          \"source\": \"turtle\",\n          \"startTimestamp\": \"2006-01-13T15:26:34.629Z\",\n          \"endTimestamp\": \"2013-08-04T02:33:06.661Z\",\n          \"status\": \"upcoming\",\n          \"campaignType\": \"string\",\n          \"collateralAsset\": \"string\",\n          \"requiresCb1Verification\": false,\n          \"merklCampaignId\": \"string\",\n          \"opportunityType\": \"string\",\n          \"distributionType\": \"string\",\n          \"whitelist\": [\n            \"string\",\n            \"string\"\n          ],\n          \"blacklist\": [\n            \"string\",\n            \"string\"\n          ]\n        }\n      ],\n      \"totalApr\": 5958.278299865157\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"1953-05-19T11:09:14.815Z\",\n    \"total\": 3029,\n    \"hasMore\": false,\n    \"offset\": 4171,\n    \"limit\": 3704,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ab91c52f-a1c7-400e-a591-c85377a099ab",
+          "name": "Rewards APY history",
+          "request": {
+            "name": "Rewards APY history",
+            "description": {
+              "content": "Rewards APY history for a required time range.\nRequired query params: `chainId`, `from`, `to`.\nOptional filters: `vault`, `resolution`, `offset`, `limit`.\nMaximum allowed window is 30 days per request.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v3",
+                "apys",
+                "rewards",
+                "history"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "from",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "to",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "resolution",
+                  "value": "1d"
+                },
+                {
+                  "disabled": false,
+                  "key": "vault",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "eedde49b-cbf3-4967-b718-d7e3678329c6",
+              "name": "Rewards APY history",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"chainId\": 3872,\n      \"vault\": \"string\",\n      \"rewardsApy\": 962.2550517497797,\n      \"timestamp\": \"2003-11-01T12:11:27.977Z\"\n    },\n    {\n      \"chainId\": 6039,\n      \"vault\": \"string\",\n      \"rewardsApy\": 1199.6573253859233,\n      \"timestamp\": \"1985-03-08T07:14:05.673Z\"\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"1991-12-11T07:43:35.463Z\",\n    \"total\": 3408,\n    \"hasMore\": false,\n    \"offset\": 7572,\n    \"limit\": 6859,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a662bafe-c7a4-4e21-b0b0-091f4e4dd02e",
+              "name": "Bad request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": \"string\",\n      \"key_1\": false,\n      \"key_2\": 4335.760124281075\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "034d8d8e-f15f-40e8-b4dc-82e773729ab7",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": \"string\",\n      \"key_1\": false,\n      \"key_2\": 4335.760124281075\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bf0b713f-5c6b-4a1b-8944-ef36ec13ab75",
+              "name": "Rate limited",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Seconds until next request is allowed.",
+                  "key": "Retry-After",
+                  "value": "4239"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": \"string\",\n      \"key_1\": false,\n      \"key_2\": 4335.760124281075\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0ff13c55-81f4-4930-a7cd-98eb641eb821",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "rewards",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": \"string\",\n      \"key_1\": false,\n      \"key_2\": 4335.760124281075\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e53ae79f-8e41-4198-a519-b7545b2b0ee2",
+          "name": "Per-user reward breakdowns",
+          "request": {
+            "name": "Per-user reward breakdowns",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "rewards",
+                "breakdown"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "account",
+                  "value": "<string>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "vault",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "b6c02422-ad6c-46ea-9a59-eab406dcfe94",
+              "name": "Reward breakdowns",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "rewards",
+                    "breakdown"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "account",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"meta\": {\n    \"timestamp\": \"2021-06-01T19:01:51.507Z\",\n    \"total\": 558,\n    \"hasMore\": false,\n    \"offset\": 5415,\n    \"limit\": 263,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "e8000183-274f-486b-be74-c50c1045d260",
+    "name": "Euler Data API (V3) Accounts Rewards API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n",
+      "type": "text/plain"
+    }
+  }
+}

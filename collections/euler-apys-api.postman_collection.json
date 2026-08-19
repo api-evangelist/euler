@@ -1,0 +1,457 @@
+{
+  "item": [
+    {
+      "id": "3c2da938-4720-43c0-b6e6-b2a82e36ff95",
+      "name": "APYs",
+      "description": {
+        "content": "Base and intrinsic APY surfaces. In v3, APY families are split into dedicated endpoints instead of being embedded inconsistently across larger payloads.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "70383388-06cc-45f2-8f06-17626dc00b30",
+          "name": "Vault APY (current + historical)",
+          "request": {
+            "name": "Vault APY (current + historical)",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "evk",
+                "vaults",
+                ":chainId",
+                ":address",
+                "apy"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "from",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "to",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "resolution",
+                  "value": "1d",
+                  "description": "Defaults to `1d`. If omitted, uses last 30 days for `1d` and last 7 days for `1h`."
+                },
+                {
+                  "disabled": false,
+                  "key": "sort",
+                  "value": "<string>",
+                  "description": "Sort field, prefix with '-' for descending."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<integer>",
+                  "key": "chainId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "address",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "79be3fc8-29ff-4efc-b710-b22677e1ab37",
+              "name": "Vault APY",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "evk",
+                    "vaults",
+                    ":chainId",
+                    ":address",
+                    "apy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "1d"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<integer>",
+                      "key": "chainId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"current\": {\n      \"supplyApy\": 619.278468080734,\n      \"borrowApy\": 9710.398979029513,\n      \"timestamp\": \"2011-12-06T00:23:29.045Z\"\n    },\n    \"history\": [\n      {\n        \"supplyApy\": 1172.4063329439427,\n        \"borrowApy\": 7882.108523190541,\n        \"timestamp\": \"2025-01-04T05:40:32.939Z\"\n      },\n      {\n        \"supplyApy\": 4278.6281881439245,\n        \"borrowApy\": 5507.002406255448,\n        \"timestamp\": \"1998-08-23T04:01:38.068Z\"\n      }\n    ]\n  },\n  \"meta\": {\n    \"chainId\": \"string\",\n    \"vault\": \"string\",\n    \"resolution\": \"1d\",\n    \"startTimestamp\": \"1998-07-18T22:57:17.137Z\",\n    \"endTimestamp\": \"1949-05-07T15:01:54.407Z\",\n    \"timestamp\": \"1969-06-06T10:44:31.967Z\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "213c7323-fb87-4fbb-9611-65e229824edb",
+          "name": "Intrinsic APYs",
+          "request": {
+            "name": "Intrinsic APYs",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "apys",
+                "intrinsic"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "assets",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "key": "fields",
+                  "value": "<string>",
+                  "description": "Comma-separated list of fields to include."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "48a10a60-9803-4345-8b8c-b5953b50f338",
+              "name": "Intrinsic APYs",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "intrinsic"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "assets",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"chainId\": 2024,\n      \"address\": \"string\",\n      \"symbol\": \"string\",\n      \"apy\": 5622.145866845432,\n      \"provider\": \"string\",\n      \"source\": \"string\",\n      \"timestamp\": \"2001-02-05T00:27:35.913Z\"\n    },\n    {\n      \"chainId\": 1193,\n      \"address\": \"string\",\n      \"symbol\": \"string\",\n      \"apy\": 1228.828699449459,\n      \"provider\": \"string\",\n      \"source\": \"string\",\n      \"timestamp\": \"1965-11-27T18:27:00.423Z\"\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"2002-05-30T10:44:29.472Z\",\n    \"total\": 962,\n    \"hasMore\": false,\n    \"offset\": 6406,\n    \"limit\": 2545,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a3440ae4-f522-424a-8eea-9908d9a3da0c",
+          "name": "Intrinsic APY history",
+          "request": {
+            "name": "Intrinsic APY history",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "apys",
+                "intrinsic",
+                "history"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "asset",
+                  "value": "<string>",
+                  "description": "(Required) Asset address to query."
+                },
+                {
+                  "disabled": false,
+                  "key": "resolution",
+                  "value": "<string>",
+                  "description": "(Required) Bucket size for aggregation."
+                },
+                {
+                  "disabled": false,
+                  "key": "startTimestamp",
+                  "value": "<integer>",
+                  "description": "Start of time range (unix seconds)."
+                },
+                {
+                  "disabled": false,
+                  "key": "endTimestamp",
+                  "value": "<integer>",
+                  "description": "End of time range (unix seconds)."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "167d2e63-55e4-4588-a5f0-bbbc0f7e5d42",
+              "name": "Intrinsic APY history",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "apys",
+                    "intrinsic",
+                    "history"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "asset",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "resolution",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "startTimestamp",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "endTimestamp",
+                      "value": "<integer>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"timestamp\": \"1958-12-25T05:22:27.284Z\",\n      \"apy\": 5718.4229672474075,\n      \"provider\": \"string\",\n      \"apyDuration\": 8410.51925811157\n    },\n    {\n      \"timestamp\": \"2012-10-02T07:14:34.791Z\",\n      \"apy\": 2372.775452194431,\n      \"provider\": \"string\",\n      \"apyDuration\": 9132.965019154915\n    }\n  ],\n  \"meta\": {\n    \"chainId\": \"string\",\n    \"asset\": \"string\",\n    \"symbol\": \"string\",\n    \"resolution\": \"1d\",\n    \"startTimestamp\": \"1978-06-14T11:08:05.205Z\",\n    \"endTimestamp\": \"1967-12-07T09:49:11.163Z\",\n    \"timestamp\": \"1981-02-17T23:10:57.503Z\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "1d222be6-4536-41c8-ade8-c0eec500a3d4",
+    "name": "Euler Data API (V3) Accounts APYs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n",
+      "type": "text/plain"
+    }
+  }
+}

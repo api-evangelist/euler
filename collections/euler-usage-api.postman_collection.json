@@ -1,0 +1,286 @@
+{
+  "item": [
+    {
+      "id": "c445b6e9-81bd-487d-8baf-9915c629eb3d",
+      "name": "Usage",
+      "description": {
+        "content": "API usage and API key analytics. These endpoints are intended for operators and consumers tracking traffic, rate limits, and key-level activity.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "55d45471-4755-4475-af51-237890c84058",
+          "name": "Usage statistics for the authenticated API key",
+          "request": {
+            "name": "Usage statistics for the authenticated API key",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "usage",
+                "stats"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key"
+                },
+                {
+                  "key": "value",
+                  "value": "{{apiKey}}"
+                },
+                {
+                  "key": "in",
+                  "value": "header"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "4f530203-772c-446b-bffd-fa9672409c88",
+              "name": "Usage statistics",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "usage",
+                    "stats"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-API-Key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"identifier\": \"string\",\n    \"key\": {\n      \"id\": \"string\",\n      \"prefix\": \"string\",\n      \"name\": \"string\",\n      \"rateLimit\": 4662,\n      \"createdAt\": \"1973-01-21T06:45:36.121Z\",\n      \"lastUsedAt\": \"1991-11-30T00:08:06.704Z\"\n    },\n    \"stats\": {\n      \"daily\": {\n        \"totalRequests\": 8781,\n        \"avgResponseTimeMs\": 7612,\n        \"errorCount\": 4729\n      },\n      \"weekly\": {\n        \"totalRequests\": 953,\n        \"avgResponseTimeMs\": 545,\n        \"errorCount\": 957\n      },\n      \"topEndpoints\": [\n        {\n          \"path\": \"string\",\n          \"method\": \"string\",\n          \"count\": 1360,\n          \"avgResponseTimeMs\": 3261\n        },\n        {\n          \"path\": \"string\",\n          \"method\": \"string\",\n          \"count\": 8623,\n          \"avgResponseTimeMs\": 1702\n        }\n      ]\n    },\n    \"rateLimit\": {\n      \"limit\": 382,\n      \"window\": \"string\"\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b8964d40-72f8-46a1-bb5b-b710bc01c5ec",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "usage",
+                    "stats"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-API-Key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": true,\n      \"key_1\": false,\n      \"key_2\": 3151.0892442665504\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2f46d519-1815-4fe7-b7f3-310a2a24cb2d",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "usage",
+                    "stats"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-API-Key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": true,\n      \"key_1\": false,\n      \"key_2\": 3151.0892442665504\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e2722311-a01c-413c-8f62-add4b853629b",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "usage",
+                    "stats"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-API-Key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": true,\n      \"key_1\": false,\n      \"key_2\": 3151.0892442665504\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "ee5f15ce-b710-4529-9597-671a78b41419",
+    "name": "Euler Data API (V3) Accounts Usage API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts FeeFlow API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "FeeFlow",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Unified fee-flow event timeline",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/fee-flow/events",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated chain IDs."
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated event type filter. Current supported value is `buy`. Unknown values return 400."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Unified stream of fee-flow events with current indexed coverage (`buy`).\n`chainId`, `from`, and `to` are required.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,195 @@
+{
+  "item": [
+    {
+      "id": "a065e077-6f8b-46e8-bc4a-94f8a282b46f",
+      "name": "Liquidations",
+      "description": {
+        "content": "Liquidation events and related historical views used for risk analysis and monitoring.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "e321aa12-f393-4685-b0ec-e850852e4dc5",
+          "name": "Liquidation events",
+          "request": {
+            "name": "Liquidation events",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "liquidations"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "vault",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "key": "violator",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "key": "liquidator",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "key": "from",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "to",
+                  "value": "<integer>",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "key": "sort",
+                  "value": "<string>",
+                  "description": "Sort field, prefix with '-' for descending."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "8a21c473-7e21-4fc1-b29b-9934c38c482f",
+              "name": "Liquidations",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "liquidations"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "vault",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "violator",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "liquidator",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "from",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "to",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"meta\": {\n    \"timestamp\": \"1970-12-02T21:00:46.242Z\",\n    \"total\": 3042,\n    \"hasMore\": false,\n    \"offset\": 9171,\n    \"limit\": 751,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "6c7b66ba-fff2-468a-9217-b7bc74fa929d",
+    "name": "Euler Data API (V3) Accounts Liquidations API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Rewards API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Rewards",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Rewards APYs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/apys/rewards",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Rewards APYs"
+        },
+        {
+          "info": {
+            "name": "Rewards APY history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/apys/rewards/history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "resolution",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Rewards APY history for a required time range.\nRequired query params: `chainId`, `from`, `to`.\nOptional filters: `vault`, `resolution`, `offset`, `limit`.\nMaximum allowed window is 30 days per request.\n"
+        },
+        {
+          "info": {
+            "name": "Per-user reward breakdowns",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/rewards/breakdown",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "account",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Per-user reward breakdowns"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

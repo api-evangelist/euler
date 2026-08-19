@@ -1,0 +1,65 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Chains API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Chains",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List supported chains",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/chains"
+          },
+          "docs": "List supported chains"
+        },
+        {
+          "info": {
+            "name": "Chain-level stats",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/chains/:chainId/stats",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns chain-scoped EVK lending aggregates. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`."
+        },
+        {
+          "info": {
+            "name": "Borrowable vaults for a chain",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/chains/:chainId/borrowable-vaults",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Legacy location for this collection."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

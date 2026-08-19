@@ -1,0 +1,79 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Liquidations API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Liquidations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Liquidation events",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/liquidations",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "violator",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "liquidator",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "sort",
+                "value": "",
+                "type": "query",
+                "description": "Sort field, prefix with '-' for descending."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Liquidation events"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

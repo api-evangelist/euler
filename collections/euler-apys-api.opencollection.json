@@ -1,0 +1,147 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts APYs API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "APYs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Vault APY (current + historical)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/apy",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "resolution",
+                "value": "",
+                "type": "query",
+                "description": "Defaults to `1d`. If omitted, uses last 30 days for `1d` and last 7 days for `1h`."
+              },
+              {
+                "name": "sort",
+                "value": "",
+                "type": "query",
+                "description": "Sort field, prefix with '-' for descending."
+              }
+            ]
+          },
+          "docs": "Vault APY (current + historical)"
+        },
+        {
+          "info": {
+            "name": "Intrinsic APYs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/apys/intrinsic",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "assets",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "fields",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of fields to include."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Intrinsic APYs"
+        },
+        {
+          "info": {
+            "name": "Intrinsic APY history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/apys/intrinsic/history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "asset",
+                "value": "",
+                "type": "query",
+                "description": "Asset address to query."
+              },
+              {
+                "name": "resolution",
+                "value": "",
+                "type": "query",
+                "description": "Bucket size for aggregation."
+              },
+              {
+                "name": "startTimestamp",
+                "value": "",
+                "type": "query",
+                "description": "Start of time range (unix seconds)."
+              },
+              {
+                "name": "endTimestamp",
+                "value": "",
+                "type": "query",
+                "description": "End of time range (unix seconds)."
+              }
+            ]
+          },
+          "docs": "Intrinsic APY history"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,77 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Tokens API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Tokens",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Token list",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/tokens",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "query",
+                "description": "Filter by a token address. May be repeated. Combine with chainId for the fastest lookup path. Counts toward the 100-address filter cap. When address filters are present and limit is omitted, the default limit is the requested address count capped at 100."
+              },
+              {
+                "name": "addresses",
+                "value": "",
+                "type": "query",
+                "description": "Filter by comma-separated token addresses. May be repeated. Maximum 100 addresses. Combine with chainId for the fastest lookup path. When address filters are present and limit is omitted, the default limit is the requested address count capped at 100."
+              },
+              {
+                "name": "fields",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of fields to include."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested token page size. Values above 500 are clamped."
+              },
+              {
+                "name": "search",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by token classification. Comma-separated values: base, debt, unitOfAccount, oracleAsset, reward, swapAsset"
+              }
+            ]
+          },
+          "docs": "Token list"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

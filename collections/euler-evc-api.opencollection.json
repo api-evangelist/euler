@@ -1,0 +1,69 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts EVC API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "EVC",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Unified EVC account event timeline",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evc/accounts/:address/events",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated chain IDs."
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated event type filter. Unknown values return 400."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Account-primary EVC event stream. `chainId`, `from`, and `to` are required.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

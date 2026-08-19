@@ -1,0 +1,125 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Oracles API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Oracles",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Vault-scoped oracle prices",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/oracles/prices",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "asset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Supports exact mode (`chainId + vault + asset`) and list mode (`chainId` + pagination).\n- Exact mode requires the full key.\n- Exact mode returns `200` with `price: null` when the tuple is known but currently unpriced.\n- Non-null `price` values are exact contract-derived prices encoded as 18-decimal bigint strings in `unitOfAccount` terms.\n- Exact mode returns `404` only when the `(chainId, vault, asset)` tuple is unknown.\n- Partial exact key requests return `400`.\n- List mode returns flat rows s"
+        },
+        {
+          "info": {
+            "name": "Oracle router state",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/oracles/routers",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "adapter",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Factory-deployed EulerRouter list with latest indexed config and resolved-vault state.\n- `chainId` is required.\n- Optional filters: `vault`, `adapter`, `offset`, `limit`.\n"
+        },
+        {
+          "info": {
+            "name": "Historical oracle adapters",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/oracles/historical-adapters",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Distinct oracle adapter addresses ever configured through `ConfigSet` events\non any EulerRouter deployed by OracleRouterFactory for the requested chain.\n- `chainId` is required.\n- Supports `offset` and `limit`.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,142 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Earn API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Earn",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Earn vaults",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/earn/vaults",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Earn vaults"
+        },
+        {
+          "info": {
+            "name": "Earn vault batch",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/earn/vaults/batch",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns earn vault summaries for explicit addresses on one chain.\nPass `include: [\"strategies\"]` to add the same strategy objects\nreturned by earn vault detail.\nResponse preserves request order after address deduplication.\nRequest cap: 1000 vault addresses and 256 KiB of JSON body.\n"
+        },
+        {
+          "info": {
+            "name": "Earn vault detail",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/earn/vaults/:chainId/:address",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "include",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of related resources to expand. Unknown values are ignored."
+              }
+            ]
+          },
+          "docs": "Returns earn vault detail. Optional `include` expands related resources.\nSupported values: `apy`, `totals`, `prices`.\n"
+        },
+        {
+          "info": {
+            "name": "Unified Euler Earn vault event timeline",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/earn/vaults/:chainId/:address/events",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated event type filter. Unknown values return 400."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Unified stream of user, interest/reallocation, and governance earn-vault events.\nRequires a bounded time window (`from` + `to`), max 30 days.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

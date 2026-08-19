@@ -1,0 +1,62 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts GraphQL API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "GraphQL",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "GraphQL endpoint (GET query mode)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/graphql",
+            "params": [
+              {
+                "name": "query",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "variables",
+                "value": "",
+                "type": "query",
+                "description": "JSON-encoded variables object."
+              },
+              {
+                "name": "operationName",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Lightweight GET mode for development/debugging.\nDisabled in production; use POST `/v3/graphql` there.\nRequires `query` and optionally accepts `variables` (JSON string) and `operationName`.\nPonder LIKE filter operators reject unescaped `%` and `_` wildcard values.\nFor standard GraphQL usage, use POST `/v3/graphql`.\n"
+        },
+        {
+          "info": {
+            "name": "GraphQL endpoint",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/graphql",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "GraphQL endpoint (shared auth/rate limit with REST), proxied to the\nPonder GraphQL API.\nPonder LIKE filter operators reject unescaped `%` and `_` wildcard values.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,78 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts TermsOfUse API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "TermsOfUse",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Terms-of-use signature history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/terms-of-use/signatures",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "query",
+                "description": "Optional signer/account filter."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Terms-of-use signature history"
+        },
+        {
+          "info": {
+            "name": "Check whether an address signed terms of use",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/terms-of-use/check/:address",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              }
+            ]
+          },
+          "docs": "Check whether an address signed terms of use"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

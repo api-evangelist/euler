@@ -1,0 +1,716 @@
+{
+  "item": [
+    {
+      "id": "d6111887-db46-4a69-9338-7f29f944263b",
+      "name": "Accounts",
+      "description": {
+        "content": "Account activity, discovered positions, and sub-account relationships. Legacy nested account payloads are flattened into account-vault rows in v3.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "759a7b68-101e-4174-ae7a-6b1e2f818e15",
+          "name": "Account portfolio",
+          "request": {
+            "name": "Account portfolio",
+            "description": {
+              "content": "Returns a position-first portfolio view for an owner on a single chain.\nThe backend builds SDK Account and Portfolio entities from internal V3\naccount, vault, price, and label data sources; it does not recursively\ncall `/v3/accounts/{address}/positions`. When `forceFresh=true`, the\nendpoint enqueues or promotes account snapshot refresh work and waits\nbriefly for refreshed snapshots before falling back to the current\nindexed portfolio view. Freshness metadata indicates whether the refresh\ncompleted, timed out, or was rate-limited.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v3",
+                "accounts",
+                ":address",
+                "portfolio"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<integer>",
+                  "description": "(Required) Chain ID. Exactly one chain is required."
+                },
+                {
+                  "disabled": false,
+                  "key": "labeledVaultsOnly",
+                  "value": "<boolean>",
+                  "description": "Filter positions to the product-facing labeled vault universe."
+                },
+                {
+                  "disabled": false,
+                  "key": "includeAccount",
+                  "value": "<boolean>",
+                  "description": "Include the backing SDK account-shaped payload for debugging and migration."
+                },
+                {
+                  "disabled": false,
+                  "key": "forceFresh",
+                  "value": "<boolean>",
+                  "description": "When true, enqueue or promote account snapshot refresh for discovered tuples.\nThe endpoint waits briefly for refreshed snapshots before falling back to\nthe current indexed portfolio view. Inspect `data.freshness` for completion,\ntimeout, rate-limit, and fallback metadata.\n"
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "address",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "18ce8698-e58b-4db0-9d71-b21da33af5f6",
+              "name": "Account portfolio",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "portfolio"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "labeledVaultsOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeAccount",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "forceFresh",
+                      "value": "<boolean>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"chainId\": 1614,\n    \"owner\": \"string\",\n    \"portfolio\": {\n      \"savings\": [\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": true,\n            \"isCollateral\": false,\n            \"balanceForwarderEnabled\": true,\n            \"marketPriceUsd\": 5758.303177342745,\n            \"suppliedValueUsd\": 4581.299607246191,\n            \"borrowedValueUsd\": 453.2183674301149,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 5373.4154047112015,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"securitize\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 240.15999357625773,\n            \"borrowApy\": 2206.1560249057766,\n            \"supplyApy1h\": 111.70195068136657,\n            \"strategyCount\": 6601\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 7570.163798744657,\n          \"apy\": 7081.69295301601,\n          \"apyBreakdown\": {\n            \"lending\": 6630.3348402609745,\n            \"borrowing\": 8877.400023352335,\n            \"rewards\": 5936.654014981233,\n            \"intrinsicApy\": 6144.19704810345,\n            \"total\": 989.6149004405041\n          }\n        },\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": false,\n            \"balanceForwarderEnabled\": false,\n            \"marketPriceUsd\": 3690.16910787919,\n            \"suppliedValueUsd\": 3016.735775034596,\n            \"borrowedValueUsd\": 4621.679494253133,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 4267.023307836063,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"securitize\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 8536.62971316134,\n            \"borrowApy\": 4588.636100409353,\n            \"supplyApy1h\": 3710.433711573463,\n            \"strategyCount\": 1629\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 3214.69820433413,\n          \"apy\": 5463.106872213828,\n          \"apyBreakdown\": {\n            \"lending\": 4746.857077409201,\n            \"borrowing\": 9064.772246481238,\n            \"rewards\": 7266.3021045394025,\n            \"intrinsicApy\": 7939.816304715671,\n            \"total\": 5582.681053493217\n          }\n        }\n      ],\n      \"borrows\": [\n        {\n          \"borrow\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": true,\n            \"marketPriceUsd\": 1228.0838862863618,\n            \"suppliedValueUsd\": 2858.0439809748837,\n            \"borrowedValueUsd\": 3008.674646269538,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 7274.061506966373,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"collaterals\": [\n            {\n              \"account\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vaultAddress\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vault\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"asset\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"shares\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"assets\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowed\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isController\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isCollateral\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"balanceForwarderEnabled\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"marketPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"suppliedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidity\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowLiquidationPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"collateralLiquidationPricesUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            {\n              \"account\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vaultAddress\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vault\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"asset\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"shares\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"assets\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowed\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isController\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isCollateral\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"balanceForwarderEnabled\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"marketPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"suppliedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidity\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowLiquidationPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"collateralLiquidationPricesUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          ],\n          \"collateral\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": false,\n            \"marketPriceUsd\": 7041.374491795159,\n            \"suppliedValueUsd\": 6623.972662499595,\n            \"borrowedValueUsd\": 4255.576271285151,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 6341.35251116301,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"borrowVault\": {\n            \"address\": \"string\",\n            \"type\": \"evk\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 2507.9001818944125,\n            \"borrowApy\": 5678.506393007266,\n            \"supplyApy1h\": 8155.364623479127,\n            \"strategyCount\": 6478\n          },\n          \"collateralVault\": {\n            \"address\": \"string\",\n            \"type\": \"unknown\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 6330.229628729305,\n            \"borrowApy\": 8344.051993800505,\n            \"supplyApy1h\": 8684.092888439189,\n            \"strategyCount\": 6962\n          },\n          \"collateralVaults\": [\n            \"string\",\n            \"string\"\n          ],\n          \"subAccount\": \"string\",\n          \"healthFactor\": \"string\",\n          \"userLTV\": \"string\",\n          \"currentLTV\": \"string\",\n          \"borrowed\": \"string\",\n          \"supplied\": \"string\",\n          \"price\": 3265.9037087657625,\n          \"borrowLiquidationPriceUsd\": 8351.651871441001,\n          \"collateralLiquidationPricesUsd\": {\n            \"key_0\": 1327.9219859085124,\n            \"key_1\": 1276.5731633741816\n          },\n          \"borrowLTV\": 6331.568186450708,\n          \"liquidationLTV\": 8535.500988151633,\n          \"accountLiquidationLTV\": 9230.80397320466,\n          \"liabilityValueBorrowing\": \"string\",\n          \"liabilityValueLiquidation\": \"string\",\n          \"liabilityValueUsd\": 2542.3585875449794,\n          \"totalCollateralValueUsd\": 7145.171943690808,\n          \"collateralValueLiquidation\": \"string\",\n          \"timeToLiquidation\": 5798,\n          \"multiplier\": 3854.8585254776644,\n          \"netApy\": 9961.26196316377,\n          \"roe\": 4684.380977017875,\n          \"apyBreakdown\": {\n            \"lending\": 1963.2418361314196,\n            \"borrowing\": 4942.145388572713,\n            \"rewards\": 839.5025603562922,\n            \"intrinsicApy\": 583.8050775140391,\n            \"total\": 1020.7043574835217\n          },\n          \"roeBreakdown\": {\n            \"lending\": 2509.830521490032,\n            \"borrowing\": 9468.410995592818,\n            \"rewards\": 9038.658572291866,\n            \"intrinsicApy\": 7249.13699977817,\n            \"total\": 8376.488445304218\n          }\n        },\n        {\n          \"borrow\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": false,\n            \"marketPriceUsd\": 9770.43962175694,\n            \"suppliedValueUsd\": 9044.292565688362,\n            \"borrowedValueUsd\": 1406.4102485941155,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 8965.568311435323,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"collaterals\": [\n            {\n              \"account\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vaultAddress\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vault\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"asset\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"shares\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"assets\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowed\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isController\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isCollateral\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"balanceForwarderEnabled\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"marketPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"suppliedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidity\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowLiquidationPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"collateralLiquidationPricesUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            {\n              \"account\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vaultAddress\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"vault\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"asset\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"shares\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"assets\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowed\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isController\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"isCollateral\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"balanceForwarderEnabled\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"marketPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"suppliedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowedValueUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidity\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"borrowLiquidationPriceUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"collateralLiquidationPricesUsd\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          ],\n          \"collateral\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": true,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": true,\n            \"marketPriceUsd\": 3671.7185209480476,\n            \"suppliedValueUsd\": 8122.409994473629,\n            \"borrowedValueUsd\": 7257.101118306626,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 3662.240793543675,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"borrowVault\": {\n            \"address\": \"string\",\n            \"type\": \"evk\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 4093.229972063861,\n            \"borrowApy\": 8760.308407470331,\n            \"supplyApy1h\": 5362.549478564296,\n            \"strategyCount\": 8245\n          },\n          \"collateralVault\": {\n            \"address\": \"string\",\n            \"type\": \"earn\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 2229.0371686455323,\n            \"borrowApy\": 9657.838570045475,\n            \"supplyApy1h\": 6205.350474836881,\n            \"strategyCount\": 2682\n          },\n          \"collateralVaults\": [\n            \"string\",\n            \"string\"\n          ],\n          \"subAccount\": \"string\",\n          \"healthFactor\": \"string\",\n          \"userLTV\": \"string\",\n          \"currentLTV\": \"string\",\n          \"borrowed\": \"string\",\n          \"supplied\": \"string\",\n          \"price\": 8137.752587155666,\n          \"borrowLiquidationPriceUsd\": 6890.367342978199,\n          \"collateralLiquidationPricesUsd\": {\n            \"key_0\": 2041.918686740344,\n            \"key_1\": 1939.6539858437357,\n            \"key_2\": 508.62984014639403\n          },\n          \"borrowLTV\": 8069.109779465711,\n          \"liquidationLTV\": 1447.8473739626008,\n          \"accountLiquidationLTV\": 6489.526716296357,\n          \"liabilityValueBorrowing\": \"string\",\n          \"liabilityValueLiquidation\": \"string\",\n          \"liabilityValueUsd\": 4693.35938793076,\n          \"totalCollateralValueUsd\": 3097.4243852800255,\n          \"collateralValueLiquidation\": \"string\",\n          \"timeToLiquidation\": 2835,\n          \"multiplier\": 7327.360549203068,\n          \"netApy\": 9702.978844464833,\n          \"roe\": 8391.047990318386,\n          \"apyBreakdown\": {\n            \"lending\": 5805.779025671795,\n            \"borrowing\": 1919.3154184597183,\n            \"rewards\": 6998.863430324257,\n            \"intrinsicApy\": 7456.6215020308955,\n            \"total\": 7911.582401912024\n          },\n          \"roeBreakdown\": {\n            \"lending\": 1511.4621642259851,\n            \"borrowing\": 590.9364399151451,\n            \"rewards\": 6997.546806051654,\n            \"intrinsicApy\": 4549.853221396919,\n            \"total\": 9935.457957379831\n          }\n        }\n      ],\n      \"positions\": [\n        {\n          \"account\": \"string\",\n          \"vaultAddress\": \"string\",\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"securitize\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 7095.506380970986,\n            \"borrowApy\": 368.8068728320981,\n            \"supplyApy1h\": 9006.404781618628,\n            \"strategyCount\": 6207\n          },\n          \"asset\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"borrowed\": \"string\",\n          \"isController\": true,\n          \"isCollateral\": true,\n          \"balanceForwarderEnabled\": false,\n          \"marketPriceUsd\": 8875.273716245421,\n          \"suppliedValueUsd\": 3557.167049383837,\n          \"borrowedValueUsd\": 4328.299537605671,\n          \"liquidity\": {\n            \"vaultAddress\": \"string\",\n            \"unitOfAccount\": \"string\",\n            \"daysToLiquidation\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"liabilityValue\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"totalCollateralValue\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"collaterals\": [\n              {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            ],\n            \"liabilityValueUsd\": 4860.703825340317,\n            \"totalCollateralValueUsd\": 4222.681421339976\n          },\n          \"borrowLiquidationPriceUsd\": 367.6139452956628,\n          \"collateralLiquidationPricesUsd\": {\n            \"key_0\": 6514.938962045526\n          }\n        },\n        {\n          \"account\": \"string\",\n          \"vaultAddress\": \"string\",\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"unknown\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 9610.597058715291,\n            \"borrowApy\": 380.15154057406744,\n            \"supplyApy1h\": 5207.791105259521,\n            \"strategyCount\": 9982\n          },\n          \"asset\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"borrowed\": \"string\",\n          \"isController\": false,\n          \"isCollateral\": true,\n          \"balanceForwarderEnabled\": true,\n          \"marketPriceUsd\": 7029.003480078125,\n          \"suppliedValueUsd\": 510.55803805195256,\n          \"borrowedValueUsd\": 8133.062355478285,\n          \"liquidity\": {\n            \"vaultAddress\": \"string\",\n            \"unitOfAccount\": \"string\",\n            \"daysToLiquidation\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"liabilityValue\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"totalCollateralValue\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"collaterals\": [\n              {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            ],\n            \"liabilityValueUsd\": 3944.8815608778064,\n            \"totalCollateralValueUsd\": 9517.488679935333\n          },\n          \"borrowLiquidationPriceUsd\": 5259.215845967511,\n          \"collateralLiquidationPricesUsd\": {\n            \"key_0\": 1906.8267227270585,\n            \"key_1\": 858.4676140992198\n          }\n        }\n      ],\n      \"managedLending\": [\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": true,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": true,\n            \"marketPriceUsd\": 5224.752698324266,\n            \"suppliedValueUsd\": 8189.506433230924,\n            \"borrowedValueUsd\": 8744.93939862396,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 2951.827363688797,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"unknown\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 5254.034516676903,\n            \"borrowApy\": 9807.231477691294,\n            \"supplyApy1h\": 3446.449459505242,\n            \"strategyCount\": 2120\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 3085.5416635248835,\n          \"apy\": 7752.975730288092,\n          \"apyBreakdown\": {\n            \"lending\": 566.1907986794412,\n            \"borrowing\": 4875.420823361252,\n            \"rewards\": 8105.825534530023,\n            \"intrinsicApy\": 3164.599541389572,\n            \"total\": 1578.6567349601467\n          }\n        },\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": false,\n            \"balanceForwarderEnabled\": true,\n            \"marketPriceUsd\": 6718.924668708865,\n            \"suppliedValueUsd\": 1441.5799798425066,\n            \"borrowedValueUsd\": 4002.7322558688406,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 4766.885593122384,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"earn\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 8619.906586080071,\n            \"borrowApy\": 7875.785589055462,\n            \"supplyApy1h\": 6775.394808137785,\n            \"strategyCount\": 3281\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 6222.75580048554,\n          \"apy\": 5101.070039989454,\n          \"apyBreakdown\": {\n            \"lending\": 782.8186608878884,\n            \"borrowing\": 4708.172634775378,\n            \"rewards\": 6169.131626892547,\n            \"intrinsicApy\": 9353.013275950047,\n            \"total\": 8483.320878247621\n          }\n        }\n      ],\n      \"directLending\": [\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": false,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": false,\n            \"marketPriceUsd\": 4476.425701929617,\n            \"suppliedValueUsd\": 3047.4567614606685,\n            \"borrowedValueUsd\": 238.5519347541032,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 2308.776105919107,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"evk\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 7946.339424802854,\n            \"borrowApy\": 4776.981516813989,\n            \"supplyApy1h\": 9223.011746284803,\n            \"strategyCount\": 9445\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 869.6816501555061,\n          \"apy\": 5644.886153779228,\n          \"apyBreakdown\": {\n            \"lending\": 607.2182260028214,\n            \"borrowing\": 1827.2022415604627,\n            \"rewards\": 3710.878923200195,\n            \"intrinsicApy\": 4426.627087783486,\n            \"total\": 9994.804924032976\n          }\n        },\n        {\n          \"position\": {\n            \"account\": \"string\",\n            \"vaultAddress\": \"string\",\n            \"vault\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"asset\": \"string\",\n            \"shares\": \"string\",\n            \"assets\": \"string\",\n            \"borrowed\": \"string\",\n            \"isController\": true,\n            \"isCollateral\": true,\n            \"balanceForwarderEnabled\": false,\n            \"marketPriceUsd\": 4039.012400434956,\n            \"suppliedValueUsd\": 3727.4420277223876,\n            \"borrowedValueUsd\": 2284.2297333986817,\n            \"liquidity\": {\n              \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n            },\n            \"borrowLiquidationPriceUsd\": 5985.7655984015855,\n            \"collateralLiquidationPricesUsd\": {\n              \"key_0\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_1\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"key_2\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"vault\": {\n            \"address\": \"string\",\n            \"type\": \"evk\",\n            \"asset\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"shares\": {\n              \"address\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"symbol\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"decimals\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"supplyApy\": 5497.211162519247,\n            \"borrowApy\": 9754.15043885196,\n            \"supplyApy1h\": 4942.077918541705,\n            \"strategyCount\": 7498\n          },\n          \"subAccount\": \"string\",\n          \"shares\": \"string\",\n          \"assets\": \"string\",\n          \"suppliedValueUsd\": 9335.690162417288,\n          \"apy\": 9559.098995166429,\n          \"apyBreakdown\": {\n            \"lending\": 1364.8530900759847,\n            \"borrowing\": 9202.638765207354,\n            \"rewards\": 6427.249722422113,\n            \"intrinsicApy\": 3599.8815661662165,\n            \"total\": 8472.536540205621\n          }\n        }\n      ],\n      \"totals\": {\n        \"suppliedValueUsd\": 9229.930218105994,\n        \"borrowedValueUsd\": 6036.796514398303,\n        \"netAssetValueUsd\": 7023.864477824435,\n        \"netApy\": 8791.561622291236,\n        \"roe\": 4306.162563137762,\n        \"apyBreakdown\": {\n          \"lending\": 2660.5696527800683,\n          \"borrowing\": 6598.273562845194,\n          \"rewards\": 1387.5719411226494,\n          \"intrinsicApy\": 2844.635477657771,\n          \"total\": 7628.585572308174\n        },\n        \"roeBreakdown\": {\n          \"lending\": 4735.283887515964,\n          \"borrowing\": 6545.702975303529,\n          \"rewards\": 3719.294159211004,\n          \"intrinsicApy\": 4440.235383123097,\n          \"total\": 9368.445723922105\n        }\n      }\n    },\n    \"account\": {\n      \"key_0\": \"string\",\n      \"key_1\": 8541\n    },\n    \"errors\": [\n      {\n        \"code\": \"string\",\n        \"severity\": \"warning\",\n        \"message\": \"string\",\n        \"locations\": [\n          {\n            \"owner\": {\n              \"key_0\": 4886.352024438762,\n              \"key_1\": false,\n              \"key_2\": \"string\"\n            },\n            \"path\": \"string\"\n          },\n          {\n            \"owner\": {\n              \"key_0\": false,\n              \"key_1\": \"string\"\n            },\n            \"path\": \"string\"\n          }\n        ],\n        \"source\": \"string\",\n        \"originalValue\": \"\",\n        \"normalizedValue\": \"\"\n      },\n      {\n        \"code\": \"string\",\n        \"severity\": \"info\",\n        \"message\": \"string\",\n        \"locations\": [\n          {\n            \"owner\": {\n              \"key_0\": 3108.8982469231364,\n              \"key_1\": 8829.8492774626,\n              \"key_2\": \"string\",\n              \"key_3\": true\n            },\n            \"path\": \"string\"\n          },\n          {\n            \"owner\": {\n              \"key_0\": \"string\"\n            },\n            \"path\": \"string\"\n          }\n        ],\n        \"source\": \"string\",\n        \"originalValue\": \"\",\n        \"normalizedValue\": \"\"\n      }\n    ],\n    \"freshness\": {\n      \"latestSnapshotTimestamp\": 7576,\n      \"ageSeconds\": 4808,\n      \"timestamp\": \"1960-12-04T22:09:03.975Z\",\n      \"mode\": \"cached\",\n      \"forceFreshRequested\": true,\n      \"refreshTriggered\": true,\n      \"refreshCompleted\": true,\n      \"timedOut\": true,\n      \"rateLimited\": true,\n      \"fallbackReason\": \"string\",\n      \"waitedMs\": 4582\n    }\n  },\n  \"meta\": {\n    \"timestamp\": \"1953-05-30T10:59:35.818Z\",\n    \"total\": 9874,\n    \"hasMore\": false,\n    \"offset\": 9466,\n    \"limit\": 1617,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1b4584c6-7816-47f9-909e-691e2bc1206e",
+              "name": "Bad request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "portfolio"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "labeledVaultsOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeAccount",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "forceFresh",
+                      "value": "<boolean>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": 2145,\n      \"key_1\": 3001.1993799527236\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e571ddc3-e114-4e03-8846-e356b52d578b",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "portfolio"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "labeledVaultsOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeAccount",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "forceFresh",
+                      "value": "<boolean>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\",\n    \"requestId\": \"string\",\n    \"details\": {\n      \"key_0\": 2145,\n      \"key_1\": 3001.1993799527236\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b8ac8cd0-286a-458e-a758-0a88bde15960",
+          "name": "Account positions across chains",
+          "request": {
+            "name": "Account positions across chains",
+            "description": {
+              "content": "Returns paginated account positions across the selected chain scope.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v3",
+                "accounts",
+                ":address",
+                "positions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                },
+                {
+                  "disabled": false,
+                  "key": "forceFresh",
+                  "value": "<boolean>",
+                  "description": "When true, trigger bounded synchronous account snapshot refresh for the returned tuples.\nOn timeout/failure, response safely falls back to stored snapshots and indicates cached mode in freshness metadata.\n"
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "address",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "eb73929e-2685-474e-9803-d32e5f000682",
+              "name": "Account positions",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "positions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "forceFresh",
+                      "value": "<boolean>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Cache policy for this response.",
+                  "key": "Cache-Control",
+                  "value": "string"
+                },
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"chainId\": 3007,\n      \"account\": \"string\",\n      \"vault\": \"string\",\n      \"vaultType\": \"earn\",\n      \"asset\": \"string\",\n      \"shares\": \"string\",\n      \"assets\": \"string\",\n      \"borrowed\": \"string\",\n      \"assetsValue\": \"string\",\n      \"debtValue\": \"string\",\n      \"isCollateral\": false,\n      \"balanceForwarderEnabled\": false,\n      \"isController\": false,\n      \"liquidity\": {\n        \"vaultAddress\": \"string\",\n        \"unitOfAccount\": \"string\",\n        \"daysToLiquidation\": 5007,\n        \"liabilityValue\": {\n          \"borrowing\": \"string\",\n          \"liquidation\": \"string\",\n          \"oracleMid\": \"string\"\n        },\n        \"totalCollateralValue\": {\n          \"borrowing\": \"string\",\n          \"liquidation\": \"string\",\n          \"oracleMid\": \"string\"\n        },\n        \"collaterals\": [\n          {\n            \"address\": \"string\",\n            \"value\": {\n              \"borrowing\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidation\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"oracleMid\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"marketPriceUsd\": 567.3512032790884,\n            \"valueUsd\": 7990.6897046720815\n          },\n          {\n            \"address\": \"string\",\n            \"value\": {\n              \"borrowing\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidation\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"oracleMid\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"marketPriceUsd\": 7757.281056008102,\n            \"valueUsd\": 3881.5175246008703\n          }\n        ],\n        \"liabilityValueUsd\": 2003.351579059204,\n        \"totalCollateralValueUsd\": 4093.5914453297505\n      },\n      \"subAccount\": {\n        \"owner\": \"string\",\n        \"timestamp\": \"2009-05-08T23:12:50.310Z\",\n        \"lastAccountStatusCheckTimestamp\": \"2016-07-09T10:58:03.152Z\",\n        \"enabledControllers\": [\n          \"string\",\n          \"string\"\n        ],\n        \"enabledCollaterals\": [\n          \"string\",\n          \"string\"\n        ],\n        \"isLockdownMode\": false,\n        \"isPermitDisabledMode\": true\n      },\n      \"snapshot\": {\n        \"timestamp\": \"1956-09-27T20:42:12.550Z\",\n        \"ageSeconds\": 8916,\n        \"source\": \"string\",\n        \"method\": \"string\"\n      }\n    },\n    {\n      \"chainId\": 7587,\n      \"account\": \"string\",\n      \"vault\": \"string\",\n      \"vaultType\": \"earn\",\n      \"asset\": \"string\",\n      \"shares\": \"string\",\n      \"assets\": \"string\",\n      \"borrowed\": \"string\",\n      \"assetsValue\": \"string\",\n      \"debtValue\": \"string\",\n      \"isCollateral\": true,\n      \"balanceForwarderEnabled\": true,\n      \"isController\": false,\n      \"liquidity\": {\n        \"vaultAddress\": \"string\",\n        \"unitOfAccount\": \"string\",\n        \"daysToLiquidation\": 5324,\n        \"liabilityValue\": {\n          \"borrowing\": \"string\",\n          \"liquidation\": \"string\",\n          \"oracleMid\": \"string\"\n        },\n        \"totalCollateralValue\": {\n          \"borrowing\": \"string\",\n          \"liquidation\": \"string\",\n          \"oracleMid\": \"string\"\n        },\n        \"collaterals\": [\n          {\n            \"address\": \"string\",\n            \"value\": {\n              \"borrowing\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidation\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"oracleMid\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"marketPriceUsd\": 8199.876102661407,\n            \"valueUsd\": 8193.110744566085\n          },\n          {\n            \"address\": \"string\",\n            \"value\": {\n              \"borrowing\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"liquidation\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"oracleMid\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            \"marketPriceUsd\": 8212.785923803243,\n            \"valueUsd\": 2360.126250546105\n          }\n        ],\n        \"liabilityValueUsd\": 136.16646737285686,\n        \"totalCollateralValueUsd\": 3246.444219868083\n      },\n      \"subAccount\": {\n        \"owner\": \"string\",\n        \"timestamp\": \"1998-02-08T15:19:17.577Z\",\n        \"lastAccountStatusCheckTimestamp\": \"1952-07-12T12:34:01.689Z\",\n        \"enabledControllers\": [\n          \"string\",\n          \"string\"\n        ],\n        \"enabledCollaterals\": [\n          \"string\",\n          \"string\"\n        ],\n        \"isLockdownMode\": true,\n        \"isPermitDisabledMode\": false\n      },\n      \"snapshot\": {\n        \"timestamp\": \"2013-04-13T06:20:25.439Z\",\n        \"ageSeconds\": 9933,\n        \"source\": \"string\",\n        \"method\": \"string\"\n      }\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"1957-09-16T22:06:45.633Z\",\n    \"total\": 1647,\n    \"hasMore\": false,\n    \"offset\": 9932,\n    \"limit\": 4426,\n    \"chainId\": \"string\"\n  },\n  \"freshness\": {\n    \"latestSnapshotTimestamp\": \"2021-04-14T20:19:38.602Z\",\n    \"ageSeconds\": 2135,\n    \"timestamp\": \"1997-07-01T19:31:06.484Z\",\n    \"mode\": \"cached\",\n    \"forceFreshRequested\": false,\n    \"refreshTriggered\": true,\n    \"refreshCompleted\": true,\n    \"timedOut\": true,\n    \"rateLimited\": true,\n    \"fallbackReason\": \"string\",\n    \"waitedMs\": 7474\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f0f9cb12-01fc-4e36-a526-6f0927d0bdbe",
+          "name": "Account vault activity discovery",
+          "request": {
+            "name": "Account vault activity discovery",
+            "description": {
+              "content": "Discovers vault tuples an account interacts with (shares and/or controller-enabled debt),\nincluding sub-accounts when available.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v3",
+                "accounts",
+                ":address",
+                "activity"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "address",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a826b5d2-1ad6-4d51-80cf-b36a9c78a9e9",
+              "name": "Account activity",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "activity"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1,10,8453"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"type\": \"string\",\n      \"chainId\": 3509,\n      \"vault\": \"string\",\n      \"assets\": \"string\",\n      \"shares\": \"string\",\n      \"txHash\": \"string\",\n      \"blockNumber\": \"string\",\n      \"timestamp\": \"1990-12-13T17:07:41.007Z\"\n    },\n    {\n      \"type\": \"string\",\n      \"chainId\": 3853,\n      \"vault\": \"string\",\n      \"assets\": \"string\",\n      \"shares\": \"string\",\n      \"txHash\": \"string\",\n      \"blockNumber\": \"string\",\n      \"timestamp\": \"1953-10-29T10:45:06.042Z\"\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"1948-09-05T09:24:36.139Z\",\n    \"total\": 3245,\n    \"hasMore\": true,\n    \"offset\": 8376,\n    \"limit\": 7559,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "3611b24a-9ac7-466f-9143-cee4962f1d4e",
+          "name": "Sub-accounts for an EVC-enabled account",
+          "request": {
+            "name": "Sub-accounts for an EVC-enabled account",
+            "description": {},
+            "url": {
+              "path": [
+                "v3",
+                "accounts",
+                ":address",
+                "sub-accounts"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "chainId",
+                  "value": "<string>",
+                  "description": "(Required) Comma-separated list of chain IDs (single value allowed)."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "address",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "8f10fdc0-37c3-4c9a-bad7-d1174fffc9a1",
+              "name": "Sub-accounts",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v3",
+                    "accounts",
+                    ":address",
+                    "sub-accounts"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "chainId",
+                      "value": "1"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "address",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Request identifier for tracing.",
+                  "key": "X-Request-Id",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"chainId\": 3640,\n      \"owner\": \"string\",\n      \"addressPrefix\": \"string\",\n      \"blockNumber\": \"string\",\n      \"timestamp\": \"1982-10-09T05:03:25.353Z\"\n    },\n    {\n      \"chainId\": 6574,\n      \"owner\": \"string\",\n      \"addressPrefix\": \"string\",\n      \"blockNumber\": \"string\",\n      \"timestamp\": \"2022-12-31T18:48:33.150Z\"\n    }\n  ],\n  \"meta\": {\n    \"timestamp\": \"1962-09-08T21:38:07.250Z\",\n    \"total\": 1800,\n    \"hasMore\": true,\n    \"offset\": 6953,\n    \"limit\": 5047,\n    \"chainId\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "/",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "7a8fb4a3-3c24-483e-b1f9-bdacb7436c88",
+    "name": "Euler Data API (V3) Accounts API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API specification for Euler Data v3. This spec defines the current\nresource-oriented contract for the platform, with emphasis on consistent\nschemas, predictable REST semantics, caching, observability, and a uniform\ndeveloper experience.\n\nMigration notes\n- Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map\n  directly, some require multiple v3 calls, and some legacy aggregates were\n  intentionally removed.\n- The live [migration guide](/v3/docs/migration) explains how legacy v1/v2\n  endpoints and payloads map into the v3 resource model.\n- Important semantic changes:\n  - Vault base APY and rewards APY are exposed separately in v3.\n  - Account positions are flattened into account-vault rows instead of the\n    legacy nested sub-account shape.\n  - All supported API paths live under `/v3`; legacy paths return `410`.\n  - Summary endpoints prefer smaller, focused resources over large\n    BFF-style payloads.\n\nBase path: /v3\n\nConventions\n- JSON field naming: camelCase\n- Addresses: accept lowercase or checksum; responses are EIP-55 checksummed\n- Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)\n- Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units\n- Ratios (utilization, LTV, etc.): numbers with 6 decimal places\n- Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix\n  seconds for compatibility and include `*Iso` companions.\n- Query time ranges: unix seconds (from/to)\n\nUnit policy\n- v3 separates market metadata from contract verdicts by both name and type.\n- Market-normalized USD prices and USD values are JSON numbers. These are values\n  derived from off-chain pricing, cached price snapshots, or API-level market math.\n  This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,\n  portfolio market values, portfolio USD liquidation/risk fields such as\n  `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,\n  and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`.\n- Contract-derived oracle and raw account-liquidity verdict values are exact strings.\n  These preserve the integer value used by contracts, normalized to 18 decimals\n  for API exposure. Oracle prices are quoted in the vault unit of account, which\n  can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw\n  account-liquidity `liabilityValue` and `totalCollateralValue` objects,\n  `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict\n  values.\n- On-chain token quantities are bigint strings in their native unit scale. This\n  includes amounts, balances, shares, assets, borrows, reward amounts, liquidation\n  repay/yield amounts, and block numbers.\n- Caps are also bigint strings, but EVK caps are exposed as resolved underlying\n  asset-unit amounts rather than packed contract config words.\n- LTV config values use canonical basis-point strings. Legacy decimal aliases\n  may remain on config-history payloads for compatibility when explicitly named.\n\nRate limiting\n- Optional API keys for higher limits\n- Default limits are configurable; current defaults: free tier 100 req/min (IP-based)\n  and authenticated 1000 req/min (per API key), 60s window.\n- By default, proxy headers are not trusted for IP identity unless explicitly enabled.\n- Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in.\n- RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.\n\nCORS\n- Public API responses use wildcard CORS, including preflight responses for unsafe methods.\n- Unsafe methods with request bodies must use a JSON media type.\n\nCaching\n- Cache-Control headers are returned for cacheable endpoints.\n- Defaults (may be adjusted in config):\n  - Prices: 300s\n  - APYs: 600s\n  - Rewards: 900s\n  - General responses: 60s (short 30s, long 300s)\n\nErrors\n- All errors use a standard envelope: { error: { code, message, requestId, details? } }\n- Domain error codes are documented in this spec.\n- JSON request bodies must use `Content-Type: application/json` or another `application/*+json` media type.\n- Request bodies larger than 1 MiB are rejected before route parsing with `413 PAYLOAD_TOO_LARGE`.\n",
+      "type": "text/plain"
+    }
+  }
+}

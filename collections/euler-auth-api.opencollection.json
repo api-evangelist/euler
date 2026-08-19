@@ -1,0 +1,290 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Auth API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Auth",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Start platform-operator Google SSO",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/auth/login"
+          },
+          "docs": "Redirects the browser to Google OAuth/OIDC and sets a signed OAuth state cookie."
+        },
+        {
+          "info": {
+            "name": "Complete platform-operator Google SSO callback",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/auth/callback",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "query",
+                "description": "OAuth authorization code. Never returned in responses."
+              },
+              {
+                "name": "state",
+                "value": "",
+                "type": "query",
+                "description": "OAuth anti-forgery state bound to the signed state cookie."
+              }
+            ]
+          },
+          "docs": "Validates state, nonce, Google ID-token claims, and active platform-admin access."
+        },
+        {
+          "info": {
+            "name": "Get current platform-operator session",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/auth/session",
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Get current platform-operator session"
+        },
+        {
+          "info": {
+            "name": "End current platform-operator session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/auth/logout",
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "End current platform-operator session"
+        },
+        {
+          "info": {
+            "name": "Grant platform-admin access",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/platform-admins",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Creates an active platform-admin access row for a Google email address.\nRequires a valid platform session and CSRF token because this is an unsafe\ncookie-authenticated write.\n"
+        },
+        {
+          "info": {
+            "name": "Revoke platform-admin access",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/platform-admins/revoke",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Soft-revokes platform-admin access for a Google email address. Requires a\nvalid platform session and CSRF token because this is an unsafe\ncookie-authenticated write.\n"
+        },
+        {
+          "info": {
+            "name": "List API keys for toolbox Admin",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/toolbox/admin/api-keys",
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Lists API key metadata for the toolbox Admin screen. Requires an active platform-admin session and a Google email present in `TOOLBOX_ADMIN_EMAILS`."
+        },
+        {
+          "info": {
+            "name": "List API keys (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/admin/api-keys",
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "List API keys (admin)"
+        },
+        {
+          "info": {
+            "name": "Create an API key (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/admin/api-keys",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "Create an API key (admin)"
+        },
+        {
+          "info": {
+            "name": "Get API key by id (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/admin/api-keys/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "Get API key by id (admin)"
+        },
+        {
+          "info": {
+            "name": "Update API key (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "/v3/admin/api-keys/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "Update API key (admin)"
+        },
+        {
+          "info": {
+            "name": "Revoke API key (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "/v3/admin/api-keys/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "Revoke API key (admin)"
+        },
+        {
+          "info": {
+            "name": "Usage stats for an API key (admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/admin/api-keys/:id/usage",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "days",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "X-Admin-Secret",
+              "value": "{{X-Admin-Secret}}",
+              "placement": "header"
+            }
+          },
+          "docs": "Usage stats for an API key (admin)"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

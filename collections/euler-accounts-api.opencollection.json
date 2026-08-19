@@ -1,0 +1,171 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Accounts",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Account portfolio",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/accounts/:address/portfolio",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Chain ID. Exactly one chain is required."
+              },
+              {
+                "name": "labeledVaultsOnly",
+                "value": "",
+                "type": "query",
+                "description": "Filter positions to the product-facing labeled vault universe."
+              },
+              {
+                "name": "includeAccount",
+                "value": "",
+                "type": "query",
+                "description": "Include the backing SDK account-shaped payload for debugging and migration."
+              },
+              {
+                "name": "forceFresh",
+                "value": "",
+                "type": "query",
+                "description": "When true, enqueue or promote account snapshot refresh for discovered tuples.\nThe endpoint waits briefly for refreshed snapshots before falling back to\nthe current indexed portfolio view. Inspect `data.freshness` for completion,\ntimeout, rate-limit, and fallback metadata.\n"
+              }
+            ]
+          },
+          "docs": "Returns a position-first portfolio view for an owner on a single chain.\nThe backend builds SDK Account and Portfolio entities from internal V3\naccount, vault, price, and label data sources; it does not recursively\ncall `/v3/accounts/{address}/positions`. When `forceFresh=true`, the\nendpoint enqueues or promotes account snapshot refresh work and waits\nbriefly for refreshed snapshots before falling back to the current\nindexed portfolio view. Freshness metadata indicates whether the refresh\ncomplet"
+        },
+        {
+          "info": {
+            "name": "Account positions across chains",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/accounts/:address/positions",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              },
+              {
+                "name": "forceFresh",
+                "value": "",
+                "type": "query",
+                "description": "When true, trigger bounded synchronous account snapshot refresh for the returned tuples.\nOn timeout/failure, response safely falls back to stored snapshots and indicates cached mode in freshness metadata.\n"
+              }
+            ]
+          },
+          "docs": "Returns paginated account positions across the selected chain scope.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n"
+        },
+        {
+          "info": {
+            "name": "Account vault activity discovery",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/accounts/:address/activity",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Discovers vault tuples an account interacts with (shares and/or controller-enabled debt),\nincluding sub-accounts when available.\nUses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.\n"
+        },
+        {
+          "info": {
+            "name": "Sub-accounts for an EVC-enabled account",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/accounts/:address/sub-accounts",
+            "params": [
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "1",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Sub-accounts for an EVC-enabled account"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

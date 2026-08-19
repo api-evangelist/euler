@@ -1,0 +1,834 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Vaults API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Vaults",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List vaults",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              },
+              {
+                "name": "fields",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of fields to include."
+              },
+              {
+                "name": "sort",
+                "value": "",
+                "type": "query",
+                "description": "Sort field, prefix with '-' for descending."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              },
+              {
+                "name": "asset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "minTvl",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "maxTvl",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "visibility",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated visibility filter (`visible,warning,hidden,pending_review`)."
+              }
+            ]
+          },
+          "docs": "Returns a list of vaults.\nNotes:\n  - `fields` and `sort` are accepted but currently ignored.\n  - `minTvl`/`maxTvl` apply to `totalSupplyUsd` where `totalSupplyUsd = (cash + totalBorrows) * price`.\n"
+        },
+        {
+          "info": {
+            "name": "Batch vault details",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/evk/vaults/batch",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns canonical EVK vault detail entities for an explicit address set.\nUse this to avoid high client-side fanout when you already know the vault\naddresses you want to render.\n\nNotes:\n  - Request order is preserved for found vaults.\n  - `meta.notFound` returns requested addresses that were not resolved.\n  - `include=[\"collaterals\"]` expands collateral detail for every returned vault.\n  - The request cap is 1000 vault addresses and 256 KiB of JSON body.\n"
+        },
+        {
+          "info": {
+            "name": "Resolve a vault address to its family",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/resolve/vaults",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Resolve a single `(chainId, address)` pair to `vaultType`, `factory`, and the canonical resource path when one exists."
+        },
+        {
+          "info": {
+            "name": "Resolve multiple vault addresses to their families",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/resolve/vaults",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Bulk resolver for SDK/meta-routing use cases. Supports up to 500 addresses per request."
+        },
+        {
+          "info": {
+            "name": "Vault utilization health",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/health/utilization",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "threshold",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "onlyOverThreshold",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Lists vaults ordered by utilization severity (descending).\n- `chainId` is required.\n- If `threshold` is omitted, returns all vaults.\n- Threshold filter is inclusive (`utilization >= threshold`).\n- `onlyOverThreshold` is accepted for compatibility and currently does not alter filtering.\n"
+        },
+        {
+          "info": {
+            "name": "Vault cap usage health",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/health/caps",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "threshold",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "onlyOverThreshold",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Lists vaults ordered by cap-usage severity (descending).\nCap usage is computed as `max(supplyCapUsage, borrowCapUsage)`, and the\nresponse includes both supply-cap and borrow-cap fields.\n- `chainId` is required.\n- If `threshold` is omitted, returns all vaults.\n- Threshold filter is inclusive (`capUsage >= threshold`).\n- `onlyOverThreshold` is accepted for compatibility and currently does not alter filtering.\n"
+        },
+        {
+          "info": {
+            "name": "Vault details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "include",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of related resources to expand. Unknown values are ignored."
+              },
+              {
+                "name": "fields",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of fields to include."
+              }
+            ]
+          },
+          "docs": "Returns vault detail. Optional `include` expands related resources in a single response.\nSupported values: `collaterals`, `apy`, `totals`, `prices`.\nThe single-vault detail response uses `totalBorrowed` as the canonical borrow-total field.\n"
+        },
+        {
+          "info": {
+            "name": "Public curator labels for a vault",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/labels",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Public curator labels for a vault"
+        },
+        {
+          "info": {
+            "name": "Deterministic visibility status for a vault",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/visibility",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Deterministic visibility status for a vault"
+        },
+        {
+          "info": {
+            "name": "Positions in a vault",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/positions",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              },
+              {
+                "name": "addressPrefix",
+                "value": "",
+                "type": "query",
+                "description": "Optional 4-byte account prefix filter (`0x` + 8 hex chars)."
+              },
+              {
+                "name": "blockNumber",
+                "value": "",
+                "type": "query",
+                "description": "Not supported for this endpoint. If provided, returns 400."
+              }
+            ]
+          },
+          "docs": "Positions in a vault"
+        },
+        {
+          "info": {
+            "name": "Vault configuration history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/config-history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by configuration change type"
+              }
+            ]
+          },
+          "docs": "Returns a unified timeline of all configuration changes for this vault,\nincluding caps, LTV, IRM, governor, fee receiver, hook config, and other settings.\nFor specific config types, use the dedicated endpoints (cap-history, ltv-history, irm-history).\n"
+        },
+        {
+          "info": {
+            "name": "Current accepted collaterals with LTV configurations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/collaterals",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the list of vaults accepted as collateral for this vault,\nalong with their current LTV configurations. Use this to understand\nwhat assets can be used as collateral when borrowing from this vault.\n"
+        },
+        {
+          "info": {
+            "name": "Vault LTV history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/ltv-history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "collateral",
+                "value": "",
+                "type": "query",
+                "description": "Filter by collateral vault address"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Vault LTV history"
+        },
+        {
+          "info": {
+            "name": "Vault cap history (supply/borrow)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/cap-history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Returns historical changes to supply and borrow caps for this vault."
+        },
+        {
+          "info": {
+            "name": "Vault interest rate model history",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/irm-history",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Returns historical changes to the interest rate model for this vault."
+        },
+        {
+          "info": {
+            "name": "Unified core vault event timeline",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/events",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated event type filter. Unknown values return 400."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Unified stream of deposit, withdraw, borrow, repay, and transfer events for one vault.\nRequires a bounded time window (`from` + `to`), max 30 days.\n"
+        },
+        {
+          "info": {
+            "name": "Vault totals with historical series",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/totals",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "resolution",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Unix timestamp (seconds)."
+              },
+              {
+                "name": "forceFresh",
+                "value": "",
+                "type": "query",
+                "description": "When true, trigger bounded synchronous vault dynamic refresh before reading totals.\nOn timeout/failure, response safely falls back to stored snapshots and indicates cached mode in freshness metadata.\n"
+              }
+            ]
+          },
+          "docs": "Returns totalAssets, totalBorrows, utilization, APY from dynamic snapshots. Historical values are raw amounts - compose with /v3/prices for USD conversion."
+        },
+        {
+          "info": {
+            "name": "Vault share holders",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/holders",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "addressPrefix",
+                "value": "",
+                "type": "query",
+                "description": "Optional 4-byte account prefix filter (`0x` + 8 hex chars)."
+              },
+              {
+                "name": "resolveEulerEarn",
+                "value": "",
+                "type": "query",
+                "description": "When true, expands Euler Earn vault-holder addresses into underlying depositors (v1 parity mode)."
+              },
+              {
+                "name": "resolveSubAccounts",
+                "value": "",
+                "type": "query",
+                "description": "When true, aggregates sub-account holders into their owner addresses."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Returns all holders with non-zero share balances via transfer aggregation (raw holder set). This endpoint does not unwrap Euler Earn depositors and therefore aligns with legacy behavior when `resolveEulerEarn=false`. Supports 4-byte `addressPrefix` filter for wallet-scoped scans. Balance values are integer strings in raw mode; when resolve flags are enabled, balances may be proportional decimal strings."
+        },
+        {
+          "info": {
+            "name": "Vault debt holder candidates",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/:chainId/:address/debt-holders",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Returns addresses that have the vault enabled as a controller. Optimistic set - some may have zero debt."
+        },
+        {
+          "info": {
+            "name": "Open interest across vaults",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/open-interest",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Chain ID (required)"
+              },
+              {
+                "name": "vault",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Event-based aggregation of total borrows and borrower counts. Uses MV-backed query path (`open_interest_mv`) with safe fallback to raw aggregation when unavailable. Prices should be composed separately via /v3/prices."
+        },
+        {
+          "info": {
+            "name": "Collateral-covered debt by collateral vault",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/open-interest/by-collateral",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Chain ID (required)"
+              }
+            ]
+          },
+          "docs": "Collateral-covered USD borrow exposure as a nested map keyed by borrow vault, then collateral vault. Underwater debt is capped at current attributable collateral value, so this endpoint is not gross open interest. The expensive account-level debt/collateral composition is worker-computed and stored in a latest projection table; the request path only reads that projection. Redis may cache this response, but PostgreSQL projection rows are the source of truth.\n"
+        },
+        {
+          "info": {
+            "name": "Bad debt by borrow vault",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/evk/vaults/bad-debt",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Chain ID (required)"
+              },
+              {
+                "name": "borrowVault",
+                "value": "",
+                "type": "query",
+                "description": "Optional borrow vault/controller address filter"
+              },
+              {
+                "name": "minBadDebtUsd",
+                "value": "",
+                "type": "query",
+                "description": "Minimum bad debt USD threshold. Defaults to 0."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100."
+              }
+            ]
+          },
+          "docs": "Borrow-vault aggregate of asset-value bad debt. Rows include only underwater account/borrow-vault positions where gross debt value exceeds the current value of enabled collateral considered for that debt position. Healthy accounts are omitted and no chain-level bad-debt total is exposed. Values use asset-value insolvency, not risk-adjusted LTV shortfall.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

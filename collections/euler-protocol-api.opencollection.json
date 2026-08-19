@@ -1,0 +1,70 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Protocol API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Protocol",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Service metadata",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3"
+          },
+          "docs": "Service metadata"
+        },
+        {
+          "info": {
+            "name": "OpenAPI document",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/openapi.json"
+          },
+          "docs": "OpenAPI document"
+        },
+        {
+          "info": {
+            "name": "Developer documentation UI",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/docs"
+          },
+          "docs": "Developer documentation UI"
+        },
+        {
+          "info": {
+            "name": "Protocol-wide EVK lending stats across chains",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/protocol/stats",
+            "params": [
+              {
+                "name": "chainId",
+                "value": "1,10,8453",
+                "type": "query",
+                "description": "Comma-separated list of chain IDs (single value allowed)."
+              }
+            ]
+          },
+          "docs": "Returns EVK lending aggregates across the selected chains. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

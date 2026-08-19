@@ -1,0 +1,390 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Euler Data API (V3) Accounts Entities API",
+    "version": "3.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Entities",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List entity profiles",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/entities",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "query",
+                "value": "",
+                "type": "query",
+                "description": "Optional case-insensitive filter over entity id and name."
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Lists KYBed entity profiles. Requires an active platform-admin session."
+        },
+        {
+          "info": {
+            "name": "Create entity profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/entities",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Creates a KYBed entity profile. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "List entity members",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/entities/:id/members",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "query",
+                "value": "",
+                "type": "query",
+                "description": "Optional case-insensitive filter over member email and name."
+              },
+              {
+                "name": "includeRevoked",
+                "value": "",
+                "type": "query",
+                "description": "Include revoked members when true."
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Lists entity members for a KYBed entity. Requires an active platform-admin session."
+        },
+        {
+          "info": {
+            "name": "Create entity member",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/entities/:id/members",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Creates or reactivates an entity member. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "List entity governance addresses",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/entities/:id/addresses",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "query",
+                "description": "Optional supported chain ID filter."
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Lists chain-scoped governance addresses for a KYBed entity. Requires an active platform-admin session."
+        },
+        {
+          "info": {
+            "name": "Create entity governance address",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "/v3/entities/:id/addresses",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Creates a chain-scoped governance address for a KYBed entity. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "Delete entity governance address",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "/v3/entities/:id/addresses/:chainId/:address",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "chainId",
+                "value": "",
+                "type": "path",
+                "description": "Supported chain ID."
+              },
+              {
+                "name": "address",
+                "value": "",
+                "type": "path",
+                "description": "Valid EVM address to remove."
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Deletes a chain-scoped governance address for a KYBed entity. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "Update entity member",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "/v3/entities/:id/members/:memberId",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "memberId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Updates mutable entity member fields. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "Revoke entity member",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "/v3/entities/:id/members/:memberId",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "memberId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Soft-revokes an entity member. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "Get entity profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "/v3/entities/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Reads one KYBed entity profile. Requires an active platform-admin session."
+        },
+        {
+          "info": {
+            "name": "Update entity profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "/v3/entities/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Updates mutable entity profile fields. Requires a platform-admin session and CSRF token."
+        },
+        {
+          "info": {
+            "name": "Delete entity profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "/v3/entities/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "apikey",
+              "key": "euler_platform_session",
+              "value": "{{euler_platform_session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Deletes an entity profile row. Requires a platform-admin session and CSRF token."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
