@@ -29,6 +29,17 @@ tags:
 - Finance
 - Ethereum
 - Blockchain
+- Vault
+- Liquidation
+- Interest Rates
+- Permissionless
+tags_raw:
+- DeFi
+- Lending
+- Borrowing
+- Finance
+- Ethereum
+- Blockchain
 - Vaults
 - Liquidation
 - Interest Rates
@@ -65,6 +76,14 @@ apis:
   tags:
   - GraphQL
   - Subgraph
+  - Vault
+  - Positions
+  - History
+  - Analytics
+  - DeFi
+  tags_raw:
+  - GraphQL
+  - Subgraph
   - Vaults
   - Positions
   - History
@@ -93,6 +112,12 @@ apis:
   - SDK
   - TypeScript
   - DeFi
+  - Vault
+  - EVC
+  tags_raw:
+  - SDK
+  - TypeScript
+  - DeFi
   - Vaults
   - EVC
   properties:
@@ -113,6 +138,8 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
   baseURL: https://v3.euler.finance/v3
   tags:
+  - Account
+  tags_raw:
   - Accounts
   properties:
   - type: OpenAPI
@@ -159,6 +186,8 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
   baseURL: https://v3.euler.finance/v3
   tags:
+  - Authentication
+  tags_raw:
   - Auth
   properties:
   - type: OpenAPI
@@ -562,6 +591,8 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
   baseURL: https://v3.euler.finance/v3
   tags:
+  - Vault
+  tags_raw:
   - Vaults
   properties:
   - type: OpenAPI
