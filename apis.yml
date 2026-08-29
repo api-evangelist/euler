@@ -4,6 +4,19 @@ description: Euler is a permissionless modular lending protocol that enables use
   REST APIs for querying vaults, account positions, interest rates, liquidation thresholds,
   token prices, APYs, reward campaigns, and lending market analytics across multiple
   EVM-compatible networks.
+deliveryModel:
+  model: unknown
+  open_source: unknown
+  commercial: true
+  callable_host: false
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - openapi
+  - pricing
+  - repository-unlicensed
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: free
   onboarding: self-serve
