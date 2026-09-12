@@ -623,6 +623,8 @@ apis:
   - type: GraphQL
     url: graphql/euler-graphql.md
 common:
+- type: Website
+  url: https://www.euler.finance/
 - type: IssueTracker
   url: https://github.com/euler-xyz/euler-subgraph/issues
 - type: AgenticAccess
