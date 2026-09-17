@@ -352,28 +352,6 @@ apis:
       https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
   - type: GraphQL
     url: graphql/euler-graphql.md
-- aid: euler:euler-graphql-api
-  name: Euler Finance GraphQL API
-  description: >-
-    Controlled GraphQL passthrough endpoints for indexer-backed data exploration and compatibility workflows.
-  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  baseURL: https://v3.euler.finance/v3
-  tags:
-  - GraphQL
-  properties:
-  - type: OpenAPI
-    url: openapi/euler-graphql-api-openapi.yml
-  - type: Documentation
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: SwaggerUI
-    url: https://v3.euler.finance/v3/docs
-  - type: PricingPage
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: RateLimits
-    url: >-
-      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
-  - type: GraphQL
-    url: graphql/euler-graphql.md
 - aid: euler:euler-health-api
   name: Euler Finance Health API
   description: >-
@@ -611,6 +589,28 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/euler-vaults-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-graph-ql-api
+  name: Euler Finance Graph QL API
+  description: >-
+    Controlled GraphQL passthrough endpoints for indexer-backed data exploration and compatibility workflows.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Graph QL
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-graph-ql-api-openapi.yml
   - type: Documentation
     url: https://docs.euler.finance/developers/data-querying/euler-v3-api
   - type: SwaggerUI
