@@ -168,31 +168,28 @@ paths:
       operationId: getPricesHistory
 components:
   schemas:
-    Price:
+    PaginationMeta:
       type: object
+      required:
+      - timestamp
       properties:
-        chainId:
+        total:
           type: integer
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
           type: integer
-        priceUsd:
-          type: number
-          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
-        source:
-          type: string
-        confidence:
-          type: number
-          nullable: true
-        blockNumber:
-          type: string
-          nullable: true
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
         timestamp:
           type: string
           format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
     ErrorResponse:
       type: object
       required:
@@ -239,74 +236,31 @@ components:
             details:
               type: object
               additionalProperties: true
-    PaginationMeta:
+    Price:
       type: object
-      required:
-      - timestamp
       properties:
-        total:
+        chainId:
           type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
           type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        blockNumber:
+          type: string
+          nullable: true
         timestamp:
           type: string
           format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-  parameters:
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   responses:
     Error400:
       description: Bad request
@@ -317,8 +271,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
+    Error404:
+      description: Not found
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -339,8 +293,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
+    Error500:
+      description: Internal server error
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -348,6 +302,52 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

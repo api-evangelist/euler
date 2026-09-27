@@ -1,6 +1,6 @@
 openapi: 3.2.0
 info:
-  title: Euler Data API (V3) Graph QL API
+  title: Euler Data API (V3) GraphQL API
   version: 3.0.0
   description: API specification for Euler Data v3.
 servers:
@@ -108,15 +108,6 @@ paths:
       operationId: postGraphql
 components:
   responses:
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     Error503:
       description: Service unavailable
       headers:
@@ -126,8 +117,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error502:
-      description: Upstream dependency failure
+    Error400:
+      description: Bad request
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -135,8 +126,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error400:
-      description: Bad request
+    Error502:
+      description: Upstream dependency failure
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -162,6 +153,15 @@ components:
           description: Supported methods for this endpoint.
           schema:
             type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
       content:
         application/json:
           schema:

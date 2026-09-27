@@ -5,17 +5,21 @@ description: Euler is a permissionless modular lending protocol that enables use
   token prices, APYs, reward campaigns, and lending market analytics across multiple
   EVM-compatible networks.
 deliveryModel:
-  model: unknown
+  model: saas
+  license_evidence:
+    not_product:
+    - euler-xyz/euler-sdks
+    - euler-xyz/euler-subgraph
   open_source: unknown
   commercial: true
   callable_host: false
-  label: Delivery model not determined — needs a product licence on record
+  label: Hosted service · you call their endpoint
   confidence: low
   source:
   - openapi
   - pricing
-  - repository-unlicensed
-  generated: '2026-08-28'
+  - repository-not-product
+  generated: '2026-09-25'
   method: derived
 accessModel:
   pricing: free
@@ -609,8 +613,6 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
   baseURL: https://app.euler.finance/api/v1
   tags:
-  - GraphQL
-  tags_raw:
   - Graph QL
   properties:
   - type: OpenAPI

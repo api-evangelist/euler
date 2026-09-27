@@ -727,125 +727,39 @@ components:
           type: string
           format: date-time
           nullable: true
-    ApiKeyCreateRequest:
+    PlatformAdminAccessRequest:
       type: object
+      additionalProperties: false
       required:
-      - name
+      - googleEmail
       properties:
-        name:
-          type: string
-        ownerEmail:
+        googleEmail:
           type: string
           format: email
-        keyType:
-          type: string
-          enum:
-          - standard
-          - curator
-          default: standard
-        scopeMode:
-          type: string
-          enum:
-          - all_vaults
-          - allowlist
-        vaultAllowlist:
-          type: array
-          items:
-            type: object
-            required:
-            - chainId
-            - vaultAddress
-            properties:
-              chainId:
-                type: integer
-              vaultAddress:
-                type: string
-        rateLimit:
-          type: integer
-        expiresInDays:
-          type: integer
-    PlatformAdminRevokeAccessResult:
+          description: Google Workspace email address to grant or revoke.
+    PlatformAuthSession:
       type: object
       required:
-      - admin
-      - state
-      properties:
-        admin:
-          $ref: '#/components/schemas/PlatformAdminAccess'
-        state:
-          type: string
-          enum:
-          - revoked
-    PlatformAdminAccess:
-      type: object
-      required:
-      - id
+      - platformAdminId
       - googleEmail
-      - createdAt
-      - revokedAt
+      - googleSubject
+      - active
+      - expiresAt
       properties:
-        id:
+        platformAdminId:
           type: string
           format: uuid
         googleEmail:
           type: string
           format: email
-        createdAt:
+        googleSubject:
+          type: string
+        active:
+          type: boolean
+          const: true
+        expiresAt:
           type: string
           format: date-time
-        revokedAt:
-          type: string
-          format: date-time
-          nullable: true
-    ApiKeyUsageResponse:
-      type: object
-      required:
-      - period
-      - summary
-      - endpoints
-      properties:
-        period:
-          type: object
-          required:
-          - days
-          - since
-          properties:
-            days:
-              type: integer
-            since:
-              type: string
-              format: date-time
-        summary:
-          type: object
-          required:
-          - totalRequests
-          - avgResponseTimeMs
-          - errorCount
-          properties:
-            totalRequests:
-              type: integer
-            avgResponseTimeMs:
-              type: integer
-            errorCount:
-              type: integer
-        endpoints:
-          type: array
-          items:
-            type: object
-            required:
-            - endpoint
-            - method
-            - count
-            - avgResponseTime
-            properties:
-              endpoint:
-                type: string
-              method:
-                type: string
-              count:
-                type: integer
-              avgResponseTime:
-                type: integer
     ApiKeyResponse:
       type: object
       required:
@@ -903,19 +817,27 @@ components:
           type: string
           format: date-time
           nullable: true
-    PlatformAdminCreateAccessResult:
+    PlatformAdminAccess:
       type: object
       required:
-      - admin
-      - state
+      - id
+      - googleEmail
+      - createdAt
+      - revokedAt
       properties:
-        admin:
-          $ref: '#/components/schemas/PlatformAdminAccess'
-        state:
+        id:
           type: string
-          enum:
-          - created
-          - reactivated
+          format: uuid
+        googleEmail:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
     ErrorResponse:
       type: object
       required:
@@ -962,6 +884,68 @@ components:
             details:
               type: object
               additionalProperties: true
+    ApiKeyUsageResponse:
+      type: object
+      required:
+      - period
+      - summary
+      - endpoints
+      properties:
+        period:
+          type: object
+          required:
+          - days
+          - since
+          properties:
+            days:
+              type: integer
+            since:
+              type: string
+              format: date-time
+        summary:
+          type: object
+          required:
+          - totalRequests
+          - avgResponseTimeMs
+          - errorCount
+          properties:
+            totalRequests:
+              type: integer
+            avgResponseTimeMs:
+              type: integer
+            errorCount:
+              type: integer
+        endpoints:
+          type: array
+          items:
+            type: object
+            required:
+            - endpoint
+            - method
+            - count
+            - avgResponseTime
+            properties:
+              endpoint:
+                type: string
+              method:
+                type: string
+              count:
+                type: integer
+              avgResponseTime:
+                type: integer
+    PlatformAdminCreateAccessResult:
+      type: object
+      required:
+      - admin
+      - state
+      properties:
+        admin:
+          $ref: '#/components/schemas/PlatformAdminAccess'
+        state:
+          type: string
+          enum:
+          - created
+          - reactivated
     PaginationMeta:
       type: object
       required:
@@ -984,47 +968,58 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    PlatformAuthSession:
+    ApiKeyCreateRequest:
       type: object
       required:
-      - platformAdminId
-      - googleEmail
-      - googleSubject
-      - active
-      - expiresAt
+      - name
       properties:
-        platformAdminId:
+        name:
           type: string
-          format: uuid
-        googleEmail:
+        ownerEmail:
           type: string
           format: email
-        googleSubject:
+        keyType:
           type: string
-        active:
-          type: boolean
-          const: true
-        expiresAt:
+          enum:
+          - standard
+          - curator
+          default: standard
+        scopeMode:
           type: string
-          format: date-time
-    PlatformAdminAccessRequest:
+          enum:
+          - all_vaults
+          - allowlist
+        vaultAllowlist:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - vaultAddress
+            properties:
+              chainId:
+                type: integer
+              vaultAddress:
+                type: string
+        rateLimit:
+          type: integer
+        expiresInDays:
+          type: integer
+    PlatformAdminRevokeAccessResult:
       type: object
-      additionalProperties: false
       required:
-      - googleEmail
+      - admin
+      - state
       properties:
-        googleEmail:
+        admin:
+          $ref: '#/components/schemas/PlatformAdminAccess'
+        state:
           type: string
-          format: email
-          description: Google Workspace email address to grant or revoke.
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
+          enum:
+          - revoked
   responses:
-    Error500:
-      description: Internal server error
+    Error401:
+      description: Unauthorized
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -1032,8 +1027,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error403:
-      description: Forbidden
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -1059,8 +1063,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
+    Error403:
+      description: Forbidden
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -1068,8 +1072,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error401:
-      description: Unauthorized
+    Error500:
+      description: Internal server error
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -1077,15 +1081,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

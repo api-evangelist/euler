@@ -258,6 +258,46 @@ components:
         total:
           type: number
           description: Total APY as a percent number.
+    AccountLiquidityValue:
+      type: object
+      description: Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.
+      properties:
+        borrowing:
+          type: string
+          description: Borrowing value, raw 18-decimal bigint string.
+        liquidation:
+          type: string
+          description: Liquidation value, raw 18-decimal bigint string.
+        oracleMid:
+          type: string
+          description: Oracle midpoint value, raw 18-decimal bigint string.
+    DataIssue:
+      type: object
+      properties:
+        code:
+          type: string
+        severity:
+          type: string
+          enum:
+          - info
+          - warning
+          - error
+        message:
+          type: string
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: object
+                additionalProperties: true
+              path:
+                type: string
+        source:
+          type: string
+        originalValue: {}
+        normalizedValue: {}
     PortfolioBorrowPosition:
       type: object
       properties:
@@ -348,74 +388,6 @@ components:
           $ref: '#/components/schemas/YieldApyBreakdown'
         roeBreakdown:
           $ref: '#/components/schemas/YieldApyBreakdown'
-    PortfolioSavingsPosition:
-      type: object
-      properties:
-        position:
-          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
-        vault:
-          $ref: '#/components/schemas/SerializedPortfolioVault'
-        subAccount:
-          type: string
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        suppliedValueUsd:
-          type: number
-          description: Market USD value number for this savings position.
-        apy:
-          type: number
-          description: Public APY as a percent number.
-        apyBreakdown:
-          $ref: '#/components/schemas/YieldApyBreakdown'
-    SerializedPortfolioVault:
-      type: object
-      properties:
-        address:
-          type: string
-        type:
-          type: string
-          enum:
-          - evk
-          - earn
-          - securitize
-          - unknown
-        asset:
-          type: object
-          properties:
-            address:
-              type: string
-            symbol:
-              type: string
-            decimals:
-              type: integer
-            name:
-              type: string
-        shares:
-          type: object
-          properties:
-            address:
-              type: string
-            symbol:
-              type: string
-            decimals:
-              type: integer
-            name:
-              type: string
-        supplyApy:
-          type: number
-          description: Public supply APY as a percent number.
-        borrowApy:
-          type: number
-          description: Public borrow APY as a percent number.
-        supplyApy1h:
-          type: number
-          description: One-hour public supply APY as a percent number.
-        strategyCount:
-          type: integer
     AccountPortfolioResponse:
       type: object
       properties:
@@ -554,6 +526,138 @@ components:
             details:
               type: object
               additionalProperties: true
+    SerializedPortfolioVault:
+      type: object
+      properties:
+        address:
+          type: string
+        type:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          - unknown
+        asset:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        shares:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        supplyApy:
+          type: number
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          description: Public borrow APY as a percent number.
+        supplyApy1h:
+          type: number
+          description: One-hour public supply APY as a percent number.
+        strategyCount:
+          type: integer
+    SerializedPortfolioAccountPosition:
+      type: object
+      properties:
+        account:
+          type: string
+        vaultAddress:
+          type: string
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        asset:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        borrowed:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        isController:
+          type: boolean
+        isCollateral:
+          type: boolean
+        balanceForwarderEnabled:
+          type: boolean
+        marketPriceUsd:
+          type: number
+          description: Market USD price number for this position's asset.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this supplied position.
+        borrowedValueUsd:
+          type: number
+          description: Market USD value number for this borrowed position.
+        liquidity:
+          $ref: '#/components/schemas/AccountPositionLiquidity'
+        borrowLiquidationPriceUsd:
+          type: number
+          description: Borrow liquidation price in USD.
+        collateralLiquidationPricesUsd:
+          type: object
+          description: Liquidation prices in USD keyed by collateral address.
+          additionalProperties:
+            type: number
+    AccountActivity:
+      type: object
+      properties:
+        type:
+          type: string
+        chainId:
+          type: integer
+        vault:
+          type: string
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        txHash:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    SubAccount:
+      type: object
+      required:
+      - chainId
+      - owner
+      - addressPrefix
+      - blockNumber
+      - timestamp
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        addressPrefix:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
     PaginationMeta:
       type: object
       required:
@@ -576,26 +680,29 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    SubAccount:
+    PortfolioSavingsPosition:
       type: object
-      required:
-      - chainId
-      - owner
-      - addressPrefix
-      - blockNumber
-      - timestamp
       properties:
-        chainId:
-          type: integer
-        owner:
+        position:
+          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        subAccount:
           type: string
-        addressPrefix:
+        shares:
           type: string
-        blockNumber:
+          description: Raw vault share amount as a bigint string.
+        assets:
           type: string
-        timestamp:
-          type: string
-          format: date-time
+          description: Raw underlying asset amount as a bigint string.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this savings position.
+        apy:
+          type: number
+          description: Public APY as a percent number.
+        apyBreakdown:
+          $ref: '#/components/schemas/YieldApyBreakdown'
     AccountPosition:
       type: object
       properties:
@@ -692,113 +799,6 @@ components:
             method:
               type: string
               nullable: true
-    SerializedPortfolioAccountPosition:
-      type: object
-      properties:
-        account:
-          type: string
-        vaultAddress:
-          type: string
-        vault:
-          $ref: '#/components/schemas/SerializedPortfolioVault'
-        asset:
-          type: string
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        borrowed:
-          type: string
-          description: Raw borrowed asset amount as a bigint string.
-        isController:
-          type: boolean
-        isCollateral:
-          type: boolean
-        balanceForwarderEnabled:
-          type: boolean
-        marketPriceUsd:
-          type: number
-          description: Market USD price number for this position's asset.
-        suppliedValueUsd:
-          type: number
-          description: Market USD value number for this supplied position.
-        borrowedValueUsd:
-          type: number
-          description: Market USD value number for this borrowed position.
-        liquidity:
-          $ref: '#/components/schemas/AccountPositionLiquidity'
-        borrowLiquidationPriceUsd:
-          type: number
-          description: Borrow liquidation price in USD.
-        collateralLiquidationPricesUsd:
-          type: object
-          description: Liquidation prices in USD keyed by collateral address.
-          additionalProperties:
-            type: number
-    DataIssue:
-      type: object
-      properties:
-        code:
-          type: string
-        severity:
-          type: string
-          enum:
-          - info
-          - warning
-          - error
-        message:
-          type: string
-        locations:
-          type: array
-          items:
-            type: object
-            properties:
-              owner:
-                type: object
-                additionalProperties: true
-              path:
-                type: string
-        source:
-          type: string
-        originalValue: {}
-        normalizedValue: {}
-    AccountActivity:
-      type: object
-      properties:
-        type:
-          type: string
-        chainId:
-          type: integer
-        vault:
-          type: string
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        txHash:
-          type: string
-        blockNumber:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-    AccountLiquidityValue:
-      type: object
-      description: Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.
-      properties:
-        borrowing:
-          type: string
-          description: Borrowing value, raw 18-decimal bigint string.
-        liquidation:
-          type: string
-          description: Liquidation value, raw 18-decimal bigint string.
-        oracleMid:
-          type: string
-          description: Oracle midpoint value, raw 18-decimal bigint string.
     AccountPositionLiquidity:
       type: object
       nullable: true
@@ -840,22 +840,29 @@ components:
           type: number
           description: Market USD collateral value number.
   headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
     X-Request-Id:
       description: Request identifier for tracing.
       schema:
         type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
   parameters:
-    OffsetParam:
-      name: offset
+    ChainIdParam:
+      name: chainId
       in: query
       required: false
       schema:
-        type: integer
-        default: 0
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
     LimitParam:
       name: limit
       in: query
@@ -865,20 +872,13 @@ components:
         type: integer
         default: 20
         maximum: 100
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
-    ChainIdParam:
-      name: chainId
+    OffsetParam:
+      name: offset
       in: query
       required: false
       schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
+        type: integer
+        default: 0
   responses:
     Error400:
       description: Bad request
