@@ -167,6 +167,93 @@ paths:
           $ref: '#/components/responses/Error500'
       operationId: getPricesHistory
 components:
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  parameters:
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   schemas:
     PaginationMeta:
       type: object
@@ -190,6 +277,31 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
+    Price:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        blockNumber:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
     ErrorResponse:
       type: object
       required:
@@ -236,118 +348,6 @@ components:
             details:
               type: object
               additionalProperties: true
-    Price:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
-          type: integer
-        priceUsd:
-          type: number
-          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
-        source:
-          type: string
-        confidence:
-          type: number
-          nullable: true
-        blockNumber:
-          type: string
-          nullable: true
-        timestamp:
-          type: string
-          format: date-time
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
-  parameters:
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

@@ -676,214 +676,71 @@ paths:
           $ref: '#/components/responses/Error500'
       operationId: getAdminApiKeysByIdUsage
 components:
+  responses:
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ApiKeyCreateResponse:
-      type: object
-      required:
-      - message
-      - key
-      - keyPrefix
-      - id
-      - name
-      - keyType
-      - rateLimit
-      properties:
-        message:
-          type: string
-        key:
-          type: string
-        keyPrefix:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        keyType:
-          type: string
-          enum:
-          - standard
-          - curator
-        scopeMode:
-          type: string
-          enum:
-          - all_vaults
-          - allowlist
-          nullable: true
-        vaultAllowlist:
-          type: array
-          items:
-            type: object
-            required:
-            - chainId
-            - vaultAddress
-            properties:
-              chainId:
-                type: integer
-              vaultAddress:
-                type: string
-        rateLimit:
-          type: integer
-        expiresAt:
-          type: string
-          format: date-time
-          nullable: true
-    PlatformAdminAccessRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - googleEmail
-      properties:
-        googleEmail:
-          type: string
-          format: email
-          description: Google Workspace email address to grant or revoke.
-    PlatformAuthSession:
-      type: object
-      required:
-      - platformAdminId
-      - googleEmail
-      - googleSubject
-      - active
-      - expiresAt
-      properties:
-        platformAdminId:
-          type: string
-          format: uuid
-        googleEmail:
-          type: string
-          format: email
-        googleSubject:
-          type: string
-        active:
-          type: boolean
-          const: true
-        expiresAt:
-          type: string
-          format: date-time
-    ApiKeyResponse:
-      type: object
-      required:
-      - id
-      - name
-      - keyType
-      - rateLimit
-      - isActive
-      - createdAt
-      properties:
-        id:
-          type: string
-        keyPrefix:
-          type: string
-        name:
-          type: string
-        ownerEmail:
-          type: string
-          nullable: true
-        keyType:
-          type: string
-          enum:
-          - standard
-          - curator
-        scopeMode:
-          type: string
-          enum:
-          - all_vaults
-          - allowlist
-          nullable: true
-        vaultAllowlist:
-          type: array
-          items:
-            type: object
-            required:
-            - chainId
-            - vaultAddress
-            properties:
-              chainId:
-                type: integer
-              vaultAddress:
-                type: string
-        rateLimit:
-          type: integer
-        isActive:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        lastUsedAt:
-          type: string
-          format: date-time
-          nullable: true
-        expiresAt:
-          type: string
-          format: date-time
-          nullable: true
-    PlatformAdminAccess:
-      type: object
-      required:
-      - id
-      - googleEmail
-      - createdAt
-      - revokedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-        googleEmail:
-          type: string
-          format: email
-        createdAt:
-          type: string
-          format: date-time
-        revokedAt:
-          type: string
-          format: date-time
-          nullable: true
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
     ApiKeyUsageResponse:
       type: object
       required:
@@ -946,28 +803,75 @@ components:
           enum:
           - created
           - reactivated
-    PaginationMeta:
+    ApiKeyResponse:
       type: object
       required:
-      - timestamp
+      - id
+      - name
+      - keyType
+      - rateLimit
+      - isActive
+      - createdAt
       properties:
-        total:
+        id:
+          type: string
+        keyPrefix:
+          type: string
+        name:
+          type: string
+        ownerEmail:
+          type: string
+          nullable: true
+        keyType:
+          type: string
+          enum:
+          - standard
+          - curator
+        scopeMode:
+          type: string
+          enum:
+          - all_vaults
+          - allowlist
+          nullable: true
+        vaultAllowlist:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - vaultAddress
+            properties:
+              chainId:
+                type: integer
+              vaultAddress:
+                type: string
+        rateLimit:
           type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
+        isActive:
           type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
+        createdAt:
           type: string
           format: date-time
-        chainId:
+        lastUsedAt:
           type: string
-          description: Comma-separated chain IDs for multi-chain responses.
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    PlatformAdminRevokeAccessResult:
+      type: object
+      required:
+      - admin
+      - state
+      properties:
+        admin:
+          $ref: '#/components/schemas/PlatformAdminAccess'
+        state:
+          type: string
+          enum:
+          - revoked
     ApiKeyCreateRequest:
       type: object
       required:
@@ -1005,82 +909,178 @@ components:
           type: integer
         expiresInDays:
           type: integer
-    PlatformAdminRevokeAccessResult:
+    ErrorResponse:
       type: object
       required:
-      - admin
-      - state
+      - error
       properties:
-        admin:
-          $ref: '#/components/schemas/PlatformAdminAccess'
-        state:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    PlatformAuthSession:
+      type: object
+      required:
+      - platformAdminId
+      - googleEmail
+      - googleSubject
+      - active
+      - expiresAt
+      properties:
+        platformAdminId:
+          type: string
+          format: uuid
+        googleEmail:
+          type: string
+          format: email
+        googleSubject:
+          type: string
+        active:
+          type: boolean
+          const: true
+        expiresAt:
+          type: string
+          format: date-time
+    ApiKeyCreateResponse:
+      type: object
+      required:
+      - message
+      - key
+      - keyPrefix
+      - id
+      - name
+      - keyType
+      - rateLimit
+      properties:
+        message:
+          type: string
+        key:
+          type: string
+        keyPrefix:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        keyType:
           type: string
           enum:
-          - revoked
-  responses:
-    Error401:
-      description: Unauthorized
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error403:
-      description: Forbidden
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+          - standard
+          - curator
+        scopeMode:
+          type: string
+          enum:
+          - all_vaults
+          - allowlist
+          nullable: true
+        vaultAllowlist:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - vaultAddress
+            properties:
+              chainId:
+                type: integer
+              vaultAddress:
+                type: string
+        rateLimit:
+          type: integer
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    PlatformAdminAccess:
+      type: object
+      required:
+      - id
+      - googleEmail
+      - createdAt
+      - revokedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        googleEmail:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    PlatformAdminAccessRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - googleEmail
+      properties:
+        googleEmail:
+          type: string
+          format: email
+          description: Google Workspace email address to grant or revoke.
   headers:
     X-Request-Id:
       description: Request identifier for tracing.

@@ -187,6 +187,25 @@ paths:
           $ref: '#/components/responses/Error403'
       operationId: getMetrics
 components:
+  responses:
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     PaginationMeta:
       type: object
@@ -210,73 +229,6 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    HealthResponse:
-      type: object
-      required:
-      - status
-      - version
-      - uptime
-      - timestamp
-      properties:
-        status:
-          type: string
-          enum:
-          - healthy
-          - degraded
-          - unhealthy
-        version:
-          type: string
-        uptime:
-          type: integer
-        timestamp:
-          type: string
-          format: date-time
     DetailedHealthResponse:
       allOf:
       - $ref: '#/components/schemas/HealthResponse'
@@ -328,25 +280,73 @@ components:
                     type: number
                   error:
                     type: string
-  responses:
-    Error401:
-      description: Unauthorized
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error403:
-      description: Forbidden
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+    HealthResponse:
+      type: object
+      required:
+      - status
+      - version
+      - uptime
+      - timestamp
+      properties:
+        status:
+          type: string
+          enum:
+          - healthy
+          - degraded
+          - unhealthy
+        version:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
   headers:
     X-Request-Id:
       description: Request identifier for tracing.

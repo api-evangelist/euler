@@ -157,7 +157,62 @@ paths:
                     $ref: '#/components/schemas/PaginationMeta'
       operationId: getRewardsBreakdown
 components:
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    RewardsApyHistoryPoint:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        vault:
+          type: string
+        rewardsApy:
+          type: number
+          description: Rewards APY as a public percent number.
+        timestamp:
+          type: string
+          format: date-time
+          description: Bucket timestamp as an ISO-8601 UTC string.
     PaginationMeta:
       type: object
       required:
@@ -180,78 +235,6 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    RewardsApyHistoryPoint:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        vault:
-          type: string
-        rewardsApy:
-          type: number
-          description: Rewards APY as a public percent number.
-        timestamp:
-          type: string
-          format: date-time
-          description: Bucket timestamp as an ISO-8601 UTC string.
-    AssetRef:
-      type: object
-      properties:
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
-          type: integer
-        name:
-          type: string
-          nullable: true
     RewardsApy:
       type: object
       properties:
@@ -320,47 +303,64 @@ components:
         totalApr:
           type: number
           description: Sum of currently active reward APR contributions as a public percent number.
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+    AssetRef:
+      type: object
+      properties:
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        name:
+          type: string
+          nullable: true
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
   headers:
     Cache-Control:
       description: Cache policy for this response.

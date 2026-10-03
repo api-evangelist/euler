@@ -91,13 +91,6 @@ components:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
   parameters:
-    SortParam:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Sort field, prefix with '-' for descending.
     LimitParam:
       name: limit
       in: query
@@ -122,6 +115,13 @@ components:
       schema:
         type: integer
         default: 0
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Sort field, prefix with '-' for descending.
   headers:
     X-Request-Id:
       description: Request identifier for tracing.

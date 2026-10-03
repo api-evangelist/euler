@@ -108,6 +108,25 @@ paths:
           $ref: '#/components/responses/Error404'
       operationId: getTermsOfUseCheckByAddress
 components:
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     PaginationMeta:
       type: object
@@ -177,30 +196,6 @@ components:
             details:
               type: object
               additionalProperties: true
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   parameters:
     LimitParam:
       name: limit
@@ -230,6 +225,11 @@ components:
       name: address
       in: path
       required: true
+      schema:
+        type: string
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
       schema:
         type: string
   securitySchemes:

@@ -247,6 +247,82 @@ paths:
           $ref: '#/components/responses/Error500'
       operationId: getOraclesHistoricalAdapters
 components:
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error502:
+      description: Upstream dependency failure
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
   schemas:
     PaginationMeta:
       type: object
@@ -316,82 +392,6 @@ components:
             details:
               type: object
               additionalProperties: true
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error502:
-      description: Upstream dependency failure
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
-  parameters:
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

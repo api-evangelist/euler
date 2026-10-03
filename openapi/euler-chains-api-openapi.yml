@@ -98,6 +98,22 @@ paths:
                     $ref: '#/components/schemas/PaginationMeta'
       operationId: getChainsByChainIdBorrowableVaults
 components:
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  parameters:
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
   schemas:
     PaginationMeta:
       type: object
@@ -121,26 +137,6 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    ProtocolStats:
-      type: object
-      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
-      properties:
-        totalSuppliedUsd:
-          type: number
-          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
-        totalBorrowedUsd:
-          type: number
-          description: Total EVK lending borrows in USD across the selected chains.
-        earnTotalAssetsUsd:
-          type: number
-          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
-        utilization:
-          type: number
-          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
-        vaultCount:
-          type: integer
-        chainCount:
-          type: integer
     Chain:
       type: object
       required:
@@ -165,22 +161,26 @@ components:
           chainId:
             type: integer
             description: Chain ID for the returned chain-scoped aggregate.
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
-  parameters:
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
+    ProtocolStats:
+      type: object
+      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
+      properties:
+        totalSuppliedUsd:
+          type: number
+          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
+        totalBorrowedUsd:
+          type: number
+          description: Total EVK lending borrows in USD across the selected chains.
+        earnTotalAssetsUsd:
+          type: number
+          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
+        utilization:
+          type: number
+          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
+        vaultCount:
+          type: integer
+        chainCount:
+          type: integer
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

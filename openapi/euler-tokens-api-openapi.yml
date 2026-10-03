@@ -86,6 +86,47 @@ paths:
                     $ref: '#/components/schemas/PaginationMeta'
       operationId: getTokens
 components:
+  parameters:
+    TokenLimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested token page size. Values above 500 are clamped.
+      schema:
+        type: integer
+        default: 20
+        maximum: 500
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    FieldsParam:
+      name: fields
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of fields to include.
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   schemas:
     PaginationMeta:
       type: object
@@ -156,47 +197,6 @@ components:
           type: string
           nullable: true
       additionalProperties: true
-  parameters:
-    TokenLimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested token page size. Values above 500 are clamped.
-      schema:
-        type: integer
-        default: 20
-        maximum: 500
-    FieldsParam:
-      name: fields
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of fields to include.
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

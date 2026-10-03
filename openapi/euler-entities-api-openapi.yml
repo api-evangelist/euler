@@ -1058,28 +1058,6 @@ paths:
       operationId: deleteEntity
 components:
   schemas:
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
     EntityMemberCreateRequest:
       type: object
       additionalProperties: false
@@ -1100,67 +1078,75 @@ components:
           - admin
           - editor
           default: editor
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    EntityAddressCreateRequest:
+    EntityCreateRequest:
       type: object
       additionalProperties: false
       required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
+          type: string
+          pattern: \S
+        logo:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTwitter:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialYoutube:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialDiscord:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTelegram:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialGithub:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+    EntityAddress:
+      type: object
+      required:
+      - entityId
       - chainId
       - address
       - label
       properties:
+        entityId:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
         chainId:
           type: integer
           minimum: 1
         address:
           type: string
           pattern: ^0x[a-fA-F0-9]{40}$
-          description: Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted.
+          description: EIP-55 checksummed governance address in API responses.
         label:
           type: string
           pattern: \S
@@ -1203,6 +1189,47 @@ components:
           type: string
           format: date-time
           nullable: true
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    EntityAddressCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - chainId
+      - address
+      - label
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          description: Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted.
+        label:
+          type: string
+          pattern: \S
+          description: Human-readable governance address label.
     EntityMemberUpdateRequest:
       type: object
       additionalProperties: false
@@ -1217,6 +1244,52 @@ components:
           enum:
           - admin
           - editor
+    EntityUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          pattern: \S
+        logo:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTwitter:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialYoutube:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialDiscord:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTelegram:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialGithub:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
     Entity:
       type: object
       required:
@@ -1284,125 +1357,52 @@ components:
         updatedAt:
           type: string
           format: date-time
-    EntityUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          pattern: \S
-        logo:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        url:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTwitter:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialYoutube:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialDiscord:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTelegram:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialGithub:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-    EntityAddress:
+    ErrorResponse:
       type: object
       required:
-      - entityId
-      - chainId
-      - address
-      - label
+      - error
       properties:
-        entityId:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        chainId:
-          type: integer
-          minimum: 1
-        address:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-          description: EIP-55 checksummed governance address in API responses.
-        label:
-          type: string
-          pattern: \S
-          description: Human-readable governance address label.
-    EntityCreateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          pattern: \S
-        logo:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        url:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTwitter:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialYoutube:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialDiscord:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTelegram:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialGithub:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
   headers:
     X-Request-Id:
       description: Request identifier for tracing.
