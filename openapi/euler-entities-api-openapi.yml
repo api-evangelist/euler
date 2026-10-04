@@ -1058,26 +1058,52 @@ paths:
       operationId: deleteEntity
 components:
   schemas:
-    EntityMemberCreateRequest:
+    EntityUpdateRequest:
       type: object
       additionalProperties: false
-      required:
-      - email
+      minProperties: 1
       properties:
-        email:
-          type: string
-          format: email
-          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
         name:
           type: string
           pattern: \S
-          nullable: true
-        role:
+        logo:
           type: string
-          enum:
-          - admin
-          - editor
-          default: editor
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTwitter:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialYoutube:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialDiscord:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialTelegram:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
+        socialGithub:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          nullable: true
     EntityCreateRequest:
       type: object
       additionalProperties: false
@@ -1189,107 +1215,6 @@ components:
           type: string
           format: date-time
           nullable: true
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-    EntityAddressCreateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - chainId
-      - address
-      - label
-      properties:
-        chainId:
-          type: integer
-          minimum: 1
-        address:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-          description: Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted.
-        label:
-          type: string
-          pattern: \S
-          description: Human-readable governance address label.
-    EntityMemberUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          pattern: \S
-          nullable: true
-        role:
-          type: string
-          enum:
-          - admin
-          - editor
-    EntityUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          pattern: \S
-        logo:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        url:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTwitter:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialYoutube:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialDiscord:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTelegram:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialGithub:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
     Entity:
       type: object
       required:
@@ -1357,6 +1282,26 @@ components:
         updatedAt:
           type: string
           format: date-time
+    EntityMemberCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+        name:
+          type: string
+          pattern: \S
+          nullable: true
+        role:
+          type: string
+          enum:
+          - admin
+          - editor
+          default: editor
     ErrorResponse:
       type: object
       required:
@@ -1403,6 +1348,61 @@ components:
             details:
               type: object
               additionalProperties: true
+    EntityMemberUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          pattern: \S
+          nullable: true
+        role:
+          type: string
+          enum:
+          - admin
+          - editor
+    EntityAddressCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - chainId
+      - address
+      - label
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          description: Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted.
+        label:
+          type: string
+          pattern: \S
+          description: Human-readable governance address label.
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
   headers:
     X-Request-Id:
       description: Request identifier for tracing.

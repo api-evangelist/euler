@@ -142,7 +142,81 @@ paths:
                     $ref: '#/components/schemas/IntrinsicApyHistoryMeta'
       operationId: getApysIntrinsicHistory
 components:
+  parameters:
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Sort field, prefix with '-' for descending.
+    StartTimestampParam:
+      name: startTimestamp
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Start of time range (unix seconds).
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    EndTimestampParam:
+      name: endTimestamp
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: End of time range (unix seconds).
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    FieldsParam:
+      name: fields
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of fields to include.
   schemas:
+    VaultApy:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultApyPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultApyPoint'
     IntrinsicApy:
       type: object
       properties:
@@ -162,51 +236,6 @@ components:
         timestamp:
           type: string
           format: date-time
-    IntrinsicApyHistoryPoint:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        apy:
-          type: number
-          description: Intrinsic APY as a percent number.
-        provider:
-          type: string
-        apyDuration:
-          type: number
-          description: Duration in seconds used to compute the APY.
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-    VaultApy:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultApyPoint'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultApyPoint'
     VaultApyMeta:
       type: object
       properties:
@@ -228,19 +257,20 @@ components:
         timestamp:
           type: string
           format: date-time
-    VaultApyPoint:
+    IntrinsicApyHistoryPoint:
       type: object
       properties:
-        supplyApy:
-          type: number
-          nullable: true
-          description: Percent number with 6 decimal places.
-        borrowApy:
-          type: number
-          description: Percent number with 6 decimal places.
         timestamp:
           type: string
           format: date-time
+        apy:
+          type: number
+          description: Intrinsic APY as a percent number.
+        provider:
+          type: string
+        apyDuration:
+          type: number
+          description: Duration in seconds used to compute the APY.
     IntrinsicApyHistoryMeta:
       type: object
       properties:
@@ -264,71 +294,41 @@ components:
         timestamp:
           type: string
           format: date-time
-  parameters:
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-    EndTimestampParam:
-      name: endTimestamp
-      in: query
-      required: false
-      schema:
-        type: integer
-      description: End of time range (unix seconds).
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-    FieldsParam:
-      name: fields
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of fields to include.
-    StartTimestampParam:
-      name: startTimestamp
-      in: query
-      required: false
-      schema:
-        type: integer
-      description: Start of time range (unix seconds).
-    SortParam:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Sort field, prefix with '-' for descending.
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    VaultApyPoint:
+      type: object
+      properties:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          description: Percent number with 6 decimal places.
+        timestamp:
+          type: string
+          format: date-time
   headers:
     Cache-Control:
       description: Cache policy for this response.

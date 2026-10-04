@@ -197,100 +197,43 @@ paths:
           $ref: '#/components/responses/Error500'
       operationId: getEarnVaultsByChainIdByAddressEvents
 components:
-  responses:
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    EarnVaultDetails:
-      allOf:
-      - $ref: '#/components/schemas/EarnVaultSummary'
-      - type: object
-        properties:
-          totalShares:
-            type: string
-            description: Raw vault share supply as a bigint string.
-          lostAssets:
-            type: string
-            description: Raw lost asset amount as a bigint string.
-          exchangeRate:
-            type: string
-            description: Raw exchange rate as a bigint string.
-          strategies:
-            type: array
-            items:
-              $ref: '#/components/schemas/EarnStrategy'
-          governance:
-            $ref: '#/components/schemas/EarnVaultGovernance'
-          management:
-            $ref: '#/components/schemas/EarnVaultManagement'
-    AssetRef:
+    EarnVaultBatchResponse:
       type: object
       properties:
-        address:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EarnVaultBatchItem'
+        meta:
+          $ref: '#/components/schemas/EarnVaultBatchMeta'
+    EarnVaultGovernance:
+      type: object
+      properties:
+        owner:
           type: string
-        symbol:
+        creator:
           type: string
-        decimals:
+        curator:
+          type: string
+        guardian:
+          type: string
+        feeReceiver:
+          type: string
+        timelock:
           type: integer
-        name:
+          description: Timelock duration in seconds.
+        pendingTimelock:
+          type: integer
+          description: Pending timelock duration in seconds.
+        pendingTimelockValidAt:
           type: string
-          nullable: true
+          format: date-time
+        pendingGuardian:
+          type: string
+        pendingGuardianValidAt:
+          type: string
+          format: date-time
     EarnVaultManagement:
       type: object
       properties:
@@ -308,6 +251,13 @@ components:
         performanceFee:
           type: string
           description: Raw contract performance fee value as a bigint string.
+    EarnIncludePrices:
+      type: object
+      properties:
+        asset:
+          allOf:
+          - $ref: '#/components/schemas/Price'
+          nullable: true
     VaultApy:
       type: object
       properties:
@@ -317,46 +267,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VaultApyPoint'
-    EarnVaultBatchRequest:
-      type: object
-      required:
-      - chainId
-      - addresses
-      properties:
-        chainId:
-          type: integer
-        addresses:
-          type: array
-          minItems: 1
-          maxItems: 1000
-          items:
-            type: string
-            maxLength: 42
-        include:
-          type: array
-          items:
-            type: string
-            enum:
-            - strategies
-          description: Optional related resources to expand for every returned vault.
-    VaultTotals:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultTotalsPoint'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultTotalsPoint'
-    EarnVaultBatchResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/EarnVaultBatchItem'
-        meta:
-          $ref: '#/components/schemas/EarnVaultBatchMeta'
     EarnVaultBatchItem:
       allOf:
       - $ref: '#/components/schemas/EarnVaultSummary'
@@ -366,6 +276,28 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/EarnStrategy'
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
     EarnStrategyAllocationCap:
       type: object
       properties:
@@ -378,6 +310,79 @@ components:
         pendingValidAt:
           type: string
           format: date-time
+    AssetRef:
+      type: object
+      properties:
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        name:
+          type: string
+          nullable: true
+    VaultTotalsPoint:
+      type: object
+      properties:
+        totalAssets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        totalBorrows:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        cash:
+          type: string
+          nullable: true
+          description: Raw cash amount as a bigint string.
+        utilization:
+          type: number
+          nullable: true
+          description: Utilization ratio number.
+        supplyApy:
+          type: number
+          nullable: true
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          nullable: true
+          description: Public borrow APY as a percent number.
+        timestamp:
+          type: string
+          format: date-time
+    EarnVaultBatchMeta:
+      type: object
+      properties:
+        count:
+          type: integer
+        requested:
+          type: integer
+        notFound:
+          type: array
+          items:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+    EarnVaultDetailsWithIncludes:
+      allOf:
+      - $ref: '#/components/schemas/EarnVaultDetails'
+      - type: object
+        properties:
+          apy:
+            allOf:
+            - $ref: '#/components/schemas/VaultApy'
+            nullable: true
+          totals:
+            allOf:
+            - $ref: '#/components/schemas/VaultTotals'
+            nullable: true
+          prices:
+            allOf:
+            - $ref: '#/components/schemas/EarnIncludePrices'
+            nullable: true
     ErrorResponse:
       type: object
       required:
@@ -424,31 +429,39 @@ components:
             details:
               type: object
               additionalProperties: true
-    EarnVaultGovernance:
+    EarnVaultDetails:
+      allOf:
+      - $ref: '#/components/schemas/EarnVaultSummary'
+      - type: object
+        properties:
+          totalShares:
+            type: string
+            description: Raw vault share supply as a bigint string.
+          lostAssets:
+            type: string
+            description: Raw lost asset amount as a bigint string.
+          exchangeRate:
+            type: string
+            description: Raw exchange rate as a bigint string.
+          strategies:
+            type: array
+            items:
+              $ref: '#/components/schemas/EarnStrategy'
+          governance:
+            $ref: '#/components/schemas/EarnVaultGovernance'
+          management:
+            $ref: '#/components/schemas/EarnVaultManagement'
+    VaultApyPoint:
       type: object
       properties:
-        owner:
-          type: string
-        creator:
-          type: string
-        curator:
-          type: string
-        guardian:
-          type: string
-        feeReceiver:
-          type: string
-        timelock:
-          type: integer
-          description: Timelock duration in seconds.
-        pendingTimelock:
-          type: integer
-          description: Pending timelock duration in seconds.
-        pendingTimelockValidAt:
-          type: string
-          format: date-time
-        pendingGuardian:
-          type: string
-        pendingGuardianValidAt:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          description: Percent number with 6 decimal places.
+        timestamp:
           type: string
           format: date-time
     EarnVaultSummary:
@@ -518,134 +531,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    Price:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
-          type: integer
-        priceUsd:
-          type: number
-          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
-        source:
-          type: string
-        confidence:
-          type: number
-          nullable: true
-        blockNumber:
-          type: string
-          nullable: true
-        timestamp:
-          type: string
-          format: date-time
-    VaultTotalsPoint:
-      type: object
-      properties:
-        totalAssets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        totalBorrows:
-          type: string
-          description: Raw borrowed asset amount as a bigint string.
-        cash:
-          type: string
-          nullable: true
-          description: Raw cash amount as a bigint string.
-        utilization:
-          type: number
-          nullable: true
-          description: Utilization ratio number.
-        supplyApy:
-          type: number
-          nullable: true
-          description: Public supply APY as a percent number.
-        borrowApy:
-          type: number
-          nullable: true
-          description: Public borrow APY as a percent number.
-        timestamp:
-          type: string
-          format: date-time
-    VaultApyPoint:
-      type: object
-      properties:
-        supplyApy:
-          type: number
-          nullable: true
-          description: Percent number with 6 decimal places.
-        borrowApy:
-          type: number
-          description: Percent number with 6 decimal places.
-        timestamp:
-          type: string
-          format: date-time
-    EarnVaultDetailsWithIncludes:
-      allOf:
-      - $ref: '#/components/schemas/EarnVaultDetails'
-      - type: object
-        properties:
-          apy:
-            allOf:
-            - $ref: '#/components/schemas/VaultApy'
-            nullable: true
-          totals:
-            allOf:
-            - $ref: '#/components/schemas/VaultTotals'
-            nullable: true
-          prices:
-            allOf:
-            - $ref: '#/components/schemas/EarnIncludePrices'
-            nullable: true
-    EarnVaultBatchMeta:
-      type: object
-      properties:
-        count:
-          type: integer
-        requested:
-          type: integer
-        notFound:
-          type: array
-          items:
-            type: string
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-    EarnIncludePrices:
-      type: object
-      properties:
-        asset:
-          allOf:
-          - $ref: '#/components/schemas/Price'
-          nullable: true
     EarnStrategy:
       type: object
       properties:
@@ -707,7 +592,128 @@ components:
           type: string
           format: date-time
           nullable: true
+    VaultTotals:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultTotalsPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultTotalsPoint'
+    Price:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        blockNumber:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    EarnVaultBatchRequest:
+      type: object
+      required:
+      - chainId
+      - addresses
+      properties:
+        chainId:
+          type: integer
+        addresses:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: string
+            maxLength: 42
+        include:
+          type: array
+          items:
+            type: string
+            enum:
+            - strategies
+          description: Optional related resources to expand for every returned vault.
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   parameters:
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
     OffsetParam:
       name: offset
       in: query
@@ -721,12 +727,14 @@ components:
       required: true
       schema:
         type: string
-    ChainIdPath:
+    ChainIdParam:
       name: chainId
-      in: path
-      required: true
+      in: query
+      required: false
       schema:
-        type: integer
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
     LimitParam:
       name: limit
       in: query
@@ -736,14 +744,6 @@ components:
         type: integer
         default: 20
         maximum: 100
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
     IncludeParam:
       name: include
       in: query
@@ -752,12 +752,12 @@ components:
         type: string
       description: Comma-separated list of related resources to expand. Unknown values are ignored.
   headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
     X-Request-Id:
       description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
       schema:
         type: string
   securitySchemes:

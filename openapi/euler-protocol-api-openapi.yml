@@ -102,48 +102,27 @@ paths:
           $ref: '#/components/responses/Error500'
       operationId: getProtocolStats
 components:
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   schemas:
+    ProtocolStats:
+      type: object
+      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
+      properties:
+        totalSuppliedUsd:
+          type: number
+          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
+        totalBorrowedUsd:
+          type: number
+          description: Total EVK lending borrows in USD across the selected chains.
+        earnTotalAssetsUsd:
+          type: number
+          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
+        utilization:
+          type: number
+          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
+        vaultCount:
+          type: integer
+        chainCount:
+          type: integer
     PaginationMeta:
       type: object
       required:
@@ -212,26 +191,47 @@ components:
             details:
               type: object
               additionalProperties: true
-    ProtocolStats:
-      type: object
-      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
-      properties:
-        totalSuppliedUsd:
-          type: number
-          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
-        totalBorrowedUsd:
-          type: number
-          description: Total EVK lending borrows in USD across the selected chains.
-        earnTotalAssetsUsd:
-          type: number
-          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
-        utilization:
-          type: number
-          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
-        vaultCount:
-          type: integer
-        chainCount:
-          type: integer
+  responses:
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   parameters:
     ChainIdParam:
       name: chainId
