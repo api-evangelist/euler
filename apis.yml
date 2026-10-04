@@ -613,6 +613,8 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
   baseURL: https://app.euler.finance/api/v1
   tags:
+  - GraphQL
+  tags_raw:
   - Graph QL
   properties:
   - type: OpenAPI
@@ -629,6 +631,9 @@ apis:
   - type: GraphQL
     url: graphql/euler-graphql.md
 common:
+- type: CapabilityMap
+  url: capabilities/euler-capability-edges.yml
+  name: Euler Finance Business Capability Map
 - type: Website
   url: https://www.euler.finance/
 - type: IssueTracker
