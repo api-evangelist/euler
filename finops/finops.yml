@@ -1,3 +1,12 @@
+# Provenance stamped 2026-10-07 (roadmap#943): written by an API Evangelist sweep (dated 2026-06-14 by the file itself), not
+# harvested from the provider. `method: generated` so the economics campaign may replace it with a
+# dated, verbatim transcription; every figure below is unverified until it does.
+# Coverage demoted 2026-10-07 (roadmap#942, PLAN.md Stage A): this file was written by an API Evangelist
+# sweep and names no billing unit, meters or pricing category read from the provider — it restates the
+# FinOps framework. It is `x-coverage: unmeasured`, and the FOCUS alignment it claimed has been removed.
+x-coverage: unmeasured
+method: generated
+generated: '2026-06-14'
 name: Euler Finance API FinOps
 description: Financial operations considerations for teams integrating with Euler Finance APIs. The core Euler V3 Data API is free at low volumes with IP-based rate limiting and transitions to API-key-authenticated access at higher volumes. The protocol itself generates revenue through interest rate spreads and fees on lending/borrowing activity. Teams building on Euler should plan for API key procurement, subgraph hosting costs via Goldsky or The Graph, and SDK operational overhead.
 url: https://docs.euler.finance/developers/data-querying/euler-v3-api

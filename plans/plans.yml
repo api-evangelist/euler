@@ -1,3 +1,8 @@
+# Provenance stamped 2026-10-07 (roadmap#943): written by an API Evangelist sweep (dated 2026-06-14 by the file itself), not
+# harvested from the provider. `method: generated` so the economics campaign may replace it with a
+# dated, verbatim transcription; every figure below is unverified until it does.
+method: generated
+generated: '2026-06-14'
 name: Euler Finance API Plans
 description: Euler Finance provides tiered access to its V3 Data API based on authentication level. Unauthenticated requests are permitted with IP-based rate limiting suitable for development and low-volume use. API key authentication unlocks higher rate limits for production applications, dashboards, bots, and risk systems. Contact the Euler team directly to request an API key.
 url: https://docs.euler.finance/developers/data-querying/euler-v3-api
