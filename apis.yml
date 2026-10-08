@@ -629,6 +629,12 @@ apis:
   - type: GraphQL
     url: graphql/euler-graphql.md
 common:
+- type: Plans
+  url: plans/plans.yml
+- type: RateLimits
+  url: rate-limits/euler-v3-api.yml
+- type: FinOps
+  url: finops/finops.yml
 - type: CapabilityMap
   url: capabilities/euler-capability-edges.yml
   name: Euler Finance Business Capability Map
