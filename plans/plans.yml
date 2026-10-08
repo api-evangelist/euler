@@ -48,3 +48,23 @@ plans:
       - Higher rate limits (10x)
       - Suitable for production workloads
       - Priority support
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - negotiated
+  units: []
+  plans:
+  - name: Free (Unauthenticated)
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods: []
+  - name: Authenticated (API Key)
+    access: other
+    model: negotiated
+    model_how: derived
+    units: []
+    periods: []
