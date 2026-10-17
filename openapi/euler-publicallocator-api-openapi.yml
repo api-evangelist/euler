@@ -72,28 +72,6 @@ paths:
       operationId: getPublicAllocatorEvents
 components:
   schemas:
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
     ErrorResponse:
       type: object
       required:
@@ -140,14 +118,54 @@ components:
             details:
               type: object
               additionalProperties: true
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   responses:
-    Error429:
-      description: Rate limited
+    Error404:
+      description: Not found
       headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
       content:
@@ -163,9 +181,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
+    Error429:
+      description: Rate limited
       headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
       content:
@@ -181,28 +203,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-  parameters:
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

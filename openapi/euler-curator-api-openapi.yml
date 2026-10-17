@@ -135,6 +135,24 @@ paths:
       operationId: putCuratorVaultsByChainIdByAddressLabels
 components:
   responses:
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Error400:
       description: Bad request
       headers:
@@ -153,44 +171,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     Error401:
       description: Unauthorized
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -211,13 +193,25 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   parameters:
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
     OffsetParam:
       name: offset
       in: query
@@ -225,6 +219,15 @@ components:
       schema:
         type: integer
         default: 0
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
     AddressPath:
       name: address
       in: path
@@ -239,24 +242,12 @@ components:
         type: string
       description: Comma-separated list of chain IDs (single value allowed).
       example: 1,10,8453
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
       schema:
         type: integer
-        default: 20
-        maximum: 100
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
   schemas:
     PaginationMeta:
       type: object
@@ -280,115 +271,6 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    OracleRouterState:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        router:
-          type: string
-        deployer:
-          type: string
-        deployedAt:
-          type: string
-          format: date-time
-        configs:
-          type: array
-          items:
-            $ref: '#/components/schemas/OracleRouterConfig'
-        vaults:
-          type: array
-          items:
-            $ref: '#/components/schemas/OracleRouterVault'
-    OracleRouterConfig:
-      type: object
-      properties:
-        asset0:
-          type: string
-        asset1:
-          type: string
-        oracle:
-          type: string
-        blockNumber:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        txHash:
-          type: string
-    OracleRouterVault:
-      type: object
-      properties:
-        vault:
-          type: string
-        asset:
-          type: string
-        blockNumber:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        txHash:
-          type: string
-    CuratorInfo:
-      type: object
-      required:
-      - apiKeyId
-      - name
-      - keyPrefix
-      properties:
-        apiKeyId:
-          type: string
-        name:
-          type: string
-        keyPrefix:
-          type: string
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
     CuratorVaultLabel:
       type: object
       required:
@@ -437,6 +319,124 @@ components:
         updatedAt:
           type: string
           format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    OracleRouterVault:
+      type: object
+      properties:
+        vault:
+          type: string
+        asset:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        txHash:
+          type: string
+    OracleRouterState:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        router:
+          type: string
+        deployer:
+          type: string
+        deployedAt:
+          type: string
+          format: date-time
+        configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/OracleRouterConfig'
+        vaults:
+          type: array
+          items:
+            $ref: '#/components/schemas/OracleRouterVault'
+    OracleRouterConfig:
+      type: object
+      properties:
+        asset0:
+          type: string
+        asset1:
+          type: string
+        oracle:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        txHash:
+          type: string
+    CuratorInfo:
+      type: object
+      required:
+      - apiKeyId
+      - name
+      - keyPrefix
+      properties:
+        apiKeyId:
+          type: string
+        name:
+          type: string
+        keyPrefix:
+          type: string
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

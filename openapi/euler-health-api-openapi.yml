@@ -188,27 +188,6 @@ paths:
       operationId: getMetrics
 components:
   schemas:
-    HealthResponse:
-      type: object
-      required:
-      - status
-      - version
-      - uptime
-      - timestamp
-      properties:
-        status:
-          type: string
-          enum:
-          - healthy
-          - degraded
-          - unhealthy
-        version:
-          type: string
-        uptime:
-          type: integer
-        timestamp:
-          type: string
-          format: date-time
     ErrorResponse:
       type: object
       required:
@@ -255,6 +234,27 @@ components:
             details:
               type: object
               additionalProperties: true
+    HealthResponse:
+      type: object
+      required:
+      - status
+      - version
+      - uptime
+      - timestamp
+      properties:
+        status:
+          type: string
+          enum:
+          - healthy
+          - degraded
+          - unhealthy
+        version:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
     DetailedHealthResponse:
       allOf:
       - $ref: '#/components/schemas/HealthResponse'
@@ -329,8 +329,8 @@ components:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
   responses:
-    Error401:
-      description: Unauthorized
+    Error403:
+      description: Forbidden
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -338,8 +338,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error403:
-      description: Forbidden
+    Error401:
+      description: Unauthorized
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'

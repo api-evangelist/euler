@@ -73,28 +73,6 @@ paths:
       operationId: getEvcAccountsByAddressEvents
 components:
   schemas:
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
     ErrorResponse:
       type: object
       required:
@@ -141,48 +119,36 @@ components:
             details:
               type: object
               additionalProperties: true
-  responses:
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
   parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
     LimitParam:
       name: limit
       in: query
@@ -198,18 +164,52 @@ components:
       required: true
       schema:
         type: string
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
   headers:
     X-Request-Id:
       description: Request identifier for tracing.
       schema:
         type: string
+  responses:
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

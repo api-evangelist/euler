@@ -1131,157 +1131,66 @@ paths:
                           - 'null'
       operationId: getVaultsBadDebt
 components:
+  responses:
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    CollateralConfigWithPrice:
-      allOf:
-      - $ref: '#/components/schemas/CollateralConfig'
-      - type: object
-        properties:
-          price:
-            allOf:
-            - $ref: '#/components/schemas/Price'
-            nullable: true
-    VaultDetails:
-      allOf:
-      - $ref: '#/components/schemas/Vault'
-      - type: object
-        properties:
-          dToken:
-            type: string
-          oracle:
-            $ref: '#/components/schemas/OracleInfo'
-          unitOfAccount:
-            $ref: '#/components/schemas/AssetRef'
-          creator:
-            type: string
-          governor:
-            type: string
-            description: Latest governor admin if available; falls back to creator.
-          governorAdmin:
-            type: string
-            description: Latest governor admin if available; falls back to creator.
-          supplyCap:
-            type: string
-            description: Resolved supply cap as a bigint string in underlying asset units.
-          borrowCap:
-            type: string
-            description: Resolved borrow cap as a bigint string in underlying asset units.
-          totalShares:
-            type: string
-            description: Raw vault share supply as a bigint string.
-          totalBorrowed:
-            type: string
-            description: Raw borrowed asset amount as a bigint string.
-          totalCash:
-            type: string
-            description: Raw cash amount as a bigint string.
-          cash:
-            type: string
-            description: Raw cash amount as a bigint string.
-          interestRate:
-            type: string
-            description: Raw contract interest-rate value as a bigint string.
-          interestAccumulator:
-            type: string
-            description: Raw contract interest accumulator as a bigint string.
-          accumulatedFees:
-            type: string
-            description: Raw accumulated fee amount as a bigint string.
-          balanceTracker:
-            type: string
-          fees:
-            $ref: '#/components/schemas/VaultFees'
-          hooks:
-            $ref: '#/components/schemas/VaultHooks'
-          caps:
-            $ref: '#/components/schemas/VaultCaps'
-          liquidation:
-            $ref: '#/components/schemas/VaultLiquidation'
-          interestRates:
-            $ref: '#/components/schemas/VaultInterestRates'
-          interestRateModel:
-            $ref: '#/components/schemas/VaultInterestRateModel'
-          evcCompatibleAsset:
-            type: boolean
-          oraclePriceRaw:
-            $ref: '#/components/schemas/OraclePriceRaw'
-          timestamp:
-            type: string
-            format: date-time
-          exchangeRate:
-            type: string
-            nullable: true
-            description: Raw exchange rate as a bigint string.
-          createdAtBlock:
-            type: string
-            description: Block number as a bigint string.
-    VaultFees:
-      type: object
-      properties:
-        interestFee:
-          type: number
-          description: Interest fee ratio number.
-        accumulatedFeesShares:
-          type: string
-          description: Raw accumulated fee shares as a bigint string.
-        accumulatedFeesAssets:
-          type: string
-          description: Raw accumulated fee assets as a bigint string.
-        governorFeeReceiver:
-          type: string
-        protocolFeeReceiver:
-          type: string
-        protocolFeeShare:
-          type: number
-          description: Protocol fee share ratio number.
-    IrmHistoryItem:
-      type: object
-      description: Historical interest rate model change
-      properties:
-        interestRateModel:
-          type: string
-          description: Interest rate model contract address
-        blockNumber:
-          type: string
-          description: Block number of the change
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the change
-        txHash:
-          type: string
-          description: Transaction hash
-        logIndex:
-          type: integer
-          description: Log index within the transaction receipt.
-    VaultResolveEntry:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        address:
-          type: string
-        found:
-          type: boolean
-        vaultType:
-          oneOf:
-          - type: string
-            enum:
-            - evk
-            - earn
-            - securitize
-          - type: 'null'
-        factory:
-          type:
-          - string
-          - 'null'
-        resource:
-          type:
-          - string
-          - 'null'
-        snapshotTimestamp:
-          type: string
-          format: date-time
     VaultInterestRates:
       type: object
       description: Contract interest-rate values formatted as decimal strings in fraction units, not public percent APY numbers.
@@ -1295,742 +1204,6 @@ components:
         supplyAPY:
           type: string
           description: Supply APY as an exact decimal fraction string; `1` means 100%.
-    OracleResolvedVault:
-      type: object
-      properties:
-        vault:
-          type: string
-        quote:
-          type: string
-        asset:
-          type: string
-        resolvedAssets:
-          type: array
-          items:
-            type: string
-    OracleAdapterChainlinkDetail:
-      type: object
-      properties:
-        oracle:
-          type: string
-    ConfigHistoryItem:
-      type: object
-      description: Generic configuration change event
-      properties:
-        type:
-          type: string
-          enum:
-          - caps
-          - ltv
-          - irm
-          - governor
-          - feeReceiver
-          - hookConfig
-          - interestFee
-          - configFlags
-          description: Type of configuration change
-        data:
-          type: object
-          additionalProperties: true
-          description: The configuration values that changed (varies by type). For `ltv` events, canonical basis-point string fields such as `borrowLTV` may be accompanied by legacy decimal aliases.
-        blockNumber:
-          type: string
-          description: Block number of the change
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the change
-        txHash:
-          type: string
-          description: Transaction hash
-        logIndex:
-          type: integer
-          description: Log index within the transaction receipt.
-    PublicVaultLabel:
-      type: object
-      required:
-      - chainId
-      - vaultAddress
-      - displayName
-      - updatedAt
-      properties:
-        chainId:
-          type: integer
-        vaultAddress:
-          type: string
-        displayName:
-          type: string
-          minLength: 1
-          maxLength: 120
-          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]+$
-          description: Plain text only; clients must render as text, not HTML or Markdown.
-        description:
-          type: string
-          nullable: true
-          maxLength: 1024
-          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F<>]*$
-          description: Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed.
-        productCategory:
-          type: string
-          nullable: true
-          maxLength: 120
-          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]*$
-          description: Plain text only; clients must render as text, not HTML or Markdown.
-        riskTier:
-          type: string
-          nullable: true
-          maxLength: 64
-          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]*$
-          description: Plain text only; clients must render as text, not HTML or Markdown.
-        strategyDescription:
-          type: string
-          nullable: true
-          maxLength: 2048
-          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F<>]*$
-          description: Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed.
-        updatedAt:
-          type: string
-          format: date-time
-    VaultHookedOperations:
-      type: object
-      properties:
-        deposit:
-          type: boolean
-        mint:
-          type: boolean
-        withdraw:
-          type: boolean
-        redeem:
-          type: boolean
-        transfer:
-          type: boolean
-        skim:
-          type: boolean
-        borrow:
-          type: boolean
-        repay:
-          type: boolean
-        repayWithShares:
-          type: boolean
-        pullDebt:
-          type: boolean
-        convertFees:
-          type: boolean
-        liquidate:
-          type: boolean
-        flashloan:
-          type: boolean
-        touch:
-          type: boolean
-        vaultStatusCheck:
-          type: boolean
-    CollateralConfig:
-      type: object
-      description: Current LTV configuration for a collateral vault
-      properties:
-        collateral:
-          type: string
-          description: Collateral vault address
-        vaultType:
-          type: string
-          enum:
-          - evk
-          - earn
-          - securitize
-          description: Vault family for the collateral address
-        collateralName:
-          type: string
-          description: Collateral vault name
-        collateralSymbol:
-          type: string
-          description: Collateral vault symbol
-        asset:
-          type: string
-          description: Underlying asset address of the collateral vault
-        assetSymbol:
-          type: string
-          description: Underlying asset symbol
-        assetDecimals:
-          type: integer
-          description: Underlying asset decimals
-        borrowLTV:
-          type: string
-          description: Maximum LTV for borrowing (basis points as string, e.g., "8500" = 85%)
-        liquidationLTV:
-          type: string
-          description: LTV at which liquidation can occur (basis points as string)
-        initialLiquidationLTV:
-          type: string
-          description: Initial liquidation LTV before ramping
-        targetTimestamp:
-          type: string
-          format: date-time
-          nullable: true
-          description: ISO timestamp when LTV ramp completes
-        rampDuration:
-          type: integer
-          description: Duration of LTV ramp in seconds
-    VaultApy:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultApyPoint'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultApyPoint'
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-    VaultCaps:
-      type: object
-      properties:
-        supplyCap:
-          type: string
-          description: Resolved supply cap as a bigint string in underlying asset units.
-        borrowCap:
-          type: string
-          description: Resolved borrow cap as a bigint string in underlying asset units.
-    EvkVaultBatchMeta:
-      type: object
-      properties:
-        count:
-          type: integer
-        requested:
-          type: integer
-        notFound:
-          type: array
-          items:
-            type: string
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-    VaultTotalsFreshness:
-      type: object
-      properties:
-        mode:
-          type: string
-          enum:
-          - fresh
-          - cached
-        forceFreshRequested:
-          type: boolean
-        refreshTriggered:
-          type: boolean
-        refreshCompleted:
-          type: boolean
-        timedOut:
-          type: boolean
-        rateLimited:
-          type: boolean
-        fallbackReason:
-          type: string
-          nullable: true
-        waitedMs:
-          type: integer
-        latestSnapshotTimestamp:
-          type: string
-          format: date-time
-        ageSeconds:
-          type: integer
-    VaultDetailsWithIncludes:
-      allOf:
-      - $ref: '#/components/schemas/VaultDetails'
-      - type: object
-        properties:
-          collaterals:
-            type: array
-            items:
-              $ref: '#/components/schemas/VaultCollateralDetail'
-            nullable: true
-          apy:
-            allOf:
-            - $ref: '#/components/schemas/VaultApy'
-            nullable: true
-          totals:
-            allOf:
-            - $ref: '#/components/schemas/VaultTotals'
-            nullable: true
-          prices:
-            allOf:
-            - $ref: '#/components/schemas/VaultIncludePrices'
-            nullable: true
-    AssetRef:
-      type: object
-      properties:
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
-          type: integer
-        name:
-          type: string
-          nullable: true
-    OracleAdapterEntry:
-      type: object
-      properties:
-        oracle:
-          type: string
-        name:
-          type: string
-        base:
-          type: string
-        quote:
-          type: string
-        pythDetail:
-          allOf:
-          - $ref: '#/components/schemas/OracleAdapterPythDetail'
-          nullable: true
-        chainlinkDetail:
-          allOf:
-          - $ref: '#/components/schemas/OracleAdapterChainlinkDetail'
-          nullable: true
-    Price:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        address:
-          type: string
-        symbol:
-          type: string
-        decimals:
-          type: integer
-        priceUsd:
-          type: number
-          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
-        source:
-          type: string
-        confidence:
-          type: number
-          nullable: true
-        blockNumber:
-          type: string
-          nullable: true
-        timestamp:
-          type: string
-          format: date-time
-    VaultCollateralDetail:
-      allOf:
-      - $ref: '#/components/schemas/CollateralConfig'
-      - type: object
-        properties:
-          oraclePriceRaw:
-            allOf:
-            - $ref: '#/components/schemas/OraclePriceRaw'
-            nullable: true
-    VaultTotalsPoint:
-      type: object
-      properties:
-        totalAssets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        totalBorrows:
-          type: string
-          description: Raw borrowed asset amount as a bigint string.
-        cash:
-          type: string
-          nullable: true
-          description: Raw cash amount as a bigint string.
-        utilization:
-          type: number
-          nullable: true
-          description: Utilization ratio number.
-        supplyApy:
-          type: number
-          nullable: true
-          description: Public supply APY as a percent number.
-        borrowApy:
-          type: number
-          nullable: true
-          description: Public borrow APY as a percent number.
-        timestamp:
-          type: string
-          format: date-time
-    VaultIncludePrices:
-      type: object
-      properties:
-        asset:
-          allOf:
-          - $ref: '#/components/schemas/Price'
-          nullable: true
-        collaterals:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollateralConfigWithPrice'
-    VaultLiquidation:
-      type: object
-      properties:
-        maxLiquidationDiscount:
-          type: number
-        liquidationCoolOffTime:
-          type: integer
-        socializeDebt:
-          type: boolean
-    VaultPosition:
-      type: object
-      properties:
-        account:
-          type: string
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        assetsUsd:
-          type: number
-          nullable: true
-          description: Market USD number computed from `assets` and the token price endpoint.
-        lastUpdatedBlock:
-          type: string
-    VaultDetailResponseWithIncludes:
-      allOf:
-      - $ref: '#/components/schemas/VaultDetailResponse'
-      - type: object
-        properties:
-          collaterals:
-            type: array
-            items:
-              $ref: '#/components/schemas/VaultCollateralDetail'
-            nullable: true
-          apy:
-            allOf:
-            - $ref: '#/components/schemas/VaultApy'
-            nullable: true
-          totals:
-            allOf:
-            - $ref: '#/components/schemas/VaultTotals'
-            nullable: true
-          prices:
-            allOf:
-            - $ref: '#/components/schemas/VaultIncludePrices'
-            nullable: true
-    VaultCapHealthItem:
-      type: object
-      description: Vault cap-usage health row
-      properties:
-        chainId:
-          type: integer
-          description: Chain ID
-        vault:
-          type: string
-          description: Vault address
-        capUsage:
-          type: number
-          description: Maximum of `supplyCapUsage` and `borrowCapUsage`
-        supplyCap:
-          type: string
-          description: Supply cap in resolved asset units
-        supplyCapUsage:
-          type: number
-          description: Current supply-cap usage ratio
-        borrowCap:
-          type: string
-          description: Borrow cap in resolved asset units
-        borrowCapUsage:
-          type: number
-          description: Current borrow-cap usage ratio
-        totalAssets:
-          type: string
-          description: Current total supplied assets
-        totalBorrows:
-          type: string
-          description: Current total borrowed assets
-        thresholdExceeded:
-          type: boolean
-          description: Whether `capUsage` meets or exceeds the requested threshold
-    LtvHistoryItem:
-      type: object
-      description: Historical LTV configuration change
-      properties:
-        collateral:
-          type: string
-          description: Collateral vault address
-        borrowLTV:
-          type: string
-          description: Borrow LTV (basis points as string)
-        liquidationLTV:
-          type: string
-          description: Liquidation LTV (basis points as string)
-        initialLiquidationLTV:
-          type: string
-          description: Initial liquidation LTV before ramping
-        borrowLtv:
-          type: number
-          description: Legacy decimal alias for `borrowLTV`.
-        liquidationLtv:
-          type: number
-          description: Legacy decimal alias for `liquidationLTV`.
-        initialLiquidationLtv:
-          type: number
-          description: Legacy decimal alias for `initialLiquidationLTV`.
-        targetTimestamp:
-          type: string
-          format: date-time
-          nullable: true
-          description: ISO timestamp when LTV ramp completes
-        rampDuration:
-          type: integer
-          description: Duration of LTV ramp in seconds
-        blockNumber:
-          type: string
-          description: Block number of the change
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the change
-        txHash:
-          type: string
-          description: Transaction hash
-        logIndex:
-          type: integer
-          description: Log index within the transaction receipt.
-    OracleDetailedInfo:
-      type: object
-      properties:
-        oracle:
-          type: string
-        name:
-          type: string
-        oracleInfo:
-          type: string
-    SubAccount:
-      type: object
-      required:
-      - chainId
-      - owner
-      - addressPrefix
-      - blockNumber
-      - timestamp
-      properties:
-        chainId:
-          type: integer
-        owner:
-          type: string
-        addressPrefix:
-          type: string
-        blockNumber:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-    CapHistoryItem:
-      type: object
-      description: Historical cap configuration change
-      properties:
-        supplyCap:
-          type: string
-          description: Resolved supply cap as a bigint string in underlying asset units.
-        borrowCap:
-          type: string
-          description: Resolved borrow cap as a bigint string in underlying asset units.
-        blockNumber:
-          type: string
-          description: Block number of the change
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the change
-        txHash:
-          type: string
-          description: Transaction hash
-        logIndex:
-          type: integer
-          description: Log index within the transaction receipt.
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    OraclePriceRaw:
-      type: object
-      description: Exact oracle quote values returned by contracts, represented as raw integer strings in the oracle unit-of-account scale.
-      properties:
-        queryFailure:
-          type: boolean
-        queryFailureReason:
-          type: string
-        amountIn:
-          type: string
-          description: Raw input amount passed to the oracle.
-        amountOutMid:
-          type: string
-          description: Raw midpoint oracle output amount.
-        amountOutBid:
-          type: string
-          description: Raw bid-side oracle output amount.
-        amountOutAsk:
-          type: string
-          description: Raw ask-side oracle output amount.
-        timestamp:
-          type: string
-          format: date-time
-    VaultVisibility:
-      type: object
-      required:
-      - chainId
-      - vaultAddress
-      - status
-      - checks
-      - source
-      - evaluatedAt
-      properties:
-        chainId:
-          type: integer
-        vaultAddress:
-          type: string
-        status:
-          type: string
-          enum:
-          - visible
-          - warning
-          - hidden
-          - pending_review
-        checks:
-          type: object
-          additionalProperties: true
-        source:
-          type: string
-        evaluatedAt:
-          type: string
-          format: date-time
-          nullable: true
-    VaultApyPoint:
-      type: object
-      properties:
-        supplyApy:
-          type: number
-          nullable: true
-          description: Percent number with 6 decimal places.
-        borrowApy:
-          type: number
-          description: Percent number with 6 decimal places.
-        timestamp:
-          type: string
-          format: date-time
-    EvkVaultBatchResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultDetailsWithIncludes'
-        meta:
-          $ref: '#/components/schemas/EvkVaultBatchMeta'
-    VaultInterestRateModel:
-      type: object
-      properties:
-        address:
-          type: string
-        type:
-          type: string
-          enum:
-          - unknown
-          - kink
-          - adaptive_curve
-          - kinky
-          - fixed_cyclical_binary
-          - fixed_cyclical_binary_monthly
-        data:
-          type: object
-          nullable: true
-          additionalProperties:
-            type: string
-    VaultHooks:
-      type: object
-      properties:
-        hookedOperations:
-          $ref: '#/components/schemas/VaultHookedOperations'
-        hookTarget:
-          type: string
-    OracleAdapterPythDetail:
-      type: object
-      properties:
-        pyth:
-          type: string
-        base:
-          type: string
-        quote:
-          type: string
-        feedId:
-          type: string
-        maxStaleness:
-          type: string
-        maxConfWidth:
-          type: string
-    VaultTotals:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultTotalsPoint'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultTotalsPoint'
     Vault:
       type: object
       properties:
@@ -2077,29 +1250,103 @@ components:
         createdAt:
           type: string
           format: date-time
-    EvkVaultBatchRequest:
+    AssetRef:
       type: object
-      required:
-      - chainId
-      - addresses
+      properties:
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        name:
+          type: string
+          nullable: true
+    VaultResolveEntry:
+      type: object
       properties:
         chainId:
           type: integer
-        addresses:
-          type: array
-          minItems: 1
-          maxItems: 1000
-          items:
-            type: string
-            maxLength: 42
-          description: Ordered list of EVK vault addresses to fetch.
-        include:
-          type: array
-          items:
-            type: string
+        address:
+          type: string
+        found:
+          type: boolean
+        vaultType:
+          oneOf:
+          - type: string
             enum:
-            - collaterals
-          description: Optional related resources to expand for every returned vault.
+            - evk
+            - earn
+            - securitize
+          - type: 'null'
+        factory:
+          type:
+          - string
+          - 'null'
+        resource:
+          type:
+          - string
+          - 'null'
+        snapshotTimestamp:
+          type: string
+          format: date-time
+    OracleAdapterEntry:
+      type: object
+      properties:
+        oracle:
+          type: string
+        name:
+          type: string
+        base:
+          type: string
+        quote:
+          type: string
+        pythDetail:
+          allOf:
+          - $ref: '#/components/schemas/OracleAdapterPythDetail'
+          nullable: true
+        chainlinkDetail:
+          allOf:
+          - $ref: '#/components/schemas/OracleAdapterChainlinkDetail'
+          nullable: true
+    OracleAdapterChainlinkDetail:
+      type: object
+      properties:
+        oracle:
+          type: string
+    VaultDetailResponseWithIncludes:
+      allOf:
+      - $ref: '#/components/schemas/VaultDetailResponse'
+      - type: object
+        properties:
+          collaterals:
+            type: array
+            items:
+              $ref: '#/components/schemas/VaultCollateralDetail'
+            nullable: true
+          apy:
+            allOf:
+            - $ref: '#/components/schemas/VaultApy'
+            nullable: true
+          totals:
+            allOf:
+            - $ref: '#/components/schemas/VaultTotals'
+            nullable: true
+          prices:
+            allOf:
+            - $ref: '#/components/schemas/VaultIncludePrices'
+            nullable: true
+    VaultIncludePrices:
+      type: object
+      properties:
+        asset:
+          allOf:
+          - $ref: '#/components/schemas/Price'
+          nullable: true
+        collaterals:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollateralConfigWithPrice'
     VaultApyMeta:
       type: object
       properties:
@@ -2121,30 +1368,89 @@ components:
         timestamp:
           type: string
           format: date-time
-    OracleInfo:
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    VaultCaps:
       type: object
       properties:
-        oracle:
+        supplyCap:
           type: string
-        name:
+          description: Resolved supply cap as a bigint string in underlying asset units.
+        borrowCap:
           type: string
-        detailedInfo:
-          $ref: '#/components/schemas/OracleDetailedInfo'
-        adapters:
+          description: Resolved borrow cap as a bigint string in underlying asset units.
+    VaultApy:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultApyPoint'
+        history:
           type: array
           items:
-            $ref: '#/components/schemas/OracleAdapterEntry'
-        resolvedVaults:
-          type: array
-          items:
-            $ref: '#/components/schemas/OracleResolvedVault'
-    VaultTotalsMeta:
+            $ref: '#/components/schemas/VaultApyPoint'
+    VaultCollateralDetail:
       allOf:
-      - $ref: '#/components/schemas/VaultApyMeta'
+      - $ref: '#/components/schemas/CollateralConfig'
       - type: object
         properties:
-          note:
-            type: string
+          oraclePriceRaw:
+            allOf:
+            - $ref: '#/components/schemas/OraclePriceRaw'
+            nullable: true
+    VaultCapHealthItem:
+      type: object
+      description: Vault cap-usage health row
+      properties:
+        chainId:
+          type: integer
+          description: Chain ID
+        vault:
+          type: string
+          description: Vault address
+        capUsage:
+          type: number
+          description: Maximum of `supplyCapUsage` and `borrowCapUsage`
+        supplyCap:
+          type: string
+          description: Supply cap in resolved asset units
+        supplyCapUsage:
+          type: number
+          description: Current supply-cap usage ratio
+        borrowCap:
+          type: string
+          description: Borrow cap in resolved asset units
+        borrowCapUsage:
+          type: number
+          description: Current borrow-cap usage ratio
+        totalAssets:
+          type: string
+          description: Current total supplied assets
+        totalBorrows:
+          type: string
+          description: Current total borrowed assets
+        thresholdExceeded:
+          type: boolean
+          description: Whether `capUsage` meets or exceeds the requested threshold
     VaultDetailResponse:
       type: object
       description: Single-vault detail response shape for `GET /v3/evk/vaults/{chainId}/{address}`.
@@ -2260,20 +1566,760 @@ components:
         createdAt:
           type: string
           format: date-time
+    VaultHooks:
+      type: object
+      properties:
+        hookedOperations:
+          $ref: '#/components/schemas/VaultHookedOperations'
+        hookTarget:
+          type: string
+    OraclePriceRaw:
+      type: object
+      description: Exact oracle quote values returned by contracts, represented as raw integer strings in the oracle unit-of-account scale.
+      properties:
+        queryFailure:
+          type: boolean
+        queryFailureReason:
+          type: string
+        amountIn:
+          type: string
+          description: Raw input amount passed to the oracle.
+        amountOutMid:
+          type: string
+          description: Raw midpoint oracle output amount.
+        amountOutBid:
+          type: string
+          description: Raw bid-side oracle output amount.
+        amountOutAsk:
+          type: string
+          description: Raw ask-side oracle output amount.
+        timestamp:
+          type: string
+          format: date-time
+    CollateralConfig:
+      type: object
+      description: Current LTV configuration for a collateral vault
+      properties:
+        collateral:
+          type: string
+          description: Collateral vault address
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          description: Vault family for the collateral address
+        collateralName:
+          type: string
+          description: Collateral vault name
+        collateralSymbol:
+          type: string
+          description: Collateral vault symbol
+        asset:
+          type: string
+          description: Underlying asset address of the collateral vault
+        assetSymbol:
+          type: string
+          description: Underlying asset symbol
+        assetDecimals:
+          type: integer
+          description: Underlying asset decimals
+        borrowLTV:
+          type: string
+          description: Maximum LTV for borrowing (basis points as string, e.g., "8500" = 85%)
+        liquidationLTV:
+          type: string
+          description: LTV at which liquidation can occur (basis points as string)
+        initialLiquidationLTV:
+          type: string
+          description: Initial liquidation LTV before ramping
+        targetTimestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO timestamp when LTV ramp completes
+        rampDuration:
+          type: integer
+          description: Duration of LTV ramp in seconds
+    VaultDetailsWithIncludes:
+      allOf:
+      - $ref: '#/components/schemas/VaultDetails'
+      - type: object
+        properties:
+          collaterals:
+            type: array
+            items:
+              $ref: '#/components/schemas/VaultCollateralDetail'
+            nullable: true
+          apy:
+            allOf:
+            - $ref: '#/components/schemas/VaultApy'
+            nullable: true
+          totals:
+            allOf:
+            - $ref: '#/components/schemas/VaultTotals'
+            nullable: true
+          prices:
+            allOf:
+            - $ref: '#/components/schemas/VaultIncludePrices'
+            nullable: true
+    SubAccount:
+      type: object
+      required:
+      - chainId
+      - owner
+      - addressPrefix
+      - blockNumber
+      - timestamp
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        addressPrefix:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    OracleInfo:
+      type: object
+      properties:
+        oracle:
+          type: string
+        name:
+          type: string
+        detailedInfo:
+          $ref: '#/components/schemas/OracleDetailedInfo'
+        adapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/OracleAdapterEntry'
+        resolvedVaults:
+          type: array
+          items:
+            $ref: '#/components/schemas/OracleResolvedVault'
+    CapHistoryItem:
+      type: object
+      description: Historical cap configuration change
+      properties:
+        supplyCap:
+          type: string
+          description: Resolved supply cap as a bigint string in underlying asset units.
+        borrowCap:
+          type: string
+          description: Resolved borrow cap as a bigint string in underlying asset units.
+        blockNumber:
+          type: string
+          description: Block number of the change
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the change
+        txHash:
+          type: string
+          description: Transaction hash
+        logIndex:
+          type: integer
+          description: Log index within the transaction receipt.
+    CollateralConfigWithPrice:
+      allOf:
+      - $ref: '#/components/schemas/CollateralConfig'
+      - type: object
+        properties:
+          price:
+            allOf:
+            - $ref: '#/components/schemas/Price'
+            nullable: true
+    OracleAdapterPythDetail:
+      type: object
+      properties:
+        pyth:
+          type: string
+        base:
+          type: string
+        quote:
+          type: string
+        feedId:
+          type: string
+        maxStaleness:
+          type: string
+        maxConfWidth:
+          type: string
+    IrmHistoryItem:
+      type: object
+      description: Historical interest rate model change
+      properties:
+        interestRateModel:
+          type: string
+          description: Interest rate model contract address
+        blockNumber:
+          type: string
+          description: Block number of the change
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the change
+        txHash:
+          type: string
+          description: Transaction hash
+        logIndex:
+          type: integer
+          description: Log index within the transaction receipt.
+    VaultLiquidation:
+      type: object
+      properties:
+        maxLiquidationDiscount:
+          type: number
+        liquidationCoolOffTime:
+          type: integer
+        socializeDebt:
+          type: boolean
+    VaultTotalsMeta:
+      allOf:
+      - $ref: '#/components/schemas/VaultApyMeta'
+      - type: object
+        properties:
+          note:
+            type: string
+    VaultPosition:
+      type: object
+      properties:
+        account:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        assetsUsd:
+          type: number
+          nullable: true
+          description: Market USD number computed from `assets` and the token price endpoint.
+        lastUpdatedBlock:
+          type: string
+    VaultTotalsPoint:
+      type: object
+      properties:
+        totalAssets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        totalBorrows:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        cash:
+          type: string
+          nullable: true
+          description: Raw cash amount as a bigint string.
+        utilization:
+          type: number
+          nullable: true
+          description: Utilization ratio number.
+        supplyApy:
+          type: number
+          nullable: true
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          nullable: true
+          description: Public borrow APY as a percent number.
+        timestamp:
+          type: string
+          format: date-time
+    VaultFees:
+      type: object
+      properties:
+        interestFee:
+          type: number
+          description: Interest fee ratio number.
+        accumulatedFeesShares:
+          type: string
+          description: Raw accumulated fee shares as a bigint string.
+        accumulatedFeesAssets:
+          type: string
+          description: Raw accumulated fee assets as a bigint string.
+        governorFeeReceiver:
+          type: string
+        protocolFeeReceiver:
+          type: string
+        protocolFeeShare:
+          type: number
+          description: Protocol fee share ratio number.
+    VaultDetails:
+      allOf:
+      - $ref: '#/components/schemas/Vault'
+      - type: object
+        properties:
+          dToken:
+            type: string
+          oracle:
+            $ref: '#/components/schemas/OracleInfo'
+          unitOfAccount:
+            $ref: '#/components/schemas/AssetRef'
+          creator:
+            type: string
+          governor:
+            type: string
+            description: Latest governor admin if available; falls back to creator.
+          governorAdmin:
+            type: string
+            description: Latest governor admin if available; falls back to creator.
+          supplyCap:
+            type: string
+            description: Resolved supply cap as a bigint string in underlying asset units.
+          borrowCap:
+            type: string
+            description: Resolved borrow cap as a bigint string in underlying asset units.
+          totalShares:
+            type: string
+            description: Raw vault share supply as a bigint string.
+          totalBorrowed:
+            type: string
+            description: Raw borrowed asset amount as a bigint string.
+          totalCash:
+            type: string
+            description: Raw cash amount as a bigint string.
+          cash:
+            type: string
+            description: Raw cash amount as a bigint string.
+          interestRate:
+            type: string
+            description: Raw contract interest-rate value as a bigint string.
+          interestAccumulator:
+            type: string
+            description: Raw contract interest accumulator as a bigint string.
+          accumulatedFees:
+            type: string
+            description: Raw accumulated fee amount as a bigint string.
+          balanceTracker:
+            type: string
+          fees:
+            $ref: '#/components/schemas/VaultFees'
+          hooks:
+            $ref: '#/components/schemas/VaultHooks'
+          caps:
+            $ref: '#/components/schemas/VaultCaps'
+          liquidation:
+            $ref: '#/components/schemas/VaultLiquidation'
+          interestRates:
+            $ref: '#/components/schemas/VaultInterestRates'
+          interestRateModel:
+            $ref: '#/components/schemas/VaultInterestRateModel'
+          evcCompatibleAsset:
+            type: boolean
+          oraclePriceRaw:
+            $ref: '#/components/schemas/OraclePriceRaw'
+          timestamp:
+            type: string
+            format: date-time
+          exchangeRate:
+            type: string
+            nullable: true
+            description: Raw exchange rate as a bigint string.
+          createdAtBlock:
+            type: string
+            description: Block number as a bigint string.
+    EvkVaultBatchMeta:
+      type: object
+      properties:
+        count:
+          type: integer
+        requested:
+          type: integer
+        notFound:
+          type: array
+          items:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+    LtvHistoryItem:
+      type: object
+      description: Historical LTV configuration change
+      properties:
+        collateral:
+          type: string
+          description: Collateral vault address
+        borrowLTV:
+          type: string
+          description: Borrow LTV (basis points as string)
+        liquidationLTV:
+          type: string
+          description: Liquidation LTV (basis points as string)
+        initialLiquidationLTV:
+          type: string
+          description: Initial liquidation LTV before ramping
+        borrowLtv:
+          type: number
+          description: Legacy decimal alias for `borrowLTV`.
+        liquidationLtv:
+          type: number
+          description: Legacy decimal alias for `liquidationLTV`.
+        initialLiquidationLtv:
+          type: number
+          description: Legacy decimal alias for `initialLiquidationLTV`.
+        targetTimestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO timestamp when LTV ramp completes
+        rampDuration:
+          type: integer
+          description: Duration of LTV ramp in seconds
+        blockNumber:
+          type: string
+          description: Block number of the change
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the change
+        txHash:
+          type: string
+          description: Transaction hash
+        logIndex:
+          type: integer
+          description: Log index within the transaction receipt.
+    VaultInterestRateModel:
+      type: object
+      properties:
+        address:
+          type: string
+        type:
+          type: string
+          enum:
+          - unknown
+          - kink
+          - adaptive_curve
+          - kinky
+          - fixed_cyclical_binary
+          - fixed_cyclical_binary_monthly
+        data:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+    VaultVisibility:
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - status
+      - checks
+      - source
+      - evaluatedAt
+      properties:
+        chainId:
+          type: integer
+        vaultAddress:
+          type: string
+        status:
+          type: string
+          enum:
+          - visible
+          - warning
+          - hidden
+          - pending_review
+        checks:
+          type: object
+          additionalProperties: true
+        source:
+          type: string
+        evaluatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    VaultHookedOperations:
+      type: object
+      properties:
+        deposit:
+          type: boolean
+        mint:
+          type: boolean
+        withdraw:
+          type: boolean
+        redeem:
+          type: boolean
+        transfer:
+          type: boolean
+        skim:
+          type: boolean
+        borrow:
+          type: boolean
+        repay:
+          type: boolean
+        repayWithShares:
+          type: boolean
+        pullDebt:
+          type: boolean
+        convertFees:
+          type: boolean
+        liquidate:
+          type: boolean
+        flashloan:
+          type: boolean
+        touch:
+          type: boolean
+        vaultStatusCheck:
+          type: boolean
+    OracleResolvedVault:
+      type: object
+      properties:
+        vault:
+          type: string
+        quote:
+          type: string
+        asset:
+          type: string
+        resolvedAssets:
+          type: array
+          items:
+            type: string
+    VaultTotalsFreshness:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+          - fresh
+          - cached
+        forceFreshRequested:
+          type: boolean
+        refreshTriggered:
+          type: boolean
+        refreshCompleted:
+          type: boolean
+        timedOut:
+          type: boolean
+        rateLimited:
+          type: boolean
+        fallbackReason:
+          type: string
+          nullable: true
+        waitedMs:
+          type: integer
+        latestSnapshotTimestamp:
+          type: string
+          format: date-time
+        ageSeconds:
+          type: integer
+    OracleDetailedInfo:
+      type: object
+      properties:
+        oracle:
+          type: string
+        name:
+          type: string
+        oracleInfo:
+          type: string
+    PublicVaultLabel:
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - displayName
+      - updatedAt
+      properties:
+        chainId:
+          type: integer
+        vaultAddress:
+          type: string
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]+$
+          description: Plain text only; clients must render as text, not HTML or Markdown.
+        description:
+          type: string
+          nullable: true
+          maxLength: 1024
+          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F<>]*$
+          description: Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed.
+        productCategory:
+          type: string
+          nullable: true
+          maxLength: 120
+          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]*$
+          description: Plain text only; clients must render as text, not HTML or Markdown.
+        riskTier:
+          type: string
+          nullable: true
+          maxLength: 64
+          pattern: ^[^\u0000-\u001F\u007F-\u009F<>]*$
+          description: Plain text only; clients must render as text, not HTML or Markdown.
+        strategyDescription:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F<>]*$
+          description: Plain text only; clients must render as text, not HTML or Markdown. Tabs and line breaks are allowed.
+        updatedAt:
+          type: string
+          format: date-time
+    EvkVaultBatchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultDetailsWithIncludes'
+        meta:
+          $ref: '#/components/schemas/EvkVaultBatchMeta'
+    VaultApyPoint:
+      type: object
+      properties:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          description: Percent number with 6 decimal places.
+        timestamp:
+          type: string
+          format: date-time
+    EvkVaultBatchRequest:
+      type: object
+      required:
+      - chainId
+      - addresses
+      properties:
+        chainId:
+          type: integer
+        addresses:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: string
+            maxLength: 42
+          description: Ordered list of EVK vault addresses to fetch.
+        include:
+          type: array
+          items:
+            type: string
+            enum:
+            - collaterals
+          description: Optional related resources to expand for every returned vault.
+    Price:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        blockNumber:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    ConfigHistoryItem:
+      type: object
+      description: Generic configuration change event
+      properties:
+        type:
+          type: string
+          enum:
+          - caps
+          - ltv
+          - irm
+          - governor
+          - feeReceiver
+          - hookConfig
+          - interestFee
+          - configFlags
+          description: Type of configuration change
+        data:
+          type: object
+          additionalProperties: true
+          description: The configuration values that changed (varies by type). For `ltv` events, canonical basis-point string fields such as `borrowLTV` may be accompanied by legacy decimal aliases.
+        blockNumber:
+          type: string
+          description: Block number of the change
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the change
+        txHash:
+          type: string
+          description: Transaction hash
+        logIndex:
+          type: integer
+          description: Log index within the transaction receipt.
+    VaultTotals:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultTotalsPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultTotalsPoint'
   parameters:
-    SortParam:
-      name: sort
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Sort field, prefix with '-' for descending.
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
     OffsetParam:
       name: offset
       in: query
@@ -2281,13 +2327,36 @@ components:
       schema:
         type: integer
         default: 0
-    ToParam:
-      name: to
+    FromParam:
+      name: from
       in: query
       required: false
       schema:
         type: integer
       description: Unix timestamp (seconds).
+    IncludeParam:
+      name: include
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of related resources to expand. Unknown values are ignored.
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Sort field, prefix with '-' for descending.
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
     AddressPath:
       name: address
       in: path
@@ -2302,22 +2371,19 @@ components:
         type: string
       description: Comma-separated list of chain IDs (single value allowed).
       example: 1,10,8453
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    FromParam:
-      name: from
+    ToParam:
+      name: to
       in: query
       required: false
       schema:
         type: integer
       description: Unix timestamp (seconds).
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
     FieldsParam:
       name: fields
       in: query
@@ -2325,79 +2391,13 @@ components:
       schema:
         type: string
       description: Comma-separated list of fields to include.
-    IncludeParam:
-      name: include
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of related resources to expand. Unknown values are ignored.
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error429:
-      description: Rate limited
-      headers:
-        Retry-After:
-          description: Seconds until next request is allowed.
-          schema:
-            type: integer
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
     Cache-Control:
       description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
       schema:
         type: string
   securitySchemes:

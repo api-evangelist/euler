@@ -677,6 +677,24 @@ paths:
       operationId: getAdminApiKeysByIdUsage
 components:
   responses:
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Error400:
       description: Bad request
       headers:
@@ -695,35 +713,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error415:
-      description: Unsupported media type
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     Error401:
       description: Unauthorized
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -740,12 +731,88 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    ApiKeyCreateResponse:
+      type: object
+      required:
+      - message
+      - key
+      - keyPrefix
+      - id
+      - name
+      - keyType
+      - rateLimit
+      properties:
+        message:
+          type: string
+        key:
+          type: string
+        keyPrefix:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        keyType:
+          type: string
+          enum:
+          - standard
+          - curator
+        scopeMode:
+          type: string
+          enum:
+          - all_vaults
+          - allowlist
+          nullable: true
+        vaultAllowlist:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - vaultAddress
+            properties:
+              chainId:
+                type: integer
+              vaultAddress:
+                type: string
+        rateLimit:
+          type: integer
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    PlatformAdminAccessRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - googleEmail
+      properties:
+        googleEmail:
+          type: string
+          format: email
+          description: Google Workspace email address to grant or revoke.
+    PlatformAdminRevokeAccessResult:
+      type: object
+      required:
+      - admin
+      - state
+      properties:
+        admin:
+          $ref: '#/components/schemas/PlatformAdminAccess'
+        state:
+          type: string
+          enum:
+          - revoked
     PaginationMeta:
       type: object
       required:
@@ -768,55 +835,6 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    ApiKeyUsageResponse:
-      type: object
-      required:
-      - period
-      - summary
-      - endpoints
-      properties:
-        period:
-          type: object
-          required:
-          - days
-          - since
-          properties:
-            days:
-              type: integer
-            since:
-              type: string
-              format: date-time
-        summary:
-          type: object
-          required:
-          - totalRequests
-          - avgResponseTimeMs
-          - errorCount
-          properties:
-            totalRequests:
-              type: integer
-            avgResponseTimeMs:
-              type: integer
-            errorCount:
-              type: integer
-        endpoints:
-          type: array
-          items:
-            type: object
-            required:
-            - endpoint
-            - method
-            - count
-            - avgResponseTime
-            properties:
-              endpoint:
-                type: string
-              method:
-                type: string
-              count:
-                type: integer
-              avgResponseTime:
-                type: integer
     ApiKeyCreateRequest:
       type: object
       required:
@@ -911,51 +929,56 @@ components:
           type: string
           format: date-time
           nullable: true
-    PlatformAdminAccess:
+    ApiKeyUsageResponse:
       type: object
       required:
-      - id
-      - googleEmail
-      - createdAt
-      - revokedAt
+      - period
+      - summary
+      - endpoints
       properties:
-        id:
-          type: string
-          format: uuid
-        googleEmail:
-          type: string
-          format: email
-        createdAt:
-          type: string
-          format: date-time
-        revokedAt:
-          type: string
-          format: date-time
-          nullable: true
-    PlatformAuthSession:
-      type: object
-      required:
-      - platformAdminId
-      - googleEmail
-      - googleSubject
-      - active
-      - expiresAt
-      properties:
-        platformAdminId:
-          type: string
-          format: uuid
-        googleEmail:
-          type: string
-          format: email
-        googleSubject:
-          type: string
-        active:
-          type: boolean
-          const: true
-        expiresAt:
-          type: string
-          format: date-time
-    PlatformAdminRevokeAccessResult:
+        period:
+          type: object
+          required:
+          - days
+          - since
+          properties:
+            days:
+              type: integer
+            since:
+              type: string
+              format: date-time
+        summary:
+          type: object
+          required:
+          - totalRequests
+          - avgResponseTimeMs
+          - errorCount
+          properties:
+            totalRequests:
+              type: integer
+            avgResponseTimeMs:
+              type: integer
+            errorCount:
+              type: integer
+        endpoints:
+          type: array
+          items:
+            type: object
+            required:
+            - endpoint
+            - method
+            - count
+            - avgResponseTime
+            properties:
+              endpoint:
+                type: string
+              method:
+                type: string
+              count:
+                type: integer
+              avgResponseTime:
+                type: integer
+    PlatformAdminCreateAccessResult:
       type: object
       required:
       - admin
@@ -966,7 +989,8 @@ components:
         state:
           type: string
           enum:
-          - revoked
+          - created
+          - reactivated
     ErrorResponse:
       type: object
       required:
@@ -1013,79 +1037,55 @@ components:
             details:
               type: object
               additionalProperties: true
-    PlatformAdminAccessRequest:
+    PlatformAuthSession:
       type: object
-      additionalProperties: false
       required:
+      - platformAdminId
       - googleEmail
+      - googleSubject
+      - active
+      - expiresAt
       properties:
+        platformAdminId:
+          type: string
+          format: uuid
         googleEmail:
           type: string
           format: email
-          description: Google Workspace email address to grant or revoke.
-    ApiKeyCreateResponse:
-      type: object
-      required:
-      - message
-      - key
-      - keyPrefix
-      - id
-      - name
-      - keyType
-      - rateLimit
-      properties:
-        message:
+        googleSubject:
           type: string
-        key:
-          type: string
-        keyPrefix:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        keyType:
-          type: string
-          enum:
-          - standard
-          - curator
-        scopeMode:
-          type: string
-          enum:
-          - all_vaults
-          - allowlist
-          nullable: true
-        vaultAllowlist:
-          type: array
-          items:
-            type: object
-            required:
-            - chainId
-            - vaultAddress
-            properties:
-              chainId:
-                type: integer
-              vaultAddress:
-                type: string
-        rateLimit:
-          type: integer
+        active:
+          type: boolean
+          const: true
         expiresAt:
           type: string
           format: date-time
-          nullable: true
-    PlatformAdminCreateAccessResult:
+    PlatformAdminAccess:
       type: object
       required:
-      - admin
-      - state
+      - id
+      - googleEmail
+      - createdAt
+      - revokedAt
       properties:
-        admin:
-          $ref: '#/components/schemas/PlatformAdminAccess'
-        state:
+        id:
           type: string
-          enum:
-          - created
-          - reactivated
+          format: uuid
+        googleEmail:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

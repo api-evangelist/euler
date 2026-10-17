@@ -143,13 +143,13 @@ paths:
       operationId: getApysIntrinsicHistory
 components:
   parameters:
-    SortParam:
-      name: sort
+    EndTimestampParam:
+      name: endTimestamp
       in: query
       required: false
       schema:
-        type: string
-      description: Sort field, prefix with '-' for descending.
+        type: integer
+      description: End of time range (unix seconds).
     StartTimestampParam:
       name: startTimestamp
       in: query
@@ -172,13 +172,6 @@ components:
         type: string
       description: Comma-separated list of chain IDs (single value allowed).
       example: 1,10,8453
-    EndTimestampParam:
-      name: endTimestamp
-      in: query
-      required: false
-      schema:
-        type: integer
-      description: End of time range (unix seconds).
     LimitParam:
       name: limit
       in: query
@@ -194,12 +187,6 @@ components:
       required: true
       schema:
         type: integer
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
     FieldsParam:
       name: fields
       in: query
@@ -207,16 +194,29 @@ components:
       schema:
         type: string
       description: Comma-separated list of fields to include.
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Sort field, prefix with '-' for descending.
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
   schemas:
-    VaultApy:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultApyPoint'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/VaultApyPoint'
     IntrinsicApy:
       type: object
       properties:
@@ -233,27 +233,6 @@ components:
           type: string
         source:
           type: string
-        timestamp:
-          type: string
-          format: date-time
-    VaultApyMeta:
-      type: object
-      properties:
-        chainId:
-          type: string
-        vault:
-          type: string
-        resolution:
-          type: string
-          enum:
-          - 1h
-          - 1d
-        startTimestamp:
-          type: string
-          format: date-time
-        endTimestamp:
-          type: string
-          format: date-time
         timestamp:
           type: string
           format: date-time
@@ -294,6 +273,19 @@ components:
         timestamp:
           type: string
           format: date-time
+    VaultApyPoint:
+      type: object
+      properties:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          description: Percent number with 6 decimal places.
+        timestamp:
+          type: string
+          format: date-time
     PaginationMeta:
       type: object
       required:
@@ -316,28 +308,36 @@ components:
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    VaultApyPoint:
+    VaultApyMeta:
       type: object
       properties:
-        supplyApy:
-          type: number
-          nullable: true
-          description: Percent number with 6 decimal places.
-        borrowApy:
-          type: number
-          description: Percent number with 6 decimal places.
+        chainId:
+          type: string
+        vault:
+          type: string
+        resolution:
+          type: string
+          enum:
+          - 1h
+          - 1d
+        startTimestamp:
+          type: string
+          format: date-time
+        endTimestamp:
+          type: string
+          format: date-time
         timestamp:
           type: string
           format: date-time
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
+    VaultApy:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultApyPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultApyPoint'
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
