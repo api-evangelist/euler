@@ -1,0 +1,376 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Prices API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Prices
+  description: Current and historical token prices. Prices follow v3 source priority rules and return the canonical merged value rather than exposing raw provider-specific reads by default.
+paths:
+  /v3/tokens/{chainId}/{address}/price:
+    get:
+      tags:
+      - Prices
+      summary: Token price
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: Token price
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Price'
+                  meta:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getTokensByChainIdByAddressPrice
+  /v3/prices:
+    get:
+      tags:
+      - Prices
+      summary: Batch prices for tokens
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - $ref: '#/components/parameters/ChainIdParam'
+      - name: addresses
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Comma-separated token addresses (max 100).
+      - name: assets
+        in: query
+        required: false
+        deprecated: true
+        schema:
+          type: string
+        description: Deprecated alias for `addresses`.
+      responses:
+        '200':
+          description: Prices
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Price'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getPrices
+  /v3/prices/history:
+    get:
+      tags:
+      - Prices
+      summary: Historical prices
+      description: 'Historical prices for explicit token addresses over a bounded time range.
+
+        Required query params: `chainId`, `addresses`, `from`, `to`.
+
+        Maximum allowed window is 30 days per request.'
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - name: chainId
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: addresses
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Comma-separated token addresses.
+      - name: assets
+        in: query
+        required: false
+        deprecated: true
+        schema:
+          type: string
+        description: Deprecated alias for `addresses`.
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Inclusive start of the history window as a unix timestamp in seconds (UTC).
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Inclusive end of the history window as a unix timestamp in seconds (UTC).
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Historical prices
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Price'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getPricesHistory
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    Price:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
+          type: string
+        confidence:
+          type: number
+          nullable: true
+        blockNumber:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+  responses:
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

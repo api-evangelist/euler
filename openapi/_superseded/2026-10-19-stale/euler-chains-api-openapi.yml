@@ -1,0 +1,209 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Chains API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Chains
+  description: Chain inventory and per-chain protocol summaries. These replace ad-hoc chain-level aggregates from legacy APIs with explicit, cacheable resources.
+paths:
+  /v3/chains:
+    get:
+      tags:
+      - Chains
+      summary: List supported chains
+      x-status: implemented
+      x-cache-ttl: 300
+      responses:
+        '200':
+          description: Chains
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chain'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChains
+  /v3/chains/{chainId}/stats:
+    get:
+      tags:
+      - Chains
+      summary: Chain-level stats
+      description: Returns chain-scoped EVK lending aggregates. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`.
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      responses:
+        '200':
+          description: Chain stats
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChainStats'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChainsByChainIdStats
+  /v3/chains/{chainId}/borrowable-vaults:
+    get:
+      tags:
+      - Chains
+      summary: Borrowable vaults for a chain
+      deprecated: true
+      description: Legacy location for this collection.
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      responses:
+        '200':
+          description: Borrowable vaults
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getChainsByChainIdBorrowableVaults
+components:
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+  schemas:
+    ChainStats:
+      allOf:
+      - $ref: '#/components/schemas/ProtocolStats'
+      - type: object
+        required:
+        - chainId
+        properties:
+          chainId:
+            type: integer
+            description: Chain ID for the returned chain-scoped aggregate.
+    ProtocolStats:
+      type: object
+      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
+      properties:
+        totalSuppliedUsd:
+          type: number
+          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
+        totalBorrowedUsd:
+          type: number
+          description: Total EVK lending borrows in USD across the selected chains.
+        earnTotalAssetsUsd:
+          type: number
+          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
+        utilization:
+          type: number
+          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
+        vaultCount:
+          type: integer
+        chainCount:
+          type: integer
+    Chain:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          nullable: true
+          description: Optional chain health status.
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+  parameters:
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

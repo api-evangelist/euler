@@ -1,0 +1,926 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Accounts API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Accounts
+  description: Account activity, discovered positions, and sub-account relationships. Legacy nested account payloads are flattened into account-vault rows in v3.
+paths:
+  /v3/accounts/{address}/portfolio:
+    get:
+      tags:
+      - Accounts
+      summary: Account portfolio
+      description: 'Returns a position-first portfolio view for an owner on a single chain.
+
+        The backend builds SDK Account and Portfolio entities from internal V3
+
+        account, vault, price, and label data sources; it does not recursively
+
+        call `/v3/accounts/{address}/positions`. When `forceFresh=true`, the
+
+        endpoint enqueues or promotes account snapshot refresh work and waits
+
+        briefly for refreshed snapshots before falling back to the current
+
+        indexed portfolio view. Freshness metadata indicates whether the refresh
+
+        completed, timed out, or was rate-limited.'
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/AddressPath'
+      - name: chainId
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Chain ID. Exactly one chain is required.
+      - name: labeledVaultsOnly
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Filter positions to the product-facing labeled vault universe.
+      - name: includeAccount
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Include the backing SDK account-shaped payload for debugging and migration.
+      - name: forceFresh
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'When true, enqueue or promote account snapshot refresh for discovered tuples.
+
+          The endpoint waits briefly for refreshed snapshots before falling back to
+
+          the current indexed portfolio view. Inspect `data.freshness` for completion,
+
+          timeout, rate-limit, and fallback metadata.
+
+          '
+      responses:
+        '200':
+          description: Account portfolio
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AccountPortfolioResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+      operationId: getAccountsByAddressPortfolio
+  /v3/accounts/{address}/positions:
+    get:
+      tags:
+      - Accounts
+      summary: Account positions across chains
+      description: 'Returns paginated account positions across the selected chain scope.
+
+        Uses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.'
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/AddressPath'
+      - $ref: '#/components/parameters/ChainIdParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - name: forceFresh
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'When true, trigger bounded synchronous account snapshot refresh for the returned tuples.
+
+          On timeout/failure, response safely falls back to stored snapshots and indicates cached mode in freshness metadata.
+
+          '
+      responses:
+        '200':
+          description: Account positions
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountPosition'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  freshness:
+                    type: object
+                    properties:
+                      latestSnapshotTimestamp:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      ageSeconds:
+                        type: integer
+                        nullable: true
+                      timestamp:
+                        type: string
+                        format: date-time
+                      mode:
+                        type: string
+                        enum:
+                        - fresh
+                        - cached
+                      forceFreshRequested:
+                        type: boolean
+                      refreshTriggered:
+                        type: boolean
+                      refreshCompleted:
+                        type: boolean
+                      timedOut:
+                        type: boolean
+                      rateLimited:
+                        type: boolean
+                      fallbackReason:
+                        type: string
+                        nullable: true
+                      waitedMs:
+                        type: integer
+      operationId: getAccountsByAddressPositions
+  /v3/accounts/{address}/activity:
+    get:
+      tags:
+      - Accounts
+      summary: Account vault activity discovery
+      description: 'Discovers vault tuples an account interacts with (shares and/or controller-enabled debt),
+
+        including sub-accounts when available.
+
+        Uses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.'
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/AddressPath'
+      - $ref: '#/components/parameters/ChainIdParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Account activity
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountActivity'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getAccountsByAddressActivity
+  /v3/accounts/{address}/sub-accounts:
+    get:
+      tags:
+      - Accounts
+      summary: Sub-accounts for an EVC-enabled account
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/AddressPath'
+      - name: chainId
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Comma-separated list of chain IDs (single value allowed).
+        example: '1'
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Sub-accounts
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubAccount'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getAccountsByAddressSubAccounts
+components:
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    SerializedPortfolioAccountPosition:
+      type: object
+      properties:
+        account:
+          type: string
+        vaultAddress:
+          type: string
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        asset:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        borrowed:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        isController:
+          type: boolean
+        isCollateral:
+          type: boolean
+        balanceForwarderEnabled:
+          type: boolean
+        marketPriceUsd:
+          type: number
+          description: Market USD price number for this position's asset.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this supplied position.
+        borrowedValueUsd:
+          type: number
+          description: Market USD value number for this borrowed position.
+        liquidity:
+          $ref: '#/components/schemas/AccountPositionLiquidity'
+        borrowLiquidationPriceUsd:
+          type: number
+          description: Borrow liquidation price in USD.
+        collateralLiquidationPricesUsd:
+          type: object
+          description: Liquidation prices in USD keyed by collateral address.
+          additionalProperties:
+            type: number
+    AccountActivity:
+      type: object
+      properties:
+        type:
+          type: string
+        chainId:
+          type: integer
+        vault:
+          type: string
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        txHash:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    AccountPosition:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        account:
+          type: string
+        vault:
+          type: string
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+        asset:
+          type: string
+          nullable: true
+        shares:
+          type: string
+          nullable: true
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          nullable: true
+          description: Raw underlying asset amount as a bigint string.
+        borrowed:
+          type: string
+          nullable: true
+          description: Raw borrowed asset amount as a bigint string.
+        assetsValue:
+          type: string
+          nullable: true
+          description: Contract-derived account-liquidity asset value, raw 18-decimal bigint string.
+        debtValue:
+          type: string
+          nullable: true
+          description: Contract-derived account-liquidity debt value, raw 18-decimal bigint string.
+        isCollateral:
+          type: boolean
+          nullable: true
+        balanceForwarderEnabled:
+          type: boolean
+          nullable: true
+        isController:
+          type: boolean
+          nullable: true
+        liquidity:
+          $ref: '#/components/schemas/AccountPositionLiquidity'
+        subAccount:
+          type: object
+          nullable: true
+          properties:
+            owner:
+              type: string
+              nullable: true
+            timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            lastAccountStatusCheckTimestamp:
+              type: string
+              format: date-time
+              nullable: true
+            enabledControllers:
+              type: array
+              nullable: true
+              items:
+                type: string
+            enabledCollaterals:
+              type: array
+              nullable: true
+              items:
+                type: string
+            isLockdownMode:
+              type: boolean
+              nullable: true
+            isPermitDisabledMode:
+              type: boolean
+              nullable: true
+        snapshot:
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            ageSeconds:
+              type: integer
+              nullable: true
+            source:
+              type: string
+              nullable: true
+            method:
+              type: string
+              nullable: true
+    AccountPortfolioResponse:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        portfolio:
+          type: object
+          properties:
+            savings:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            borrows:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioBorrowPosition'
+            positions:
+              type: array
+              items:
+                $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+            managedLending:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            directLending:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            totals:
+              type: object
+              properties:
+                suppliedValueUsd:
+                  type: number
+                  description: Market USD number for total supplied value.
+                borrowedValueUsd:
+                  type: number
+                  description: Market USD number for total borrowed value.
+                netAssetValueUsd:
+                  type: number
+                  description: Market USD number for supplied minus borrowed value.
+                netApy:
+                  type: number
+                  description: Public net APY as a percent number.
+                roe:
+                  type: number
+                  description: Return-on-equity ratio number.
+                apyBreakdown:
+                  $ref: '#/components/schemas/YieldApyBreakdown'
+                roeBreakdown:
+                  $ref: '#/components/schemas/YieldApyBreakdown'
+        account:
+          type: object
+          nullable: true
+          additionalProperties: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIssue'
+        freshness:
+          type: object
+          properties:
+            latestSnapshotTimestamp:
+              type: integer
+              nullable: true
+            ageSeconds:
+              type: integer
+              nullable: true
+            timestamp:
+              type: string
+              format: date-time
+            mode:
+              type: string
+              enum:
+              - fresh
+              - cached
+            forceFreshRequested:
+              type: boolean
+            refreshTriggered:
+              type: boolean
+            refreshCompleted:
+              type: boolean
+            timedOut:
+              type: boolean
+            rateLimited:
+              type: boolean
+            fallbackReason:
+              type: string
+              nullable: true
+            waitedMs:
+              type: integer
+    AccountPositionLiquidity:
+      type: object
+      nullable: true
+      properties:
+        vaultAddress:
+          type: string
+        unitOfAccount:
+          type: string
+        daysToLiquidation:
+          oneOf:
+          - type: integer
+          - type: string
+            enum:
+            - Infinity
+            - MoreThanAYear
+        liabilityValue:
+          $ref: '#/components/schemas/AccountLiquidityValue'
+        totalCollateralValue:
+          $ref: '#/components/schemas/AccountLiquidityValue'
+        collaterals:
+          type: array
+          items:
+            type: object
+            properties:
+              address:
+                type: string
+              value:
+                $ref: '#/components/schemas/AccountLiquidityValue'
+              marketPriceUsd:
+                type: number
+                description: Market USD price number for the collateral asset.
+              valueUsd:
+                type: number
+                description: Market USD value number for this collateral.
+        liabilityValueUsd:
+          type: number
+          description: Market USD liability value number.
+        totalCollateralValueUsd:
+          type: number
+          description: Market USD collateral value number.
+    YieldApyBreakdown:
+      type: object
+      properties:
+        lending:
+          type: number
+          description: Lending APY contribution as a percent number.
+        borrowing:
+          type: number
+          description: Borrowing APY contribution as a percent number.
+        rewards:
+          type: number
+          description: Rewards APY contribution as a percent number.
+        intrinsicApy:
+          type: number
+          description: Intrinsic APY contribution as a percent number.
+        total:
+          type: number
+          description: Total APY as a percent number.
+    PortfolioSavingsPosition:
+      type: object
+      properties:
+        position:
+          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        subAccount:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this savings position.
+        apy:
+          type: number
+          description: Public APY as a percent number.
+        apyBreakdown:
+          $ref: '#/components/schemas/YieldApyBreakdown'
+    SubAccount:
+      type: object
+      required:
+      - chainId
+      - owner
+      - addressPrefix
+      - blockNumber
+      - timestamp
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        addressPrefix:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    AccountLiquidityValue:
+      type: object
+      description: Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.
+      properties:
+        borrowing:
+          type: string
+          description: Borrowing value, raw 18-decimal bigint string.
+        liquidation:
+          type: string
+          description: Liquidation value, raw 18-decimal bigint string.
+        oracleMid:
+          type: string
+          description: Oracle midpoint value, raw 18-decimal bigint string.
+    DataIssue:
+      type: object
+      properties:
+        code:
+          type: string
+        severity:
+          type: string
+          enum:
+          - info
+          - warning
+          - error
+        message:
+          type: string
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: object
+                additionalProperties: true
+              path:
+                type: string
+        source:
+          type: string
+        originalValue: {}
+        normalizedValue: {}
+    SerializedPortfolioVault:
+      type: object
+      properties:
+        address:
+          type: string
+        type:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          - unknown
+        asset:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        shares:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        supplyApy:
+          type: number
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          description: Public borrow APY as a percent number.
+        supplyApy1h:
+          type: number
+          description: One-hour public supply APY as a percent number.
+        strategyCount:
+          type: integer
+    PortfolioBorrowPosition:
+      type: object
+      properties:
+        borrow:
+          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        collaterals:
+          type: array
+          items:
+            $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        collateral:
+          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        borrowVault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        collateralVault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        collateralVaults:
+          type: array
+          items:
+            type: string
+        subAccount:
+          type: string
+        healthFactor:
+          type: string
+        userLTV:
+          type: string
+          description: Contract-derived account LTV ratio, raw 18-decimal bigint string.
+        currentLTV:
+          type: string
+          description: Contract-derived current LTV ratio, raw 18-decimal bigint string.
+        borrowed:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        supplied:
+          type: string
+          description: Raw supplied asset amount as a bigint string.
+        price:
+          type: number
+          description: Borrow liquidation price in USD.
+        borrowLiquidationPriceUsd:
+          type: number
+          description: Borrow liquidation price in USD.
+        collateralLiquidationPricesUsd:
+          type: object
+          description: Liquidation prices in USD keyed by collateral address.
+          additionalProperties:
+            type: number
+        borrowLTV:
+          type: number
+          description: Borrow LTV ratio number.
+        liquidationLTV:
+          type: number
+          description: Liquidation LTV ratio number.
+        accountLiquidationLTV:
+          type: number
+          description: Account liquidation LTV ratio number.
+        liabilityValueBorrowing:
+          type: string
+          description: Contract-derived liability value for borrowing, raw 18-decimal bigint string.
+        liabilityValueLiquidation:
+          type: string
+          description: Contract-derived liability value for liquidation, raw 18-decimal bigint string.
+        liabilityValueUsd:
+          type: number
+          description: Market USD liability value number.
+        totalCollateralValueUsd:
+          type: number
+          description: Market USD total collateral value number.
+        collateralValueLiquidation:
+          type: string
+          description: Contract-derived collateral liquidation value, raw 18-decimal bigint string.
+        timeToLiquidation:
+          oneOf:
+          - type: integer
+          - type: string
+            enum:
+            - Infinity
+            - MoreThanAYear
+        multiplier:
+          type: number
+          description: Leverage multiplier ratio number.
+        netApy:
+          type: number
+          description: Public net APY as a percent number.
+        roe:
+          type: number
+          description: Return-on-equity ratio number.
+        apyBreakdown:
+          $ref: '#/components/schemas/YieldApyBreakdown'
+        roeBreakdown:
+          $ref: '#/components/schemas/YieldApyBreakdown'
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

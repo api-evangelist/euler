@@ -2,7 +2,91 @@ openapi: 3.2.0
 info:
   title: Euler Data API (V3) Chains API
   version: 3.0.0
-  description: API specification for Euler Data v3.
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
 servers:
 - url: /
   description: Current environment
@@ -43,8 +127,11 @@ paths:
       tags:
       - Chains
       summary: Chain-level stats
-      description: Returns chain-scoped EVK lending aggregates. `earnTotalAssetsUsd` is reported separately and is not part of `totalSuppliedUsd` or `utilization`.
+      description: 'Returns the chain''s protocol stats under the same rule as `/v3/protocol/stats`: lending totals over the counted EVK, escrow and Securitize vaults, and `earnTotalAssetsUsd` over the counted Earn vaults, reported separately and not part of `totalSuppliedUsd` or `utilization`. `meta.excludedVaults` says which vaults the totals leave out and why. An incomplete chain is omitted from the aggregate, reported in response metadata, and served with `Cache-Control: no-store`.
+
+        Needs the `stats` chain capability; a chain without it answers 404 `CHAIN_CAPABILITY_DISABLED`.'
       x-status: implemented
+      x-chain-capability: stats
       x-cache-ttl: 60
       parameters:
       - $ref: '#/components/parameters/ChainIdPath'
@@ -64,7 +151,9 @@ paths:
                   data:
                     $ref: '#/components/schemas/ChainStats'
                   meta:
-                    $ref: '#/components/schemas/PaginationMeta'
+                    $ref: '#/components/schemas/ProtocolStatsMeta'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
       operationId: getChainsByChainIdStats
   /v3/chains/{chainId}/borrowable-vaults:
     get:
@@ -98,51 +187,15 @@ paths:
                     $ref: '#/components/schemas/PaginationMeta'
       operationId: getChainsByChainIdBorrowableVaults
 components:
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
   schemas:
-    ChainStats:
-      allOf:
-      - $ref: '#/components/schemas/ProtocolStats'
-      - type: object
-        required:
-        - chainId
-        properties:
-          chainId:
-            type: integer
-            description: Chain ID for the returned chain-scoped aggregate.
-    ProtocolStats:
-      type: object
-      description: EVK lending aggregates across the selected chains, with Earn TVL reported separately.
-      properties:
-        totalSuppliedUsd:
-          type: number
-          description: Total EVK lending supply in USD. This is the sum of vault `cash + totalBorrows` valued in USD and excludes Earn vault assets.
-        totalBorrowedUsd:
-          type: number
-          description: Total EVK lending borrows in USD across the selected chains.
-        earnTotalAssetsUsd:
-          type: number
-          description: Total Earn vault assets in USD. Reported separately and not included in `totalSuppliedUsd` or `utilization`.
-        utilization:
-          type: number
-          description: EVK lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
-        vaultCount:
-          type: integer
-        chainCount:
-          type: integer
     Chain:
       type: object
       required:
       - id
       - name
+      - labeling
+      - capabilities
+      - logoURI
       properties:
         id:
           type: integer
@@ -152,6 +205,99 @@ components:
           type: string
           nullable: true
           description: Optional chain health status.
+        labeling:
+          type: boolean
+          description: 'The chain accepts products, vault labels, and geo policies: `capabilities` includes `labels`. A client offers only rows with `labeling: true` in its label pickers. A label write naming a chain without labels answers 422 with a `details.issues[]` entry whose `path` is `["chainId"]`.'
+        capabilities:
+          type: array
+          description: What this deployment runs for the chain. `indexing` (the indexed reads) is always present; a route that needs a capability the chain lacks answers 404 `CHAIN_CAPABILITY_DISABLED` with `details.capability`.
+          items:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+        logoURI:
+          type: string
+          description: Chain logo URL, `/v3/images/chains/{chainId}` on the V3 image host. It depends on the chain id only, so a client can build it for chains this route does not list; keep a bundled logo as the fallback.
+    ProtocolStatsExcludedTotals:
+      type: object
+      required:
+      - vaultCount
+      - suppliedUsd
+      - borrowedUsd
+      - earnTotalAssetsUsd
+      description: USD sums cover only the vaults among them that have a usable price.
+      properties:
+        vaultCount:
+          type: integer
+          minimum: 0
+        suppliedUsd:
+          type: number
+          description: EVK and Securitize supply these vaults would add to `totalSuppliedUsd`.
+        borrowedUsd:
+          type: number
+        earnTotalAssetsUsd:
+          type: number
+          description: Earn assets these vaults would add to `earnTotalAssetsUsd`.
+    ProtocolStatsExcludedVaults:
+      type: object
+      required:
+      - hiddenByLayer1
+      - notShown
+      - notEvaluated
+      - unpriced
+      - stale
+      description: Factory vaults the totals leave out on the included chains, by reason. Only vaults Layer 1 hides carry USD, valued from the same snapshot and price reads as the counted vaults; the others are counted only.
+      properties:
+        hiddenByLayer1:
+          allOf:
+          - $ref: '#/components/schemas/ProtocolStatsExcludedTotals'
+          description: Vaults Layer 1 checks hide (`config-failed`, `config-suspended`, or a failed Layer 1 behind a Layer 2 hide). An escrow or Securitize vault a counted vault accepts as collateral keeps counting even when Layer 1 hides it. A hidden vault without a stored balance snapshot adds no USD.
+        notShown:
+          type: object
+          required:
+          - vaultCount
+          description: 'Vaults the app does not show for any other reason: pending review or unclaimed, hidden by a platform admin or a curator verdict, delisted, or collateral no counted vault accepts.'
+          properties:
+            vaultCount:
+              type: integer
+              minimum: 0
+        notEvaluated:
+          type: object
+          required:
+          - vaultCount
+          description: Vaults without a Layer 1 verdict yet.
+          properties:
+            vaultCount:
+              type: integer
+              minimum: 0
+        unpriced:
+          type: object
+          required:
+          - vaultCount
+          description: Counted vaults holding a balance without a usable price. Their USD is unknown.
+          properties:
+            vaultCount:
+              type: integer
+              minimum: 0
+        stale:
+          type: object
+          required:
+          - vaultCount
+          description: Counted vaults whose balance was read more than 15 minutes ago.
+          properties:
+            vaultCount:
+              type: integer
+              minimum: 0
     PaginationMeta:
       type: object
       required:
@@ -168,12 +314,368 @@ components:
         limit:
           type: integer
           description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
         timestamp:
           type: string
           format: date-time
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    ChainStats:
+      allOf:
+      - $ref: '#/components/schemas/ProtocolStats'
+      - type: object
+        required:
+        - chainId
+        properties:
+          chainId:
+            type: integer
+            description: Chain ID for the returned chain-scoped aggregate.
+    ProtocolStatsMeta:
+      allOf:
+      - $ref: '#/components/schemas/PaginationMeta'
+      - type: object
+        required:
+        - calculationTimestamp
+        - complete
+        - includedChainIds
+        - incompleteChainIds
+        properties:
+          calculationTimestamp:
+            type: string
+            format: date-time
+            description: Time at which chain availability and aggregates were evaluated.
+          complete:
+            type: boolean
+            description: 'True when every chain in the requested scope with a counted vault contributed from fresh source state, with every counted vault''s balance read. A vault without a usable price or with a balance read too long ago does not make its chain incomplete, however much of the chain it holds: it is left out of the totals and counted in `excludedVaults`. A chain is left out only when none of its counted vaults has a fresh balance (`stale_source`).'
+          includedChainIds:
+            type: array
+            items:
+              type: integer
+            description: Requested chains with counted vaults whose values contribute to the returned aggregate.
+          incompleteChainIds:
+            type: array
+            items:
+              type: integer
+            description: Requested chains with incomplete membership, unread balances, or stale source state. A chain with only unread balances may still contribute the vaults it read.
+          incompleteChainReasons:
+            type: array
+            description: Reasons for each incomplete chain in the requested scope. Empty for a complete response.
+            items:
+              type: object
+              required:
+              - chainId
+              - reasons
+              properties:
+                chainId:
+                  type: integer
+                reasons:
+                  type: array
+                  nullable: true
+                  description: 'Null when the cached snapshot lacks reason provenance. `membership`: a counted vault is missing from the indexed inventory. `valuation`: a counted vault''s balance could not be read; the chain still contributes the vaults it read. `stale_source`: none of the chain''s counted vaults has a balance read in the last 15 minutes, priced or not, so nothing on the chain was observed. Every reason but `valuation` leaves the chain out of the totals.'
+                  items:
+                    type: string
+                    enum:
+                    - membership
+                    - valuation
+                    - stale_source
+          excludedVaults:
+            nullable: true
+            description: What the totals leave out and why, summed over the included chains. Null when an included chain's serving snapshot was written before this was recorded.
+            allOf:
+            - $ref: '#/components/schemas/ProtocolStatsExcludedVaults'
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    ProtocolStats:
+      type: object
+      description: Lending aggregates across the selected chains, with Earn TVL reported separately.
+      properties:
+        totalSuppliedUsd:
+          type: number
+          description: 'Total supplied in USD: the `cash + totalBorrows` of every counted EVK vault (escrow vaults included) plus the deposits of every counted Securitize vault (its shares outstanding, one share to one asset), valued in USD. Earn vault assets are excluded.'
+        totalBorrowedUsd:
+          type: number
+          description: Total borrows in USD of the counted EVK vaults, all borrows counted. Securitize and escrow vaults lend nothing.
+        earnTotalAssetsUsd:
+          type: number
+          description: Total assets in USD of every counted Earn vault. Reported separately and not included in `totalSuppliedUsd` or `utilization`, since Earn deposits sit in EVK vaults.
+        utilization:
+          type: number
+          description: Lending utilization, computed as `totalBorrowedUsd / totalSuppliedUsd`. Earn assets are excluded from the denominator.
+        vaultCount:
+          type: integer
+          description: 'The vaults whose value is in the totals: counted EVK, escrow, Securitize and Earn vaults, empty ones included. Vaults left out (not shown, hidden by Layer 1, not evaluated yet, without a usable price, or read too long ago) are not in it.'
+        chainCount:
+          type: integer
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   parameters:
     ChainIdPath:
       name: chainId
@@ -181,6 +683,25 @@ components:
       required: true
       schema:
         type: integer
+  responses:
+    Error404ChainCapability:
+      description: 'Not found, or `CHAIN_CAPABILITY_DISABLED`: a requested chain does not run the capability the operation needs (see `capabilities` on `/v3/chains`), named in `x-chain-capability` or, where it depends on the request, in the parameter. `details.chainIds` lists those chains and `details.capability` names the capability.'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: CHAIN_CAPABILITY_DISABLED
+              message: Chain(s) 137 do not run prices
+              requestId: req_example
+              details:
+                chainIds:
+                - 137
+                capability: prices
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -192,18 +713,3 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
-    AdminSecret:
-      type: apiKey
-      in: header
-      name: X-Admin-Secret
-      description: Admin secret (server-to-server) for API key management.
-    PlatformSession:
-      type: apiKey
-      in: cookie
-      name: euler_platform_session
-      description: Signed, httpOnly platform-operator browser session cookie.
-    PlatformCsrf:
-      type: apiKey
-      in: header
-      name: X-CSRF-Token
-      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

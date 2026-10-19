@@ -1,0 +1,827 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Activity API
+  version: 3.0.0
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Activity
+  description: Normalized vault and owner event timelines with explicit per-chain source coverage and cursor pagination.
+paths:
+  /v3/activity/vaults/{chainId}/{vault}/events:
+    get:
+      tags:
+      - Activity
+      summary: Normalized vault activity events
+      description: 'Returns a deterministic event timeline for one EVK, Euler Earn, or Securitize vault.
+
+        `eventType` filters the normalized `type`; `rawType` preserves the indexed source name.
+
+        Coverage reflects the categories applicable to the requested vault type. Unsupported or
+
+        incomplete indexed sources are reported in `meta.coverage`. Any positive safe-integer chain
+
+        ID is accepted; chains without V3 Activity indexing return HTTP 200 with an empty timeline and
+
+        `meta.coverage.status: unsupported`. Structurally unavailable sources report unsupported
+
+        coverage; transient projection failures retain indexed events and report partial coverage.
+
+        EVK governance activity includes events from an EulerRouter used as the vault''s immutable
+
+        oracle only when that router is recorded as deployed by EulerRouterFactory. Routers outside
+
+        that factory registry are not decoded or projected.
+
+        Governance actor and before/after enrichment, underlying-asset metadata and valuation, and
+
+        swap asset/vault mapping can be unavailable. Missing normalized values stay
+
+        absent, source fields remain in `payload`, and coverage continues to describe indexed event-family
+
+        availability. Missing valuation is explicit and never synthesized as zero.
+
+
+        A served chain without the `activity` chain capability answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      x-status: implemented
+      x-chain-capability: activity
+      x-cache-ttl: 30
+      parameters:
+      - name: chainId
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        description: A positive safe-integer chain ID. V3 indexing support is reported at runtime in `meta.coverage`.
+      - name: vault
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+      - name: vaultType
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+      - name: category
+        in: query
+        required: false
+        description: Comma-separated normalized category filter. Empty or unknown values return 400.
+        schema:
+          type: string
+          maxLength: 1024
+      - name: eventType
+        in: query
+        required: false
+        description: Comma-separated normalized event type filter. Empty or unknown values return 400.
+        schema:
+          type: string
+          maxLength: 1024
+      - name: cursor
+        in: query
+        required: false
+        description: Opaque keyset cursor bound to the complete query shape.
+        schema:
+          type: string
+          maxLength: 2048
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        description: Inclusive unix timestamp in seconds.
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        description: Inclusive unix timestamp in seconds.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Normalized vault activity timeline and indexed-source coverage.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getActivityVaultEvents
+  /v3/activity/accounts/{owner}/events:
+    get:
+      tags:
+      - Activity
+      summary: Normalized owner activity events
+      description: 'Returns one deterministic timeline across the requested chains and the owner''s complete
+
+        256-address EVC account family, spanning the owner at ID 0 through subaccount ID 255.
+
+        Account identities are excluded from request logs and persisted endpoint telemetry.
+
+        Coverage is aggregated across chains and reports incomplete
+
+        reward claims or unclassified multiply intent as partial. Unsupported sources and indexer
+
+        synchronization state are explicit in `meta.coverage`. Any positive safe-integer chain ID is
+
+        accepted; chains without V3 Activity indexing return HTTP 200 with an empty timeline and
+
+        per-chain `unsupported` coverage. Governance actor and before/after enrichment,
+
+        underlying-asset metadata and valuation, and swap asset/vault mapping can be unavailable.
+
+        Missing normalized values stay absent, source fields remain in `payload`, and coverage continues
+
+        to describe indexed event-family availability. Transient projection failures retain indexed events
+
+        and report partial coverage rather than authoritative unsupported or complete coverage.
+
+
+        A served chain without the `activity` chain capability answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      x-status: implemented
+      x-chain-capability: activity
+      parameters:
+      - name: owner
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 42
+          pattern: ^0x[0-9a-fA-F]{40}$
+      - name: chainId
+        in: query
+        required: true
+        description: Comma-separated positive safe-integer chain IDs. Values are deduplicated and sorted; maximum 20. V3 indexing support is reported per chain at runtime in `meta.coverage`.
+        schema:
+          type: string
+          maxLength: 256
+      - name: category
+        in: query
+        required: false
+        description: Comma-separated normalized category filter. Empty or unknown values return 400.
+        schema:
+          type: string
+          maxLength: 1024
+      - name: eventType
+        in: query
+        required: false
+        description: Comma-separated normalized event type filter. Empty or unknown values return 400.
+        schema:
+          type: string
+          maxLength: 1024
+      - name: cursor
+        in: query
+        required: false
+        description: Opaque keyset cursor bound to the complete query shape.
+        schema:
+          type: string
+          maxLength: 2048
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        description: Inclusive unix timestamp in seconds.
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        description: Inclusive unix timestamp in seconds.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Normalized owner activity timeline and per-chain indexed-source coverage.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getActivityAccountEvents
+components:
+  schemas:
+    ActivityValuation:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - available
+          - unavailable
+          - partial
+        amountUsd:
+          type: string
+        priceTimestamp:
+          type: string
+          format: date-time
+        source:
+          type: string
+        reason:
+          type: string
+    ActivityChainCoverage:
+      type: object
+      additionalProperties: false
+      required:
+      - chainId
+      - status
+      - missingCategories
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+          - complete
+          - partial
+          - unsupported
+          - syncing
+        indexedFromBlock:
+          type: string
+          pattern: ^\d+$
+        indexedToBlock:
+          type: string
+          pattern: ^\d+$
+        missingCategories:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ActivityCategory'
+        reason:
+          type: string
+    ActivityChange:
+      type: object
+      additionalProperties: false
+      required:
+      - fields
+      properties:
+        fields:
+          type: object
+          additionalProperties: true
+          description: Source-specific changed fields retained under normalized event identity.
+    ActivityCoverage:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - chains
+      - missingCategories
+      properties:
+        status:
+          type: string
+          enum:
+          - complete
+          - partial
+          - unsupported
+          - syncing
+        chains:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityChainCoverage'
+        missingCategories:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ActivityCategory'
+        reason:
+          type: string
+    ActivityCategory:
+      type: string
+      enum:
+      - lending
+      - borrowing
+      - swaps
+      - liquidations
+      - account
+      - rewards
+      - governance
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ActivityEventType:
+      type: string
+      description: Normalized event type. Filters apply to this value, not the source table name.
+      enum:
+      - deposit
+      - withdraw
+      - mint
+      - burn
+      - transfer
+      - borrow
+      - repay
+      - swap
+      - interest_accrued
+      - debt_socialized
+      - pull_debt
+      - liquidation
+      - approval
+      - balance_forwarder_status
+      - convert_fees
+      - set_caps
+      - set_ltv
+      - set_governor_admin
+      - set_config_flags
+      - set_fee_receiver
+      - set_hook_config
+      - set_interest_fee
+      - set_interest_rate_model
+      - set_liquidation_cool_off_time
+      - set_max_liquidation_discount
+      - set_oracle_config
+      - set_fallback_oracle
+      - set_resolved_vault
+      - set_oracle_governor
+      - accrue_interest
+      - update_last_total_assets
+      - update_lost_assets
+      - reallocate_supply
+      - reallocate_withdraw
+      - set_name
+      - set_symbol
+      - set_fee
+      - set_fee_recipient
+      - set_curator
+      - set_guardian
+      - set_timelock
+      - set_cap
+      - set_is_allocator
+      - set_supply_queue
+      - set_withdraw_queue
+      - submit_cap
+      - submit_guardian
+      - submit_timelock
+      - submit_market_removal
+      - revoke_pending_cap
+      - revoke_pending_guardian
+      - revoke_pending_timelock
+      - revoke_pending_market_removal
+      - ownership_transfer_started
+      - ownership_transferred
+      - frozen
+      - unfrozen
+      - paused
+      - unpaused
+      - seized
+      - set_controller_perspective
+      - set_supply_cap
+      - owner_registered
+      - collateral_status
+      - operator_status
+      - controller_status
+      - lockdown_mode_status
+      - nonce_status
+      - nonce_used
+      - permit_disabled_mode_status
+      - reward_lock_created
+      - reward_lock_removed
+      - reward_transfer
+      - reward_whitelist_status
+      - public_reallocate_to
+      - public_withdrawal
+      - set_admin
+      - set_allocation_fee
+      - set_flow_caps
+      - transfer_allocation_fee
+      - buy
+      - terms_of_use_signed
+    ActivityEvent:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - chainId
+      - timestamp
+      - blockNumber
+      - logIndex
+      - txHash
+      - type
+      - category
+      - source
+      properties:
+        id:
+          type: string
+        chainId:
+          type: integer
+          minimum: 1
+        timestamp:
+          type: string
+          format: date-time
+        blockNumber:
+          type: string
+          pattern: ^\d+$
+        logIndex:
+          type: integer
+          minimum: 0
+        txHash:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{64}$
+        type:
+          $ref: '#/components/schemas/ActivityEventType'
+        category:
+          $ref: '#/components/schemas/ActivityCategory'
+        source:
+          type: string
+          enum:
+          - v3-ponder
+        rawType:
+          type: string
+        owner:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+        account:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+        subAccountIndex:
+          type: integer
+          minimum: 0
+          maximum: 255
+        vault:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+        actor:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+        counterparty:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAsset'
+        change:
+          $ref: '#/components/schemas/ActivityChange'
+        valuation:
+          $ref: '#/components/schemas/ActivityValuation'
+        groupId:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+          description: Source-specific fallback fields. Normalized properties remain authoritative.
+    ActivityAsset:
+      type: object
+      additionalProperties: false
+      required:
+      - kind
+      - amountRaw
+      properties:
+        kind:
+          type: string
+          enum:
+          - assets
+          - shares
+          - value
+          - collateral
+          - yield
+        amountRaw:
+          type: string
+          pattern: ^\d+$
+          description: Native-unit on-chain amount without decimal normalization.
+        address:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{40}$
+          description: Token or vault address that gives the amount context when indexed.
+        symbol:
+          type: string
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+        amount:
+          type: string
+          description: Optional decimal-normalized enrichment.
+        amountUsd:
+          type: string
+          description: Optional event-time USD enrichment. Absence never means zero.
+    ActivityResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityEvent'
+        meta:
+          type: object
+          additionalProperties: false
+          required:
+          - hasMore
+          - nextCursor
+          - source
+          - coverage
+          - timestamp
+          properties:
+            hasMore:
+              type: boolean
+            nextCursor:
+              type: string
+              nullable: true
+            source:
+              type: string
+              enum:
+              - v3-ponder
+            coverage:
+              $ref: '#/components/schemas/ActivityCoverage'
+            timestamp:
+              type: string
+              format: date-time
+  headers:
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  responses:
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404ChainCapability:
+      description: 'Not found, or `CHAIN_CAPABILITY_DISABLED`: a requested chain does not run the capability the operation needs (see `capabilities` on `/v3/chains`), named in `x-chain-capability` or, where it depends on the request, in the parameter. `details.chainIds` lists those chains and `details.capability` names the capability.'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: CHAIN_CAPABILITY_DISABLED
+              message: Chain(s) 137 do not run prices
+              requestId: req_example
+              details:
+                chainIds:
+                - 137
+                capability: prices
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'

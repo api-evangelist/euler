@@ -1,0 +1,423 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Rewards API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Rewards
+  description: Reward campaign APRs and per-account reward breakdowns. Rewards APY is intentionally separate from base vault APY in v3; combine them client-side when you need a legacy-style total supply APY.
+paths:
+  /v3/apys/rewards:
+    get:
+      tags:
+      - Rewards
+      summary: Rewards APYs
+      x-status: implemented
+      x-cache-ttl: 900
+      parameters:
+      - $ref: '#/components/parameters/ChainIdParam'
+      - name: vault
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Rewards APYs
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RewardsApy'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getApysRewards
+  /v3/apys/rewards/history:
+    get:
+      tags:
+      - Rewards
+      summary: Rewards APY history
+      description: 'Rewards APY history for a required time range.
+
+        Required query params: `chainId`, `from`, `to`.
+
+        Optional filters: `vault`, `resolution`, `offset`, `limit`.
+
+        Maximum allowed window is 30 days per request.'
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - name: chainId
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: resolution
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+          default: 1d
+      - name: vault
+        in: query
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Rewards APY history
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RewardsApyHistoryPoint'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getApysRewardsHistory
+  /v3/rewards/breakdown:
+    get:
+      tags:
+      - Rewards
+      summary: Per-user reward breakdowns
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/ChainIdParam'
+      - name: account
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: vault
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Reward breakdowns
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getRewardsBreakdown
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    AssetRef:
+      type: object
+      properties:
+        address:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        name:
+          type: string
+          nullable: true
+    RewardsApyHistoryPoint:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        vault:
+          type: string
+        rewardsApy:
+          type: number
+          description: Rewards APY as a public percent number.
+        timestamp:
+          type: string
+          format: date-time
+          description: Bucket timestamp as an ISO-8601 UTC string.
+    RewardsApy:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        vault:
+          type: string
+        campaigns:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              provider:
+                type: string
+              apr:
+                type: number
+                description: Reward APR contribution as a public percent number.
+              rewardToken:
+                $ref: '#/components/schemas/AssetRef'
+              source:
+                type: string
+                enum:
+                - merkl
+                - turtle
+                - direct
+              startTimestamp:
+                type: string
+                format: date-time
+              endTimestamp:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum:
+                - active
+                - upcoming
+                - ended
+                description: Campaign status. 'active' = ongoing, 'upcoming' = not yet started, 'ended' = past.
+              campaignType:
+                type: string
+              collateralAsset:
+                type: string
+              requiresCb1Verification:
+                type: boolean
+              merklCampaignId:
+                type: string
+                description: Original Merkl campaign id when the public campaign is fanned out into vault-level instances.
+              opportunityType:
+                type: string
+                description: Merkl opportunity type that produced this campaign.
+              distributionType:
+                type: string
+                description: Merkl distribution type for the campaign.
+              whitelist:
+                type: array
+                description: Lowercase recipient addresses eligible for whitelist-gated campaigns.
+                items:
+                  type: string
+              blacklist:
+                type: array
+                description: Lowercase recipient addresses excluded from blacklist-gated campaigns.
+                items:
+                  type: string
+        totalApr:
+          type: number
+          description: Sum of currently active reward APR contributions as a public percent number.
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+  responses:
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

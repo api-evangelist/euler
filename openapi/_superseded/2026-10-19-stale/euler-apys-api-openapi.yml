@@ -1,0 +1,366 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) APYs API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: APYs
+  description: Base and intrinsic APY surfaces. In v3, APY families are split into dedicated endpoints instead of being embedded inconsistently across larger payloads.
+paths:
+  /v3/evk/vaults/{chainId}/{address}/apy:
+    get:
+      tags:
+      - APYs
+      summary: Vault APY (current + historical)
+      x-status: implemented
+      x-cache-ttl: 600
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: integer
+      - name: resolution
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+          default: 1d
+        description: Defaults to `1d`. If omitted, uses last 30 days for `1d` and last 7 days for `1h`.
+      - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: Vault APY
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultApy'
+                  meta:
+                    $ref: '#/components/schemas/VaultApyMeta'
+      operationId: getVaultsByChainIdByAddressApy
+  /v3/apys/intrinsic:
+    get:
+      tags:
+      - APYs
+      summary: Intrinsic APYs
+      x-status: implemented
+      x-cache-ttl: 600
+      parameters:
+      - $ref: '#/components/parameters/ChainIdParam'
+      - name: assets
+        in: query
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/FieldsParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Intrinsic APYs
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IntrinsicApy'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getApysIntrinsic
+  /v3/apys/intrinsic/history:
+    get:
+      tags:
+      - APYs
+      summary: Intrinsic APY history
+      x-status: implemented
+      x-cache-ttl: 300
+      parameters:
+      - $ref: '#/components/parameters/ChainIdParam'
+      - name: asset
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Asset address to query.
+      - name: resolution
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+        description: Bucket size for aggregation.
+      - $ref: '#/components/parameters/StartTimestampParam'
+      - $ref: '#/components/parameters/EndTimestampParam'
+      responses:
+        '200':
+          description: Intrinsic APY history
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IntrinsicApyHistoryPoint'
+                  meta:
+                    $ref: '#/components/schemas/IntrinsicApyHistoryMeta'
+      operationId: getApysIntrinsicHistory
+components:
+  parameters:
+    EndTimestampParam:
+      name: endTimestamp
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: End of time range (unix seconds).
+    StartTimestampParam:
+      name: startTimestamp
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Start of time range (unix seconds).
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of chain IDs (single value allowed).
+      example: 1,10,8453
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    FieldsParam:
+      name: fields
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of fields to include.
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Sort field, prefix with '-' for descending.
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+  schemas:
+    IntrinsicApy:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        symbol:
+          type: string
+        apy:
+          type: number
+          description: Percent number with 6 decimal places.
+        provider:
+          type: string
+        source:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    IntrinsicApyHistoryPoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        apy:
+          type: number
+          description: Intrinsic APY as a percent number.
+        provider:
+          type: string
+        apyDuration:
+          type: number
+          description: Duration in seconds used to compute the APY.
+    IntrinsicApyHistoryMeta:
+      type: object
+      properties:
+        chainId:
+          type: string
+        asset:
+          type: string
+        symbol:
+          type: string
+        resolution:
+          type: string
+          enum:
+          - 1h
+          - 1d
+        startTimestamp:
+          type: string
+          format: date-time
+        endTimestamp:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+    VaultApyPoint:
+      type: object
+      properties:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          description: Percent number with 6 decimal places.
+        timestamp:
+          type: string
+          format: date-time
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+    VaultApyMeta:
+      type: object
+      properties:
+        chainId:
+          type: string
+        vault:
+          type: string
+        resolution:
+          type: string
+          enum:
+          - 1h
+          - 1d
+        startTimestamp:
+          type: string
+          format: date-time
+        endTimestamp:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+    VaultApy:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/VaultApyPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultApyPoint'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

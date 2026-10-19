@@ -2,7 +2,91 @@ openapi: 3.2.0
 info:
   title: Euler Data API (V3) Earn API
   version: 3.0.0
-  description: API specification for Euler Data v3.
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
 servers:
 - url: /
   description: Current environment
@@ -11,6 +95,43 @@ tags:
 - name: Earn
   description: Euler Earn vault resources and historical data. These endpoints are separate from EVK vaults and should be modeled independently in client code.
 paths:
+  /v3/earn/vaults/{chainId}/{address}/visibility:
+    get:
+      tags:
+      - Earn
+      summary: Visibility verdict for an earn vault
+      description: Platform-computed visibility verdict with the decision evidence in `checks` (`decidedBy`, `reason`, layer statuses, deprecation, platform overrides, and the per-side `listing` result that folds in curator flags and deprecation). Curated inputs come from the latest published label version; reasons that would reveal a draft claim are reported as their published equivalent. Platform operators read the verdict as evaluated at `.../visibility/platform`.
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: Current visibility status and check results
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultVisibility'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getEarnVaultsByChainIdByAddressVisibility
   /v3/earn/vaults:
     get:
       tags:
@@ -22,6 +143,12 @@ paths:
       - $ref: '#/components/parameters/ChainIdParam'
       - $ref: '#/components/parameters/OffsetParam'
       - $ref: '#/components/parameters/LimitParam'
+      - name: visibility
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Comma-separated visibility filter (`visible,warning,hidden,pending_review`). Defaults to `visible,warning` — hidden and pending_review vaults are excluded from discovery unless requested explicitly.
       responses:
         '200':
           description: Earn vaults
@@ -39,6 +166,10 @@ paths:
                       $ref: '#/components/schemas/EarnVaultSummary'
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '504':
+          $ref: '#/components/responses/Error504'
       operationId: getEarnVaults
   /v3/earn/vaults/batch:
     post:
@@ -85,6 +216,82 @@ paths:
         '500':
           $ref: '#/components/responses/Error500'
       operationId: postEarnVaultBatch
+  /v3/earn/vaults/{chainId}/{address}/totals:
+    get:
+      tags:
+      - Earn
+      summary: Earn vault totals history
+      description: 'Returns aggregator-level Earn vault totals history. This endpoint uses
+
+        Earn semantics and intentionally omits EVK-only borrowed, cash, and
+
+        utilization fields. Fresh Earn snapshots serve current totals, APY, and
+
+        share price without Ponder or RPC work; missing or stale snapshots retain
+
+        the indexed/live fallback. Historical USD values use bucket-aligned asset
+
+        prices when available and remain null when pricing is unavailable. The
+
+        effective end is `to` or the current time. When
+
+        `from` is omitted, the effective window is 7 days for `1h` and 30 days for
+
+        `1d`. Ranges count both endpoint buckets and support at most 744 hourly
+
+        buckets or 732 daily buckets.
+
+        Each point includes a nullable sharePriceQuote with exact assets per whole
+
+        share and block provenance. Coverage evaluates assetsPerShare separately
+
+        from the raw sharePrice ratio and APY. Quote unavailability does not suppress
+
+        other available metrics or synthesize historical quotes.'
+      x-status: implemented
+      x-cache-ttl: 60
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      - name: resolution
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 1d
+          default: 1d
+      - $ref: '#/components/parameters/HistoryFromParam'
+      - $ref: '#/components/parameters/HistoryToParam'
+      responses:
+        '200':
+          description: Earn vault totals history
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EarnTotalsHistory'
+                  meta:
+                    $ref: '#/components/schemas/EarnTotalsHistoryMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          $ref: '#/components/responses/Error504'
+      operationId: getEarnVaultsByChainIdByAddressTotals
   /v3/earn/vaults/{chainId}/{address}:
     get:
       tags:
@@ -92,7 +299,12 @@ paths:
       summary: Earn vault detail
       description: 'Returns earn vault detail. Optional `include` expands related resources.
 
-        Supported values: `apy`, `totals`, `prices`.'
+        Supported values: `apy`, `totals`, `prices`.
+
+
+        The detail is an indexed read on every served chain. On a chain without the `prices` chain
+
+        capability `prices` answers null.'
       x-status: implemented
       x-cache-ttl: 60
       parameters:
@@ -124,6 +336,8 @@ paths:
           $ref: '#/components/responses/Error429'
         '500':
           $ref: '#/components/responses/Error500'
+        '504':
+          $ref: '#/components/responses/Error504'
       operationId: getEarnVaultsByChainIdByAddress
   /v3/earn/vaults/{chainId}/{address}/events:
     get:
@@ -154,7 +368,7 @@ paths:
         schema:
           type: string
         description: Comma-separated event type filter. Unknown values return 400.
-      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/IndexedEventsOffsetParam'
       - $ref: '#/components/parameters/LimitParam'
       responses:
         '200':
@@ -172,6 +386,8 @@ paths:
                     items:
                       type: object
                       properties:
+                        id:
+                          type: string
                         chainId:
                           type: integer
                         type:
@@ -183,6 +399,8 @@ paths:
                           type: string
                         txHash:
                           type: string
+                        logIndex:
+                          type: integer
                         payload:
                           type: object
                   meta:
@@ -198,40 +416,52 @@ paths:
       operationId: getEarnVaultsByChainIdByAddressEvents
 components:
   schemas:
-    EarnVaultBatchRequest:
+    VaultVisibilitySummary:
       type: object
+      description: 'Platform visibility verdict for discovery surfaces. Warning stays discoverable with a badge; the per-surface booleans carve out lend/borrow discovery individually. A side is explorable when `status` is `visible` or `warning` and nothing hides that side: a platform override, the escrow rule, a curator listing flag on the vault or its product, or deprecation (which hides by default unless a curator re-lists with a `false` flag). An escrow vault (`isEscrow: true`) is never explorable for lending, because nothing can be borrowed from it and a deposit earns nothing; it stays explorable for borrowing, so a market that accepts it as collateral keeps it in its pairs. Its `status` is unaffected.'
       required:
-      - chainId
-      - addresses
+      - status
+      - explorableLend
+      - explorableBorrow
+      - decidedBy
+      - reason
       properties:
-        chainId:
-          type: integer
-        addresses:
-          type: array
-          minItems: 1
-          maxItems: 1000
-          items:
-            type: string
-            maxLength: 42
-        include:
-          type: array
-          items:
-            type: string
-            enum:
-            - strategies
-          description: Optional related resources to expand for every returned vault.
-    AssetRef:
-      type: object
-      properties:
-        address:
+        status:
           type: string
-        symbol:
+          enum:
+          - visible
+          - warning
+          - hidden
+          - pending_review
+        explorableLend:
+          type: boolean
+        explorableBorrow:
+          type: boolean
+        explorableLendDecidedBy:
+          $ref: '#/components/schemas/VaultListingDecidedBy'
+        explorableBorrowDecidedBy:
+          $ref: '#/components/schemas/VaultListingDecidedBy'
+        decidedBy:
           type: string
-        decimals:
-          type: integer
-        name:
+          description: Which resolution rule decided the status. `config-*` codes come from Layer 1 (configuration safety), `consistency-*` codes from Layer 2 (label consistency). `unclaimed` and `unassigned` are label gates. A verified or unassessable non-escrow vault stays in `pending_review` until an entity claims it, and EVK and Securitize vaults additionally require assignment to a product. Escrow vaults bypass both label gates. `advisories` badges a vault that passed both layers but has a failed advisory finding — it stays in discovery, with `checksStatus` on its assessment naming a Layer 1 concern and `consistencyContext` a Layer 2 one (an Earn vault's deprecated dependency); an advisory that could not be judged does not badge.
+          enum:
+          - config-revoked
+          - consistency-revoked
+          - config-suspended
+          - consistency-suspended
+          - config-failed
+          - not-explorable
+          - unassessable
+          - deprecated
+          - advisories
+          - unclaimed
+          - unassigned
+          - verified
+          - awaiting-verification
+        reason:
           type: string
           nullable: true
+          description: 'Display-appropriate explanation for the decision, when there is one: the curated deprecation reason, the failing check''s sentence, or, for `advisories`, the sentence of the first failed advisory (Layer 1 before Layer 2, each by finding key) followed by a count of the rest, e.g. "… (2 more checks flagged)". Null for a deprecated vault whose curator gave no reason, and whenever nothing needs explaining.'
     PaginationMeta:
       type: object
       required:
@@ -248,76 +478,30 @@ components:
         limit:
           type: integer
           description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
         timestamp:
           type: string
           format: date-time
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    EarnIncludePrices:
-      type: object
-      properties:
-        asset:
-          allOf:
-          - $ref: '#/components/schemas/Price'
-          nullable: true
-    VaultApy:
-      type: object
-      properties:
-        current:
-          $ref: '#/components/schemas/VaultApyPoint'
-        history:
+        degradedProviders:
           type: array
           items:
-            $ref: '#/components/schemas/VaultApyPoint'
-    EarnVaultBatchResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/EarnVaultBatchItem'
-        meta:
-          $ref: '#/components/schemas/EarnVaultBatchMeta'
-    EarnVaultGovernance:
-      type: object
-      properties:
-        owner:
-          type: string
-        creator:
-          type: string
-        curator:
-          type: string
-        guardian:
-          type: string
-        feeReceiver:
-          type: string
-        timelock:
-          type: integer
-          description: Timelock duration in seconds.
-        pendingTimelock:
-          type: integer
-          description: Pending timelock duration in seconds.
-        pendingTimelockValidAt:
-          type: string
-          format: date-time
-        pendingGuardian:
-          type: string
-        pendingGuardianValidAt:
-          type: string
-          format: date-time
-    EarnStrategyAllocationCap:
-      type: object
-      properties:
-        current:
-          type: string
-          description: Raw allocation cap as a bigint string in underlying asset units.
-        pending:
-          type: string
-          description: Pending raw allocation cap as a bigint string in underlying asset units.
-        pendingValidAt:
-          type: string
-          format: date-time
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
     EarnStrategy:
       type: object
       properties:
@@ -350,7 +534,8 @@ components:
           description: Raw underlying asset amount allocated to the strategy.
         allocatedAssetsUsd:
           type: number
-          description: Market USD number for assets allocated to this strategy.
+          nullable: true
+          description: Market USD number for assets allocated to this strategy, at the Earn vault's asset price. Null when that asset has no usable price, never 0; no allocation answers 0.
         availableAssets:
           type: string
           description: Raw underlying asset amount available from the strategy.
@@ -379,22 +564,124 @@ components:
           type: string
           format: date-time
           nullable: true
-    EarnVaultBatchMeta:
+    EarnIncludePrices:
       type: object
       properties:
-        count:
+        asset:
+          allOf:
+          - $ref: '#/components/schemas/Price'
+          nullable: true
+    EarnSharePriceQuote:
+      type: object
+      required:
+      - unit
+      - chainId
+      - vaultAddress
+      - assetAddress
+      - shareDecimals
+      - assetDecimals
+      - convertedAssetsRaw
+      - assetsPerShare
+      - blockNumber
+      - blockHash
+      - blockTimestamp
+      description: Conversion of one whole Earn share into underlying assets using contract metadata and convertToAssets at the same verified block. Does not use a USD price.
+      properties:
+        unit:
+          type: string
+          enum:
+          - assets-per-whole-share
+        chainId:
           type: integer
-        requested:
+        vaultAddress:
+          type: string
+        assetAddress:
+          type: string
+        shareDecimals:
           type: integer
-        notFound:
-          type: array
-          items:
-            type: string
+          minimum: 0
+          maximum: 77
+        assetDecimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+        convertedAssetsRaw:
+          type: string
+          description: Exact integer result of convertToAssets(10^shareDecimals) in asset base units.
+        assetsPerShare:
+          type: string
+          description: Exact decimal string obtained by applying assetDecimals to convertedAssetsRaw. Observed zero is valid.
+        blockNumber:
+          type: string
+          description: Decimal block number used for metadata and conversion reads.
+        blockHash:
+          type: string
+          pattern: ^0x[0-9a-fA-F]{64}$
+        blockTimestamp:
+          type: integer
+          description: Source block time in Unix seconds, independent of the response bucket timestamp.
+    VaultApyPoint:
+      type: object
+      properties:
+        supplyApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
+        borrowApy:
+          type: number
+          nullable: true
+          description: Percent number with 6 decimal places.
         timestamp:
           type: string
           format: date-time
-        chainId:
+    AssetRef:
+      type: object
+      properties:
+        address:
           type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        name:
+          type: string
+          nullable: true
+    HistoryMetricCoverage:
+      type: object
+      required:
+      - status
+      - availableBuckets
+      - partialBuckets
+      - missingBuckets
+      - missingIntervals
+      - partialIntervals
+      properties:
+        status:
+          type: string
+          enum:
+          - complete
+          - partial
+          - missing
+          - not_applicable
+        availableBuckets:
+          type: integer
+          minimum: 0
+          description: Distinct elapsed requested buckets with a finite value, including partial aggregate values and observed zero.
+        partialBuckets:
+          type: integer
+          minimum: 0
+          description: Available buckets whose aggregate covers only part of the requested chain scope.
+        missingBuckets:
+          type: integer
+          minimum: 0
+        missingIntervals:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryInterval'
+        partialIntervals:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryInterval'
     ErrorResponse:
       type: object
       required:
@@ -411,9 +698,17 @@ components:
               type: string
               description: 'Domain error code. Examples:
 
+                - BAD_REQUEST
+
                 - INVALID_ADDRESS
 
+                - INVALID_CHAIN_ID
+
                 - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
 
                 - VAULT_NOT_FOUND
 
@@ -423,13 +718,25 @@ components:
 
                 - VALIDATION_ERROR
 
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
                 - RATE_LIMIT_EXCEEDED
 
                 - UNSUPPORTED_MEDIA_TYPE
 
+                - UPSTREAM_TIMEOUT
+
                 - UNAUTHORIZED
 
                 - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
 
                 - INTERNAL_ERROR
 
@@ -441,157 +748,299 @@ components:
             details:
               type: object
               additionalProperties: true
-    VaultTotalsPoint:
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    EarnVaultBatchMeta:
       type: object
       properties:
-        totalAssets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        totalBorrows:
-          type: string
-          description: Raw borrowed asset amount as a bigint string.
-        cash:
-          type: string
-          nullable: true
-          description: Raw cash amount as a bigint string.
-        utilization:
-          type: number
-          nullable: true
-          description: Utilization ratio number.
-        supplyApy:
-          type: number
-          nullable: true
-          description: Public supply APY as a percent number.
-        borrowApy:
-          type: number
-          nullable: true
-          description: Public borrow APY as a percent number.
+        count:
+          type: integer
+        requested:
+          type: integer
+        notFound:
+          type: array
+          items:
+            type: string
         timestamp:
           type: string
           format: date-time
-    EarnVaultManagement:
+        chainId:
+          type: string
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    EarnVaultGovernance:
       type: object
       properties:
         owner:
+          type: string
+        creator:
           type: string
         curator:
           type: string
         guardian:
           type: string
-        feeRecipient:
+        feeReceiver:
           type: string
-        timelockSeconds:
+        allocators:
+          type: array
+          items:
+            type: string
+          description: Active allocator addresses reconstructed from SetIsAllocator events.
+        timelock:
           type: integer
           description: Timelock duration in seconds.
-        performanceFee:
+        pendingTimelock:
+          type: integer
+          description: Pending timelock duration in seconds.
+        pendingTimelockValidAt:
           type: string
-          description: Raw contract performance fee value as a bigint string.
-    EarnVaultBatchItem:
-      allOf:
-      - $ref: '#/components/schemas/EarnVaultSummary'
-      - type: object
-        properties:
-          strategies:
-            type: array
-            items:
-              $ref: '#/components/schemas/EarnStrategy'
-    EarnVaultSummary:
+          format: date-time
+        pendingGuardian:
+          type: string
+        pendingGuardianValidAt:
+          type: string
+          format: date-time
+    EarnVaultBatchRequest:
+      type: object
+      required:
+      - chainId
+      - addresses
+      properties:
+        chainId:
+          type: integer
+        addresses:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: string
+            maxLength: 42
+        include:
+          type: array
+          items:
+            type: string
+            enum:
+            - strategies
+          description: Optional related resources to expand for every returned vault.
+    Price:
       type: object
       properties:
         chainId:
           type: integer
         address:
           type: string
-        name:
-          type: string
         symbol:
           type: string
         decimals:
           type: integer
-        asset:
-          $ref: '#/components/schemas/AssetRef'
-        totalAssets:
+        priceUsd:
+          type: number
+          description: Market-normalized USD price number. Use `/v3/oracles/prices` for exact contract-derived oracle values.
+        source:
           type: string
-          description: Raw underlying asset amount as a bigint string.
-        totalShares:
-          type: string
-          description: Raw vault share supply as a bigint string.
-        lostAssets:
-          type: string
-          description: Raw lost asset amount as a bigint string.
-        exchangeRate:
-          type: string
-          description: Raw exchange rate as a bigint string.
-        totalSupplyUsd:
-          type: number
-          description: Market USD number for total Earn vault assets.
-        availableAssets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        availableAssetsUsd:
-          type: number
-          description: Market USD number for currently available assets.
-        supplyApy:
-          type: number
-          nullable: true
-          description: Public supply APY as a percent number.
-        apyCurrent:
-          type: number
-          nullable: true
-          description: Current public APY as a percent number.
-        apy7d:
-          type: number
-          nullable: true
-          description: Seven-day public APY as a percent number.
-        apy30d:
-          type: number
-          nullable: true
-          description: Thirty-day public APY as a percent number.
-        apy90d:
-          type: number
-          nullable: true
-          description: Ninety-day public APY as a percent number.
-        utilization:
-          type: number
-          description: Utilization ratio number.
-        strategyCount:
-          type: integer
-        snapshotTimestamp:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-    EarnVaultDetailsWithIncludes:
-      allOf:
-      - $ref: '#/components/schemas/EarnVaultDetails'
-      - type: object
-        properties:
-          apy:
-            allOf:
-            - $ref: '#/components/schemas/VaultApy'
-            nullable: true
-          totals:
-            allOf:
-            - $ref: '#/components/schemas/VaultTotals'
-            nullable: true
-          prices:
-            allOf:
-            - $ref: '#/components/schemas/EarnIncludePrices'
-            nullable: true
-    VaultApyPoint:
-      type: object
-      properties:
-        supplyApy:
-          type: number
-          nullable: true
-          description: Percent number with 6 decimal places.
-        borrowApy:
-          type: number
-          description: Percent number with 6 decimal places.
+          enum:
+          - onchain
+          - offchain
+          - hardcoded
+          description: Provider-redacted price provenance category.
         timestamp:
           type: string
           format: date-time
+          description: Observation time, the provider's own time for the price when it gives one. Current-price endpoints return the best-known observation up to 7 days old; derived USD calculations accept observations up to 24 hours old.
+        stale:
+          type: boolean
+          description: Whether the served observation is older than the 24-hour freshness window. Present on current-price responses (`/v3/prices`, token price, and vault and Earn price includes); absent from `/v3/prices/history`.
+    VaultVisibility:
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - status
+      - checks
+      - source
+      - evaluatedAt
+      properties:
+        chainId:
+          type: integer
+        vaultAddress:
+          type: string
+        status:
+          type: string
+          enum:
+          - visible
+          - warning
+          - hidden
+          - pending_review
+        checks:
+          type: object
+          additionalProperties: true
+          description: 'Decision evidence: `decidedBy`, `reason`, layer statuses, the resolved deprecation, the platform `notExplorable*` overrides as authored, and `listing` — the effective per-side discovery result (`{ lend: { hidden, decidedBy }, borrow: { hidden, decidedBy } }`) after platform overrides, curator flags, and deprecation.'
+        source:
+          type: string
+        evaluatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    EarnTotalsHistory:
+      type: object
+      properties:
+        current:
+          $ref: '#/components/schemas/EarnTotalsHistoryPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/EarnTotalsHistoryPoint'
+    EarnTotalsHistoryPoint:
+      type: object
+      properties:
+        totalAssets:
+          type: string
+          description: Raw aggregator underlying asset amount as a bigint string.
+        totalAssetsUsd:
+          type: number
+          nullable: true
+          description: USD value of totalAssets. Current values use the materialized vault valuation; history values use the bucket-aligned asset price when available.
+        sharePrice:
+          type: number
+          nullable: true
+          description: Raw converted-asset-base-units per share-base-unit ratio. Not a decimal-normalized price; use sharePriceQuote for assets per whole share.
+        sharePriceQuote:
+          oneOf:
+          - $ref: '#/components/schemas/EarnSharePriceQuote'
+          - type: object
+            nullable: true
+            not:
+              type: object
+          description: Verified conversion from the same source snapshot. Null for snapshots without verified metadata; no inferred historical normalization.
+        apy:
+          type: number
+          nullable: true
+          description: Earn public APY as a percent number.
+        timestamp:
+          type: string
+          format: date-time
+    HistoryCoverage:
+      type: object
+      required:
+      - scope
+      - status
+      - requestedBuckets
+      - evaluatedBuckets
+      - returnedBuckets
+      - futureBuckets
+      - firstAvailable
+      - lastAvailable
+      - provisionalBucket
+      - missingIntervals
+      - metrics
+      description: Availability within the requested range, not proof of historical membership, vault inception, source retention, recoverability, or price accuracy. Leading and trailing absent buckets are included. Future buckets are excluded from evaluation; the current bucket is provisional. Missing fields and read failures remain unavailable without asserting their root cause.
+      properties:
+        scope:
+          type: string
+          enum:
+          - requested-range
+        status:
+          type: string
+          enum:
+          - complete
+          - partial
+          - missing
+          - not_applicable
+          description: Complete requires all evaluated buckets and all reported metrics. Missing means no returned buckets. Not applicable means the range is entirely in the future.
+        requestedBuckets:
+          type: integer
+          minimum: 1
+        evaluatedBuckets:
+          type: integer
+          minimum: 0
+        returnedBuckets:
+          type: integer
+          minimum: 0
+        futureBuckets:
+          type: integer
+          minimum: 0
+        firstAvailable:
+          type: string
+          format: date-time
+          nullable: true
+          description: First returned bucket within the evaluated range, not the earliest retained source date.
+        lastAvailable:
+          type: string
+          format: date-time
+          nullable: true
+        provisionalBucket:
+          type: string
+          format: date-time
+          nullable: true
+        missingIntervals:
+          type: array
+          description: Buckets absent from the response regardless of metric coverage.
+          items:
+            $ref: '#/components/schemas/HistoryInterval'
+        metrics:
+          type: object
+          description: Coverage keyed by public metric name. Available and missing bucket counts sum to evaluatedBuckets; partialBuckets is a subset of availableBuckets.
+          additionalProperties:
+            $ref: '#/components/schemas/HistoryMetricCoverage'
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    VaultApy:
+      type: object
+      properties:
+        coverage:
+          $ref: '#/components/schemas/HistoryCoverage'
+        current:
+          $ref: '#/components/schemas/VaultApyPoint'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultApyPoint'
     EarnVaultDetails:
       allOf:
       - $ref: '#/components/schemas/EarnVaultSummary'
@@ -614,41 +1063,523 @@ components:
             $ref: '#/components/schemas/EarnVaultGovernance'
           management:
             $ref: '#/components/schemas/EarnVaultManagement'
-    Price:
+    EarnStrategyAllocationCap:
+      type: object
+      properties:
+        current:
+          type: string
+          description: Raw allocation cap as a bigint string in underlying asset units.
+        pending:
+          type: string
+          description: Pending raw allocation cap as a bigint string in underlying asset units.
+        pendingValidAt:
+          type: string
+          format: date-time
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    EarnVaultDetailsWithIncludes:
+      allOf:
+      - $ref: '#/components/schemas/EarnVaultDetails'
+      - type: object
+        properties:
+          apy:
+            allOf:
+            - $ref: '#/components/schemas/VaultApy'
+            nullable: true
+          totals:
+            allOf:
+            - $ref: '#/components/schemas/VaultTotals'
+            nullable: true
+          prices:
+            allOf:
+            - $ref: '#/components/schemas/EarnIncludePrices'
+            nullable: true
+    EarnTotalsHistoryMeta:
+      type: object
+      properties:
+        coverage:
+          $ref: '#/components/schemas/HistoryCoverage'
+        chainId:
+          type: string
+        vault:
+          type: string
+        resolution:
+          type: string
+          enum:
+          - 1h
+          - 1d
+        startTimestamp:
+          type: string
+          format: date-time
+        endTimestamp:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum:
+          - snapshot
+          - live
+          - ponder
+          - summary
+          - snapshot-stale
+          description: Source selected for the current totalAssets value.
+        stale:
+          type: boolean
+          description: Whether the selected current totalAssets value is older than the 15-minute freshness threshold.
+        snapshotTimestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the latest Earn APY snapshot when one exists.
+        snapshotAgeSeconds:
+          type: integer
+          minimum: 0
+          description: Age of the latest Earn APY snapshot at response construction time.
+        note:
+          type: string
+    EarnVaultSummary:
       type: object
       properties:
         chainId:
           type: integer
         address:
           type: string
+        vaultType:
+          type: string
+          enum:
+          - earn
+          description: Every row of the Earn surface is an Earn vault; the EVK surface answers the stored type (`evk` or `securitize`, with `isEscrow` beside it), so one read tells a consumer the family of an address.
+        name:
+          type: string
         symbol:
           type: string
         decimals:
           type: integer
-        priceUsd:
-          type: number
-          description: Market-normalized USD price number. If `source` is `oracle`, this endpoint still exposes the v3 market-price number; use `/v3/oracles/prices` for exact contract-derived oracle values.
-        source:
+        asset:
+          $ref: '#/components/schemas/AssetRef'
+        totalAssets:
           type: string
-        confidence:
+          description: Raw underlying asset amount as a bigint string.
+        totalShares:
+          type: string
+          description: Raw vault share supply as a bigint string.
+        lostAssets:
+          type: string
+          description: Raw lost asset amount as a bigint string.
+        exchangeRate:
+          type: string
+          description: Raw exchange rate as a bigint string.
+        totalSupplyUsd:
           type: number
           nullable: true
-        blockNumber:
+          description: Market USD number for total Earn vault assets. Null when the vault holds assets whose asset has no usable price, never 0; an empty vault answers 0.
+        availableAssets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        availableAssetsUsd:
+          type: number
+          nullable: true
+          description: Market USD number for currently available assets. Null when the available assets have no usable price, never 0; none available answers 0.
+        supplyApy:
+          type: number
+          nullable: true
+          description: Public supply APY as a percent number.
+        apyCurrent:
+          type: number
+          nullable: true
+          description: Current public APY as a percent number.
+        apy7d:
+          type: number
+          nullable: true
+          description: Seven-day public APY as a percent number, using an anchor at or up to 15 minutes before the exact cutoff. Null when no qualifying local or archive anchor is available.
+        apy30d:
+          type: number
+          nullable: true
+          description: Thirty-day public APY as a percent number, using an anchor at or up to 15 minutes before the exact cutoff. Null when no qualifying local or archive anchor is available.
+        apy90d:
+          type: number
+          nullable: true
+          description: Ninety-day public APY as a percent number, using an anchor at or up to 15 minutes before the exact cutoff. Null when no qualifying local or archive anchor is available.
+        utilization:
+          type: number
+          description: Utilization ratio number.
+        strategyCount:
+          type: integer
+        snapshotTimestamp:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        visibility:
+          $ref: '#/components/schemas/VaultVisibilitySummary'
+    EarnVaultManagement:
+      type: object
+      properties:
+        owner:
+          type: string
+        curator:
+          type: string
+        guardian:
+          type: string
+        feeRecipient:
+          type: string
+        timelockSeconds:
+          type: integer
+          description: Timelock duration in seconds.
+        performanceFee:
+          type: string
+          description: Raw contract performance fee value as a bigint string.
+    HistoryInterval:
+      type: object
+      required:
+      - from
+      - to
+      description: Inclusive UTC bucket-start bounds. A single absent bucket has equal from/to values.
+      properties:
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+    EarnVaultBatchItem:
+      allOf:
+      - $ref: '#/components/schemas/EarnVaultSummary'
+      - type: object
+        properties:
+          management:
+            allOf:
+            - $ref: '#/components/schemas/EarnVaultManagement'
+            description: The vault's roles and parameters from the indexed events (owner, curator, guardian, fee recipient, timelock, fee), as the detail answers them; absent when nothing is indexed for the vault.
+          strategies:
+            type: array
+            items:
+              $ref: '#/components/schemas/EarnStrategy'
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
           type: string
           nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    VaultTotalsPoint:
+      type: object
+      properties:
+        totalAssets:
+          type: string
+          nullable: true
+          description: Raw underlying asset amount as a bigint string.
+        totalAssetsUsd:
+          type: number
+          nullable: true
+          description: USD value of totalAssets. Uses the latest asset price for current and the bucket-aligned historical asset price for history entries when available.
+        totalBorrows:
+          type: string
+          nullable: true
+          description: Raw borrowed asset amount as a bigint string.
+        totalBorrowsUsd:
+          type: number
+          nullable: true
+          description: USD value of totalBorrows. Uses the latest asset price for current and the bucket-aligned historical asset price for history entries when available.
+        cash:
+          type: string
+          nullable: true
+          description: Raw cash amount as a bigint string.
+        cashUsd:
+          type: number
+          nullable: true
+          description: USD value of cash. Uses the latest asset price for current and the bucket-aligned historical asset price for history entries when available.
+        utilization:
+          type: number
+          nullable: true
+          description: Utilization ratio number.
+        supplyApy:
+          type: number
+          nullable: true
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          nullable: true
+          description: Public borrow APY as a percent number.
+        sharePrice:
+          type: number
+          nullable: true
+          description: Raw converted-asset-base-units per share-base-unit ratio for Earn totals. Not a decimal-normalized price; use sharePriceQuote for assets per whole share.
+        sharePriceQuote:
+          oneOf:
+          - $ref: '#/components/schemas/EarnSharePriceQuote'
+          - type: object
+            nullable: true
+            not:
+              type: object
+          description: Verified block-pinned Earn conversion, or null when unavailable. Not supplied by EVK totals.
         timestamp:
           type: string
           format: date-time
+    EarnVaultBatchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EarnVaultBatchItem'
+        meta:
+          $ref: '#/components/schemas/EarnVaultBatchMeta'
+    VaultListingDecidedBy:
+      type: string
+      description: 'Who decided one discovery side''s listing, nearest explicit decision first: `platform` (assessment override), `escrow` (lend side of an escrow vault, set by Euler automatically), `curator` (vault-level flag), `curator-product` (product-level flag), `deprecated` (resolved deprecation with no curator flag), or `none` (shown, nothing decided).'
+      enum:
+      - platform
+      - escrow
+      - curator
+      - curator-product
+      - deprecated
+      - none
     VaultTotals:
       type: object
       properties:
+        coverage:
+          $ref: '#/components/schemas/HistoryCoverage'
         current:
           $ref: '#/components/schemas/VaultTotalsPoint'
         history:
           type: array
           items:
             $ref: '#/components/schemas/VaultTotalsPoint'
+  parameters:
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    IncludeParam:
+      name: include
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of related resources to expand. Unknown values are ignored.
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Page offset, capped at 10000 to bound query cost.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        default: 0
+    HistoryFromParam:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+      description: Unix timestamp in seconds, no later than 2038-01-19T03:14:07Z.
+    IndexedEventsOffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Indexed-event page offset as a non-negative base-10 safe integer, with a maximum of 1000. Invalid values are rejected; use narrower time or event-type filters for deeper history.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 1000
+        default: 0
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of positive chain IDs (single value allowed). Duplicate IDs are removed in first-occurrence order; at most 20 distinct IDs and 512 input characters are accepted.
+      example: 1,10,8453
+    HistoryToParam:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2147483647
+      description: Unix timestamp in seconds, no later than 2038-01-19T03:14:07Z.
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+        maximum: 100
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
   responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Error415:
       description: Unsupported media type
       headers:
@@ -658,17 +1589,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error413:
-      description: Request body too large
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error400:
-      description: Bad request
+    Error404:
+      description: Not found
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -689,8 +1611,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error500:
-      description: Internal server error
+    Error504:
+      description: Upstream request timed out
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -698,8 +1620,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
+    Error413:
+      description: Request body too large
       headers:
         X-Request-Id:
           $ref: '#/components/headers/X-Request-Id'
@@ -707,59 +1629,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-  parameters:
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-    IncludeParam:
-      name: include
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of related resources to expand. Unknown values are ignored.
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
-    ChainIdPath:
-      name: chainId
-      in: path
-      required: true
-      schema:
-        type: integer
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
-      schema:
-        type: string
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -771,18 +1640,3 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
-    AdminSecret:
-      type: apiKey
-      in: header
-      name: X-Admin-Secret
-      description: Admin secret (server-to-server) for API key management.
-    PlatformSession:
-      type: apiKey
-      in: cookie
-      name: euler_platform_session
-      description: Signed, httpOnly platform-operator browser session cookie.
-    PlatformCsrf:
-      type: apiKey
-      in: header
-      name: X-CSRF-Token
-      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

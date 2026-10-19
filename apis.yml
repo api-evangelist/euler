@@ -196,31 +196,6 @@ apis:
       https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
   - type: GraphQL
     url: graphql/euler-graphql.md
-- aid: euler:euler-auth-api
-  name: Euler Finance Auth API
-  description: >-
-    Authentication and authorization conventions used across the API, including API keys, admin secrets,
-    and rate-limit behavior.
-  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  baseURL: https://v3.euler.finance/v3
-  tags:
-  - Authentication
-  tags_raw:
-  - Auth
-  properties:
-  - type: OpenAPI
-    url: openapi/euler-auth-api-openapi.yml
-  - type: Documentation
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: SwaggerUI
-    url: https://v3.euler.finance/v3/docs
-  - type: PricingPage
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: RateLimits
-    url: >-
-      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
-  - type: GraphQL
-    url: graphql/euler-graphql.md
 - aid: euler:euler-chains-api
   name: Euler Finance Chains API
   description: >-
@@ -233,29 +208,6 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/euler-chains-api-openapi.yml
-  - type: Documentation
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: SwaggerUI
-    url: https://v3.euler.finance/v3/docs
-  - type: PricingPage
-    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  - type: RateLimits
-    url: >-
-      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
-  - type: GraphQL
-    url: graphql/euler-graphql.md
-- aid: euler:euler-curator-api
-  name: Euler Finance Curator API
-  description: >-
-    Curator-managed metadata such as labels, descriptions, and visibility controls. This is the operator-owned
-    customization surface in v3.
-  humanURL: https://docs.euler.finance/developers/data-querying/euler-v3-api
-  baseURL: https://v3.euler.finance/v3
-  tags:
-  - Curator
-  properties:
-  - type: OpenAPI
-    url: openapi/euler-curator-api-openapi.yml
   - type: Documentation
     url: https://docs.euler.finance/developers/data-querying/euler-v3-api
   - type: SwaggerUI
@@ -606,6 +558,261 @@ apis:
       https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
   - type: GraphQL
     url: graphql/euler-graphql.md
+- aid: euler:euler-activity-api
+  name: Euler Finance Activity API
+  description: >-
+    Normalized vault and owner event timelines with explicit per-chain source coverage and cursor pagination.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Activity
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-activity-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-changes-api
+  name: Euler Finance Changes API
+  description: >-
+    Change requests for managed data. Every data area (token images, price sources, and later ones) goes
+    through the same routes, with server-side checks, a per-domain policy that applies or proposes, admin
+    review, revert, and an auto-apply kill switch.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Changes
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-changes-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-compliance-api
+  name: Euler Finance Compliance API
+  description: Capability-gated address screening for trusted server-side consumers.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Compliance
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-compliance-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-images-api
+  name: Euler Finance Images API
+  description: >-
+    Stable, extensionless image URLs and the authenticated image catalog used by Euler applications.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Images
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-images-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-labels-api
+  name: Euler Finance Labels API
+  description: >-
+    The labeling system behind the Toolbox: entity and product profiles, vault labels, vault assessments,
+    geo policies, and label publishing. The address that governs a vault is its governing address: the
+    governor of an EVK or Securitize vault, the owner of an Earn vault. In this API "controller" always
+    means the EVC controller, the liability vault an account has enabled through the Ethereum Vault Connector,
+    never the address that governs a vault.
+
+
+    **Errors on the `/v3/labels` routes.** Key on the status, `error.code` and `error.details.reason`;
+    `error.message` is for people and may change. `details.cause` narrows a reason that has several causes.
+    An error without a reason is the only one its route answers with that status and code. The labels
+    routes never answer `SERVICE_DISABLED`.
+
+
+    | Status | Code | `details.reason` | Meaning |
+
+    |---|---|---|---|
+
+    | 401 | UNAUTHORIZED | `invalid-session` | No active session of a kind the route accepts. |
+
+    | 403 | FORBIDDEN | `authorization-denied` | The actor may not make this write. `details.cause`: `platform-admin-denied`,
+    `missing-csrf` or `csrf-mismatch` on platform-only routes; `wrong-entity`, `insufficient-role`, `unsupported-actor`,
+    `inactive-actor`, `malformed-actor` or `missing-actor` on entity, member, address, product and vault
+    writes. |
+
+    | 403 | FORBIDDEN | `missing-csrf`, `csrf-mismatch` | Entity-or-platform route, unsafe method: the
+    CSRF header is missing or does not match. While a session changes under the request the reason can
+    also be `missing-session`, `invalid-session`, `expired-session`, `entity-member-denied`, `entity-auth-disabled`
+    or `platform-admin-denied`. |
+
+    | 403 | FORBIDDEN | `entity-suspended` | The member's entity is suspended by the platform. |
+
+    | 403 | FORBIDDEN | `entity-admin-required` | The route needs an entity admin; the session is an editor.
+    |
+
+    | 403 | FORBIDDEN | `entity-scope-denied` | A draft read of another entity's rows. |
+
+    | 403 | FORBIDDEN | `self-demotion-denied`, `self-revoke-denied` | An entity admin demoting or revoking
+    their own membership. |
+
+    | 403 | FORBIDDEN | `published-row` | An entity member deleting a product the public has seen. |
+
+    | 403 | FORBIDDEN | `ungoverned-locked` | An ungoverned vault or product is write-once for entity
+    members. |
+
+    | 403 | FORBIDDEN | `ownership-denied` | No entity address governs the vault; on a product, `details.addresses`
+    lists the vaults the entity no longer governs. |
+
+    | 403 | FORBIDDEN | `vault-not-claimable` | An escrow vault, or a vault type an entity cannot claim.
+    |
+
+    | 403 | FORBIDDEN | `no-governing-address` | The vault has no governor or owner on chain (`details.role`);
+    only Euler can assign it. |
+
+    | 403 | FORBIDDEN | `capability-denied`, `api-key-read-only`, `platform-session-required` | An API
+    key without the capability, a key on a write a read grant cannot make, or an action only a platform
+    session may take. |
+
+    | 404 | NOT_FOUND | `unknown-vault` | The vault is not in indexed factory discovery. |
+
+    | 404 | NOT_FOUND | `label-set-not-found`, `label-version-not-found`, `hold-not-found`, `resource-not-found`
+    | Label set, version, hold and quarantine routes. |
+
+    | 404 | NOT_FOUND | none | The entity, member, address, product, vault labels or listing override
+    does not exist. On the label reads, a 404 with `details.labelSet` and `details.version` means the
+    label set or version could not be resolved; only that 404 carries `details.labelSet`. |
+
+    | 404 | CHAIN_NOT_SUPPORTED | none | A product or vault delete or transfer on a chain the deployment
+    does not serve. |
+
+    | 404 | CHAIN_CAPABILITY_DISABLED | none | A product or vault delete or transfer, or a listing override,
+    on a served chain without labels; `details.chainIds` and `details.capability: labels`. A write naming
+    such a chain in its body or path answers 422 naming `chainId`. |
+
+    | 409 | CONFLICT | `duplicate` | The entity, address, product or vault labels already exist. |
+
+    | 409 | CONFLICT | `already-member`, `email-unavailable` | Adding a member: the email is already an
+    active member of this entity (`details.memberId`), or another entity holds it (only a platform session
+    also gets `details.entityId` and `details.revokedAt`). |
+
+    | 409 | CONFLICT | `address-taken` | The address is registered to another entity (`details.holderEntityId`).
+    |
+
+    | 409 | CONFLICT | `already-revoked`, `last-active-admin-denied` | The member is already revoked,
+    or the change would leave the entity without an active admin. |
+
+    | 409 | CONFLICT | `referenced` | Entity delete while products, claimed vaults or co-brands reference
+    it (`details.references`). |
+
+    | 409 | CONFLICT | `vault-type-mismatch`, `mixed-governance`, `invalid-membership` | The vault type
+    differs from discovery (`details.actualType`), the product would mix governed and ungoverned vaults,
+    or a vault type cannot belong to a product (`details.addresses`). |
+
+    | 409 | CONFLICT | `already-quarantined`, `already-released`, `entity-hold` | Hold routes; an entity
+    hold is released by resuming the entity. |
+
+    | 409 | CONFLICT | `label-set-not-publishable`, `version-exists`, `publication-suspended`, `restore-conflict`
+    | Publishing and restoring label versions. |
+
+    | 412 | PRECONDITION_FAILED | none | `If-Match` names an older `updatedAt`; `details.updatedAt` is
+    the current one. |
+
+    | 412 | PRECONDITION_FAILED | `draft-changed` | A publish's `expectedDraftToken` no longer matches
+    its dry run; `details.draftToken` is the current one. |
+
+    | 412 | PRECONDITION_FAILED | `stale-review` | A hold or release whose `expectedContentHash` no longer
+    matches the draft row; `details.contentHash` is the current one, and nothing is written. |
+
+    | 503 | SERVICE_UNAVAILABLE | `publication-in-progress` | A publication holds the label set; retry
+    after `Retry-After` (5 seconds). |
+
+    | 503 | SERVICE_UNAVAILABLE | `ownership-unavailable`, `governance-unavailable`, `capability-check-unavailable`
+    | On-chain ownership, product governance or an API key capability could not be checked. |
+
+    | 400 | BAD_REQUEST, VALIDATION_ERROR, INVALID_ADDRESS, INVALID_CHAIN_ID | none | Malformed JSON or
+    filter (`details.param`), a malformed `If-Match`, or a malformed address or chain id in the path.
+    |
+
+    | 422 | VALIDATION_ERROR | none | Body or query validation; `details.issues[]` names each `path`.
+    |
+
+    | 413, 415, 429 | PAYLOAD_TOO_LARGE, UNSUPPORTED_MEDIA_TYPE, RATE_LIMIT_EXCEEDED | none | A body over
+    1 MiB, a body that is not JSON, or a rate limit (`Retry-After`). |
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Labels
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-labels-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
+- aid: euler:euler-securitize-api
+  name: Euler Finance Securitize API
+  description: >-
+    Securitize collateral vaults, which the Securitize factory deploys and the issuer governs. Separate
+    from the EVK routes, which never list them.
+  humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
+  baseURL: https://app.euler.finance/api/v1
+  tags:
+  - Securitize
+  properties:
+  - type: OpenAPI
+    url: openapi/euler-securitize-api-openapi.yml
+  - type: Documentation
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: SwaggerUI
+    url: https://v3.euler.finance/v3/docs
+  - type: PricingPage
+    url: https://docs.euler.finance/developers/data-querying/euler-v3-api
+  - type: RateLimits
+    url: >-
+      https://raw.githubusercontent.com/api-evangelist/euler/refs/heads/main/rate-limits/euler-v3-api.yml
+  - type: GraphQL
+    url: graphql/euler-graphql.md
 - aid: euler:euler-graph-ql-api
   name: Euler Finance Graph QL API
   description: >-
@@ -613,8 +820,6 @@ apis:
   humanURL: https://docs.euler.finance/developers/data-querying/off-chain-prices
   baseURL: https://app.euler.finance/api/v1
   tags:
-  - GraphQL
-  tags_raw:
   - Graph QL
   properties:
   - type: OpenAPI

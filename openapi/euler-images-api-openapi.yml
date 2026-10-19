@@ -1,0 +1,2116 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Images API
+  version: 3.0.0
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Images
+  description: Stable, extensionless image URLs and the authenticated image catalog used by Euler applications.
+paths:
+  /v3/images:
+    get:
+      tags:
+      - Images
+      summary: Get the public image base URL
+      description: 'Public. Returns the base URL that every `logoURI` V3 serves starts with, for example `https://v3.euler.finance/v3/images`, so a client loads images from the same V3 as its data. Image paths go under it: `/tokens/{chainId}/{address}`, `/chains/{chainId}` and `/{namespace}/{assetKey}`. Cached as `public, max-age=3600`.'
+      x-status: implemented
+      responses:
+        '200':
+          description: The image base URL.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=3600
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: object
+                    required:
+                    - publicBaseUrl
+                    properties:
+                      publicBaseUrl:
+                        type: string
+                        format: uri
+                        description: The configured image base URL without a trailing slash.
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getImageBase
+  /v3/images/tokens/{chainId}/{address}:
+    get:
+      tags:
+      - Images
+      summary: Get a token image
+      description: Returns the managed token image, or the managed `defaults/token` image when the token image is missing. Default responses use `public, max-age=300` even with a version query, and return 404 if the default is unavailable. A request whose `v` names the token's own current image digest is cached as `public, max-age=31536000, immutable`; other managed token image requests get `public, max-age=3600, stale-while-revalidate=86400`.
+      x-status: implemented
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      - $ref: '#/components/parameters/ImageVersionQuery'
+      responses:
+        '200':
+          description: Normalized token image or managed default.
+          headers:
+            ETag:
+              schema:
+                type: string
+            Last-Modified:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '304':
+          description: The supplied ETag is current.
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getTokenImage
+    head:
+      tags:
+      - Images
+      summary: Get token image headers
+      description: Returns the token image or managed defaults/token headers without an image body. Default responses use public, max-age=300 even with a version query; a missing default returns 404.
+      x-status: implemented
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      - $ref: '#/components/parameters/ImageVersionQuery'
+      responses:
+        '200':
+          description: Normalized token image or managed default headers.
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                enum:
+                - image/webp
+            Content-Length:
+              schema:
+                type: integer
+                minimum: 0
+            ETag:
+              schema:
+                type: string
+            Last-Modified:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+        '304':
+          description: The supplied ETag is current.
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: headTokenImage
+  /v3/images/{namespace}/{assetKey}:
+    get:
+      tags:
+      - Images
+      summary: Get a managed image
+      description: 'Serves any managed image, for example chain logos at `/v3/images/chains/{chainId}` and the default token image at `/v3/images/defaults/token`. Caching follows the token image route: immutable when `v` names the current digest, an hour otherwise. Token namespace misses serve `defaults/token` with a five-minute cache. Missing labels and other non-token assets return 404.'
+      x-status: implemented
+      parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,63}$
+      - name: assetKey
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9._-]{0,254}$
+      - $ref: '#/components/parameters/ImageVersionQuery'
+      responses:
+        '200':
+          description: Normalized managed image.
+          headers:
+            ETag:
+              schema:
+                type: string
+            Last-Modified:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '304':
+          description: The supplied ETag is current.
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getManagedImage
+    head:
+      tags:
+      - Images
+      summary: Get managed image headers
+      description: Returns the managed image status and cache headers without an image body.
+      x-status: implemented
+      parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,63}$
+      - name: assetKey
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9._-]{0,254}$
+      responses:
+        '200':
+          description: Normalized managed image headers.
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                enum:
+                - image/webp
+            Content-Length:
+              schema:
+                type: integer
+                minimum: 0
+            ETag:
+              schema:
+                type: string
+            Last-Modified:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+        '304':
+          description: The supplied ETag is current.
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: headManagedImage
+  /v3/work-items:
+    get:
+      tags:
+      - Images
+      summary: List work items of one type
+      description: '`token-logo-missing` requires `token-images:read` or an allowlisted Toolbox session. It returns in-scope assets (an asset of a vault the app shows, or of a collateral such a vault accepts) on enabled chains without a managed image, excluding applied removals and dismissals, with the worker''s latest outcome, provider, attempt time and next retry time when available, and returns 503 until legacy occupancy is verified and source cutover is enabled. Scope inputs may be up to a minute old. With `state=reviewed` it lists dismissals instead.
+
+
+        `token-price-missing` requires `price-sources:read` or an allowlisted Toolbox session. It is computed on each read for every in-scope asset (an asset of a vault the app shows) that is not priced, ordered by priority, then by deposits in USD at the last price. Inputs other than reviews may be up to a minute old; a dismissal or resume shows on the next read. A proposed dismissal leaves the item outstanding until an admin approves it.
+
+
+        `asset-newly-exposed` requires `geo:read` or an allowlisted Toolbox session. It lists every asset a vault users can act on reaches, read from the exposure sweep (every 15 minutes): the assets of every EVK, Earn and Securitize vault that is not deprecated, verified or not, explorable or not; the assets of the collaterals the shown vaults accept; and what those are built on. A rule covers an asset when one of its asset selectors picks the asset, or picks a token the asset is built on; a rule limited to one product or vault leaves the item outstanding and is named in `rules`. Ordered by priority (exposure), then deposits in USD, then the newest exposure. `state` is, first match wins, `covered` (a rule applies on the whole chain), `reviewed` (a standing review), `baseline` (exposed when the chain''s first sweep ran, so an existing asset is never new), `unverified-only` (reached only through vaults the app does not show) or `new`. The default `outstanding` is `new` only, and only `new` items count in the open-items gauge; `baseline` and `unverified-only` items are listed and reviewable with their own `state`.
+
+
+        Each `asset-newly-exposed` item carries `coverage`, an onboarding checklist of five decisions: logo, price, category (`tags`), intrinsic APY (`yield`) and geo. A piece is settled when it has its data, an automatic match, or an applied "none" review; a settled piece is never a need. `needs` keeps the items with a need in any of the named pieces: not settled, no open proposal, in scope and not paused. Each piece has its write path, with no route of its own: logo: `POST /v3/changes/uploads` then a `token-images` `fill` (or a verified `fill` with `trustedSource`, or a PT `derive`) on `POST /v3/changes`; "none": `POST /v3/work-items/token-logo-missing/{id}/dismiss` with `no-logo-available`. price: a `price-sources` change on `POST /v3/changes` (key `/:`); "none": `POST /v3/work-items/token-price-missing/{id}/dismiss` with `onchain-only` or `no-price-source`. tags: a `token-tags` change on `POST /v3/changes` (key `::`; the `addresses` rule type tags one token, value `:`); "none": `POST /v3/work-items/token-category-missing/{id}/dismiss` with `no-category`. yield: a `yield-sources` change (key `/:`) or a `yield-pools` change (key `:`) on `POST /v3/changes`; "none": `POST /v3/work-items/token-intrinsic-apy-missing/{id}/dismiss` with `no-intrinsic-apy`. geo: the `/v3/geo-policies` routes or a `geo` change on `POST /v3/changes`; "none": `POST /v3/work-items/asset-newly-exposed/{id}/dismiss` with `no-rule-needed`. `token-category-missing` and `token-intrinsic-apy-missing` have no list of their own: this route returns 400 for them.
+
+
+        For every type, `review.decidedBy` is null for API-key readers. A missing or unknown `type` returns 400 before any capability check.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: type
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - token-logo-missing
+          - token-price-missing
+          - asset-newly-exposed
+      - name: state
+        in: query
+        description: 'Outstanding items (default) or reviewed items. `token-price-missing` also accepts `all` and one outstanding state: `unpriced`, `aging`, `source-stopped` or `onchain-only`. For `token-logo-missing`, reviewed lists dismissals: in-scope tokens without a logo that carry an applied dismissal, each with its `review` (`WorkItemReview`). `asset-newly-exposed` also accepts `all`, `new`, `baseline`, `unverified-only` and `covered`; its `outstanding` is `new` only, with or without `needs`.
+
+          '
+        schema:
+          type: string
+          enum:
+          - outstanding
+          - reviewed
+          - all
+          - unpriced
+          - aging
+          - source-stopped
+          - onchain-only
+          - new
+          - baseline
+          - unverified-only
+          - covered
+          default: outstanding
+      - name: needs
+        in: query
+        description: '`asset-newly-exposed` only. Comma-separated pieces of `logo`, `price`, `tags`, `yield` and `geo`; keeps the items where any of them has `need` true in `coverage`, within `state`.
+
+          '
+        schema:
+          type: string
+          example: logo,price
+      - name: chainId
+        in: query
+        description: 'One chain. A served chain without the capability the list reads answers 404 `CHAIN_CAPABILITY_DISABLED`: `prices` for `token-price-missing`, `labels` for `asset-newly-exposed`. Without it, `asset-newly-exposed` lists the chains that run labels.
+
+          '
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        description: Page size; a value above 100 is clamped to 100.
+        schema:
+          type: integer
+          minimum: 1
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+      responses:
+        '200':
+          description: Work items of the requested type
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/PriceCoverageWorkItemList'
+                - $ref: '#/components/schemas/TokenLogoWorkItemList'
+                - $ref: '#/components/schemas/GeoExposureWorkItemList'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: listWorkItems
+  /v3/changes/targets/token-images/{chainId}/{address}:
+    get:
+      tags:
+      - Images
+      summary: Read token image state, open proposals, and current sourcing suppression
+      description: Requires `token-images:read` or an allowlisted Toolbox session. The open proposals (oldest first, at most 50) and the applied removal or dismissal that suppresses automatic sourcing are change records, as on every change route. API-key responses omit operator attribution from the provenance and the records.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: Current digest, provenance, open proposals, and applied removal or dismissal
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TokenImageTarget'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getTokenImageChangeTarget
+  /v3/changes/uploads:
+    post:
+      tags:
+      - Images
+      summary: Stage a private token image candidate
+      description: Requires `token-images:propose` or an allowlisted Toolbox session. The normalized image is not served by `/v3/images` until a change is applied. Unclaimed stages expire after 24 hours; decided proposal stages are deleted on a best-effort basis after the decision commits.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+          image/svg+xml:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Upload ID and digest
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: stageTokenImageChangeUpload
+components:
+  schemas:
+    AssetCoverageReview:
+      description: The standing review that settles or pauses the piece; null when none does.
+      oneOf:
+      - type: object
+        required:
+        - changeId
+        - kind
+        properties:
+          changeId:
+            type: string
+            format: uuid
+          kind:
+            type:
+            - string
+            - 'null'
+            description: The review kind; null for a stop-for-now review, which pauses the piece.
+      - type: 'null'
+    ChangeEvent:
+      type: object
+      required:
+      - id
+      - event
+      - status
+      - actor
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        event:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+          - withdrawn
+          - superseded
+          - reverted
+          - failed
+          - expired
+        status:
+          type: string
+          enum:
+          - proposed
+          - applied
+          - rejected
+          - superseded
+          - reverted
+          - withdrawn
+          - failed
+          - expired
+        actor:
+          $ref: '#/components/schemas/ChangeActorRef'
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 'What the event recorded. An API-key reader sees only `decision`, `stale`, `kind`, `reason`, `comment` and the related change ids, plus `error` as the generic `{ message: ''The change could not be applied'' }`, as on the change itself.'
+        createdAt:
+          type: string
+          format: date-time
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    ChangeCheck:
+      type: object
+      description: A check the server ran itself. A caller's claims are evidence, never checks.
+      required:
+      - id
+      - outcome
+      - message
+      properties:
+        id:
+          type: string
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - warn
+          - skip
+        message:
+          type: string
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+    AssetCoverageProposal:
+      description: The oldest open proposal that addresses the piece, a proposed "none" review included; null when none does.
+      oneOf:
+      - type: object
+        required:
+        - changeId
+        properties:
+          changeId:
+            type: string
+            format: uuid
+      - type: 'null'
+    GeoExposureWorkItemList:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoExposureWorkItem'
+        meta:
+          allOf:
+          - $ref: '#/components/schemas/PaginationMeta'
+          - type: object
+            required:
+            - counts
+            properties:
+              counts:
+                type: object
+                description: Items per state on the requested chains, before the state filter and paging.
+                required:
+                - new
+                - baseline
+                - unverifiedOnly
+                - reviewed
+                - covered
+                properties:
+                  new:
+                    type: integer
+                  baseline:
+                    type: integer
+                  unverifiedOnly:
+                    type: integer
+                    description: Items in the `unverified-only` state.
+                  reviewed:
+                    type: integer
+                  covered:
+                    type: integer
+    PriceCoverageWorkItem:
+      type: object
+      description: One in-scope asset on the token-price-missing work list.
+      required:
+      - id
+      - chainId
+      - asset
+      - state
+      - since
+      - priority
+      - price
+      - sources
+      - fallback
+      - exposure
+      - review
+      properties:
+        id:
+          type: string
+          description: Opaque work item ID, `<chainId>:<lowercase token address>`.
+          example: 1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+        chainId:
+          type: integer
+        asset:
+          type: object
+          required:
+          - address
+          - symbol
+          - decimals
+          properties:
+            address:
+              type: string
+              description: Lowercase token address.
+            symbol:
+              type:
+              - string
+              - 'null'
+            decimals:
+              type: integer
+        state:
+          type: string
+          enum:
+          - unpriced
+          - aging
+          - source-stopped
+          - onchain-only
+          - reviewed
+          - priced
+          description: '`reviewed` while an applied review stands (see `review.kind`). Otherwise, first match wins: `unpriced` (no eligible price within 24 hours, or never), `aging` (newest price older than 12 hours), `source-stopped` (a fresh price exists but a configured source failed recent runs), `onchain-only` (only the on-chain fallback is fresh) and `priced`. Only served prices count: a source set up per token counts only while the token has an enabled entry for it. Listed items are never `priced`; a dismiss or resume response can be.
+
+            '
+        since:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: 'When the asset entered its state, derived from price and source timestamps; for a reviewed item, the review time. An asset never priced counts from its catalog entry.
+
+            '
+        priority:
+          type: integer
+          description: 4 unpriced, 3 aging, 2 source-stopped, 1 onchain-only, 0 reviewed.
+        price:
+          type:
+          - object
+          - 'null'
+          description: 'Last known served price with its internal source name, of any age: fresh sources by precedence, otherwise the newest stale one.
+
+            '
+          required:
+          - priceUsd
+          - source
+          - timestamp
+          - stale
+          properties:
+            priceUsd:
+              type: number
+              format: double
+            source:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            stale:
+              type: boolean
+              description: True when the price is older than 24 hours.
+        sources:
+          type: array
+          description: 'Configured and observed price sources. Each orchestrator run stores only the highest-ranked source with a fresh quote for the token (the newest quote when none is fresh), in the write-time merge order erc4626-fixed < erc4626 < defillama < coingecko < pendle < pyth. So a configured source silent for 24 hours, or never seen, is `stopped` or `never` only when the fresh winner ranks below it; it is `outranked` when a higher-ranked source won, and its health is then unknown. A source set up per token that the token has no enabled entry for is `stopped`, whatever the age of its last row: V3 no longer serves it. So is the on-chain fallback of a token whose `onchain` entry is disabled.
+
+            '
+          items:
+            type: object
+            required:
+            - source
+            - configured
+            - lastObservedAt
+            - lastPriceUsd
+            - status
+            properties:
+              source:
+                type: string
+              configured:
+                type: boolean
+              lastObservedAt:
+                type:
+                - string
+                - 'null'
+                format: date-time
+              lastPriceUsd:
+                type:
+                - number
+                - 'null'
+                format: double
+              status:
+                type: string
+                enum:
+                - fresh
+                - stopped
+                - never
+                - outranked
+        fallback:
+          type:
+          - object
+          - 'null'
+          description: 'Latest on-chain fallback outcome, read for up to 26 hours. When `outcome` is `priced`, the fallback stored that price. Otherwise it gives the reason for the first step that failed, for example `out-of-scope` (only adapters of vaults the app does not show could price it), `reference-required` (a fixed or rate-provider adapter without an independent reference) or `assessment-warning` (every candidate adapter has failing checks).
+
+            '
+          required:
+          - outcome
+          - priceUsd
+          - adapter
+          - path
+          - evaluatedAt
+          properties:
+            outcome:
+              type: string
+              enum:
+              - priced
+              - out-of-scope
+              - no-candidate
+              - reference-required
+              - reference-mismatch
+              - conflict
+              - assessment-warning
+              - assessment-stale
+              - rpc-behind
+              - decimals
+              - inventory-truncated
+              - wrapper-unresolved
+              - reorg
+              - error
+              - switched-off
+            priceUsd:
+              type:
+              - number
+              - 'null'
+              format: double
+            adapter:
+              type:
+              - string
+              - 'null'
+            path:
+              type:
+              - array
+              - 'null'
+              items:
+                type: object
+                required:
+                - kind
+                - token
+                - adapter
+                properties:
+                  kind:
+                    type: string
+                    enum:
+                    - unwrap
+                    - quote
+                  token:
+                    type: string
+                  adapter:
+                    type:
+                    - string
+                    - 'null'
+            evaluatedAt:
+              type: string
+              format: date-time
+        exposure:
+          type: object
+          required:
+          - vaultCount
+          - vaults
+          - depositsRaw
+          - depositsUsdAtLastPrice
+          properties:
+            vaultCount:
+              type: integer
+            vaults:
+              type: array
+              items:
+                type: object
+                required:
+                - address
+                - symbol
+                - vaultType
+                - role
+                - isEscrow
+                properties:
+                  address:
+                    type: string
+                  symbol:
+                    type:
+                    - string
+                    - 'null'
+                  vaultType:
+                    type: string
+                    enum:
+                    - evk
+                    - earn
+                    - securitize
+                  role:
+                    type: string
+                    enum:
+                    - asset
+                    - collateral
+                  isEscrow:
+                    type: boolean
+            depositsRaw:
+              type: string
+              description: Deposits of the asset in in-scope vaults, in base units.
+            depositsUsdAtLastPrice:
+              type:
+              - number
+              - 'null'
+              format: double
+        review:
+          description: 'The open review, if any. It stays on the item after it lapses (a later price ruled it out), for context; `state` then shows the computed state instead of `reviewed`.
+
+            '
+          oneOf:
+          - $ref: '#/components/schemas/WorkItemReview'
+          - type: 'null'
+    GeoExposureSignals:
+      type: object
+      description: Server-read facts about the token. A read that failed on the last attempt is named in `unavailable`.
+      properties:
+        proxy:
+          type:
+          - object
+          - 'null'
+          description: The proxy the token is (EIP-1967, an EIP-1967 beacon or an EIP-1167 clone); null for a plain contract.
+          required:
+          - kind
+          - implementation
+          properties:
+            kind:
+              type: string
+              enum:
+              - eip1967
+              - eip1967-beacon
+              - eip1167
+            implementation:
+              type: string
+        coingecko:
+          type:
+          - object
+          - 'null'
+          required:
+          - id
+          - categories
+          properties:
+            id:
+              type: string
+            categories:
+              type: array
+              items:
+                type: string
+        unavailable:
+          type: array
+          items:
+            type: string
+            enum:
+            - lineage
+            - fingerprints
+            - coingecko
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    ChangeActorRef:
+      type: object
+      description: 'Who did it. API-key readers see only their own key''s ID; every other actor is shown by kind with a null ID and label.
+
+        '
+      required:
+      - kind
+      - id
+      - label
+      properties:
+        kind:
+          type: string
+          enum:
+          - api-key
+          - platform-admin
+          - admin-secret
+          - system
+          - entity-admin
+        id:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+          description: The platform admin's email or the key's name; null for API-key readers.
+    GeoExposureWorkItem:
+      type: object
+      description: One asset on the asset-newly-exposed work list.
+      required:
+      - id
+      - type
+      - chainId
+      - subject
+      - state
+      - since
+      - firstSeenAt
+      - lastSeenAt
+      - priority
+      - vaults
+      - depositsRaw
+      - depositsUsd
+      - parents
+      - reachedVia
+      - fingerprints
+      - signals
+      - signalsCheckedAt
+      - rules
+      - review
+      properties:
+        id:
+          type: string
+          description: '`<chainId>:<lowercase asset address>`, as on every work list.'
+        type:
+          type: string
+          enum:
+          - asset-newly-exposed
+        chainId:
+          type: integer
+        subject:
+          type: object
+          required:
+          - address
+          - symbol
+          - name
+          - decimals
+          properties:
+            address:
+              type: string
+            symbol:
+              type:
+              - string
+              - 'null'
+            name:
+              type:
+              - string
+              - 'null'
+            decimals:
+              type:
+              - integer
+              - 'null'
+        state:
+          type: string
+          enum:
+          - new
+          - baseline
+          - unverified-only
+          - reviewed
+          - covered
+          description: 'The first that applies: `covered` (a geo rule applies on the whole chain), `reviewed` (a standing review), `baseline` (exposed when the chain''s first sweep ran), `unverified-only` (reached only through vaults the app does not show, by holding or by lineage), `new`. Only `new` is outstanding. An `unverified-only` asset that a shown vault starts to reach becomes `new` on the next sweep.'
+        since:
+          type: string
+          format: date-time
+          description: Start of the current exposure.
+        firstSeenAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+        priority:
+          type: integer
+          minimum: 0
+          description: One step per order of magnitude of `depositsUsd` ($10 is 1, $10M is 7); 0 when unknown or below $1.
+        vaults:
+          type: array
+          description: The vaults that hold the asset itself, shown in the app or not.
+          items:
+            $ref: '#/components/schemas/GeoExposureVault'
+        depositsRaw:
+          type: string
+          description: Deposits of those vaults in the asset's base units.
+        depositsUsd:
+          type:
+          - number
+          - 'null'
+          description: Deposits in USD at the last price, including the tokens built on the asset; null when no price is known.
+        parents:
+          type: array
+          description: What the asset is built on.
+          items:
+            $ref: '#/components/schemas/GeoExposureEdge'
+        reachedVia:
+          type: array
+          description: The exposed tokens built on this asset, through which a vault reaches it.
+          items:
+            $ref: '#/components/schemas/GeoExposureEdge'
+        fingerprints:
+          type: array
+          description: 'The asset''s proxy implementation as `implementation:0x…`, empty for a plain contract. A reviewer signal only: tokens that use the same implementation may come from one issuer or from a common template, and no rule covers a token through it. Code hashes are not recorded.'
+          items:
+            type: string
+            pattern: ^implementation:0x[0-9a-f]{40}$
+        signals:
+          $ref: '#/components/schemas/GeoExposureSignals'
+        signalsCheckedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        rules:
+          type: array
+          description: Geo rules that cover the asset; on a `covered` item one of them applies on the whole chain, otherwise each applies only inside one product or vault.
+          items:
+            type: object
+            required:
+            - policyId
+            - policyType
+            - countries
+            - productId
+            - vaultAddress
+            - match
+            properties:
+              policyId:
+                type: string
+              policyType:
+                type: string
+                enum:
+                - block
+                - restrict
+              countries:
+                type: array
+                items:
+                  type: string
+              productId:
+                type:
+                - string
+                - 'null'
+              vaultAddress:
+                type:
+                - string
+                - 'null'
+              match:
+                type: string
+                enum:
+                - address
+                - symbol
+                - name
+                - lineage
+        review:
+          oneOf:
+          - $ref: '#/components/schemas/WorkItemReview'
+          - type: 'null'
+        coverage:
+          $ref: '#/components/schemas/AssetCoverage'
+    TokenLogoWorkItemList:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenLogoWorkItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    WorkItemReview:
+      type: object
+      description: The applied review that moved a work item off the outstanding list.
+      required:
+      - changeId
+      - kind
+      - reason
+      - decidedBy
+      - decidedAt
+      properties:
+        changeId:
+          type: string
+          format: uuid
+          description: The applied change that records the review.
+        kind:
+          oneOf:
+          - type: string
+            enum:
+            - onchain-only
+            - no-price-source
+            - no-logo-available
+            - no-rule-needed
+            - no-category
+            - no-intrinsic-apy
+          - type: 'null'
+          description: 'The recognized terminal state, or null for a plain dismissal (stop looking for now). `onchain-only` or `no-price-source` on `token-price-missing`; `no-logo-available` on `token-logo-missing`; `no-category` on `token-category-missing` and `no-intrinsic-apy` on `token-intrinsic-apy-missing`, which take no null kind; `no-rule-needed` on `asset-newly-exposed`, where a null-kind review lapses when the asset is exposed again after it. A price item with a null-kind review is `reviewed` and lapses like `no-price-source`: any price observed after the decision brings it back. A logo item with a null-kind review stays reviewed until it is resumed.
+
+            '
+        reason:
+          type: string
+        decidedBy:
+          type:
+          - string
+          - 'null'
+          description: 'The platform admin''s email, else `<actorKind>:<actorId>`. Null for an API-key reader, which never sees operator identities.
+
+            '
+        decidedAt:
+          type: string
+          format: date-time
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    AssetCoveragePiece:
+      type: object
+      required:
+      - state
+      - settled
+      - need
+      - review
+      - proposal
+      properties:
+        settled:
+          type: boolean
+          description: The piece has its data, an automatic match, or an applied "none" review. A settled piece is never a need.
+        need:
+          type: boolean
+          description: Not settled, no open proposal, and the state is neither `out-of-scope` nor `paused`. The `needs` filter matches it.
+        review:
+          $ref: '#/components/schemas/AssetCoverageReview'
+        proposal:
+          $ref: '#/components/schemas/AssetCoverageProposal'
+    TokenImageTarget:
+      type: object
+      required:
+      - chainId
+      - address
+      - token
+      - hasLogo
+      - sha256
+      - provenance
+      - proposals
+      - suppression
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        token:
+          type: object
+          required:
+          - id
+          - symbol
+          - name
+          properties:
+            id:
+              type: string
+            symbol:
+              type: string
+            name:
+              type: string
+        hasLogo:
+          type: boolean
+        sha256:
+          type:
+          - string
+          - 'null'
+          description: The current managed image digest; send it as `expectedVersion`.
+        provenance:
+          type:
+          - object
+          - 'null'
+          properties:
+            sourceUrl:
+              type:
+              - string
+              - 'null'
+            sourceRepository:
+              type:
+              - string
+              - 'null'
+            updatedBy:
+              type:
+              - string
+              - 'null'
+              description: Omitted for API keys.
+        proposals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRecord'
+        suppression:
+          description: The applied removal or dismissal that keeps automatic sourcing off; null when sourcing is open.
+          oneOf:
+          - $ref: '#/components/schemas/ChangeRecord'
+          - type: 'null'
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    GeoExposureVault:
+      type: object
+      required:
+      - address
+      - symbol
+      - vaultType
+      - role
+      - isEscrow
+      - productId
+      properties:
+        address:
+          type: string
+        symbol:
+          type:
+          - string
+          - 'null'
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+        role:
+          type: string
+          enum:
+          - asset
+          - collateral
+        isEscrow:
+          type: boolean
+        productId:
+          type:
+          - string
+          - 'null'
+        strategies:
+          type: array
+          items:
+            type: string
+          description: An Earn vault's strategies, from its supply and withdraw queues.
+    TokenLogoWorkItem:
+      type: object
+      description: One in-scope asset on the token-logo-missing work list.
+      required:
+      - id
+      - chainId
+      - address
+      - symbol
+      - name
+      - workerOutcome
+      - workerProvider
+      - lastAttemptAt
+      - nextRetryAt
+      - review
+      properties:
+        id:
+          type: string
+          description: Opaque work item ID, `<chainId>:<lowercase token address>`, as on every work list.
+          example: 1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+        chainId:
+          type: integer
+        address:
+          type: string
+          description: Lowercase token address.
+        symbol:
+          type: string
+        name:
+          type: string
+        workerOutcome:
+          type:
+          - string
+          - 'null'
+          description: 'The logo worker''s latest outcome for the token: `no_candidate`, `invalid_source`, `provider_failure`, `created` or `already_present`. `shadow_candidate` is a legacy value the worker no longer writes; a token that still shows it is retried at `nextRetryAt`, and that attempt replaces it.'
+        workerProvider:
+          type:
+          - string
+          - 'null'
+        lastAttemptAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        nextRetryAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        review:
+          description: Null on the outstanding list; the applied dismissal on the reviewed list.
+          oneOf:
+          - $ref: '#/components/schemas/WorkItemReview'
+          - type: 'null'
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    ChangeRecord:
+      type: object
+      description: One change in any data domain, with its full record.
+      required:
+      - id
+      - domain
+      - operation
+      - opClass
+      - targetKey
+      - status
+      - reason
+      - value
+      - before
+      - appliedValue
+      - checks
+      - policy
+      - actor
+      - decision
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        domain:
+          type: string
+        operation:
+          type: string
+        opClass:
+          description: What the change does, computed by the server. Geo changes are `tighten` (more people or assets fall under a rule), `loosen` (fewer, including any change that loosens one part) or `update` (nothing anyone is subject to changes, for example the reason).
+          oneOf:
+          - type: string
+            enum:
+            - fill
+            - add
+            - replace
+            - update
+            - remove
+            - enable
+            - disable
+            - tighten
+            - loosen
+            - dismiss
+            - resume
+            - revert
+          - type: 'null'
+        targetKey:
+          type: string
+        status:
+          type: string
+          enum:
+          - proposed
+          - applied
+          - rejected
+          - superseded
+          - reverted
+          - withdrawn
+          - failed
+          - expired
+        reason:
+          type: string
+        rationale:
+          type:
+          - string
+          - 'null'
+        value:
+          description: The proposed after-state, in the domain's value shape.
+        before:
+          description: The state when the change was submitted.
+        appliedValue:
+          description: The state the change wrote, when applied.
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeCheck'
+        policy:
+          $ref: '#/components/schemas/ChangePolicyResult'
+        evidence:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        actor:
+          $ref: '#/components/schemas/ChangeActorRef'
+        decision:
+          type:
+          - object
+          - 'null'
+          required:
+          - actor
+          - at
+          - comment
+          properties:
+            actor:
+              $ref: '#/components/schemas/ChangeActorRef'
+            at:
+              type: string
+              format: date-time
+            comment:
+              type:
+              - string
+              - 'null'
+        expectedVersion:
+          type:
+          - string
+          - 'null'
+        resultingVersion:
+          type:
+          - string
+          - 'null'
+        revertsChangeId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        supersededByChangeId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        expiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        error:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        uploadId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: 'Token images only: the staged upload the change carries.'
+        sourceProvider:
+          type:
+          - string
+          - 'null'
+          description: 'Token images only: `coingecko`, `pendle` or `pendle-pt-ring`; null for an upload.'
+        sourceUrl:
+          type:
+          - string
+          - 'null'
+          description: Token images only.
+        sourceEvidence:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 'Token images only: the provider record or the derivation the image came from.'
+        events:
+          type: array
+          description: Present on the detail read only, oldest first.
+          items:
+            $ref: '#/components/schemas/ChangeEvent'
+    GeoExposureEdge:
+      type: object
+      required:
+      - address
+      - relation
+      properties:
+        address:
+          type: string
+          description: Lowercase token address.
+        relation:
+          type: string
+          enum:
+          - erc4626
+          - evk-share
+          - escrow-share
+          - earn-share
+          - securitize-share
+          - earn-allocation
+          - pendle-pt
+          - pendle-lp
+          - pendle-sy
+          - pendle-yt
+          description: 'How the token is built on the other: in `parents` the other token is what this one wraps; in `reachedVia` the other token wraps this one.'
+    AssetCoverage:
+      type: object
+      description: 'The onboarding checklist of one exposed asset: logo, price, category (`tags`), intrinsic APY (`yield`) and geo. Logo, price, tags and yield apply only to assets shown in the app, the scope of the logo and price lists; any other asset has them as `out-of-scope`. Geo applies to every exposed asset. `paused` is a standing review without a kind (stop for now). Every piece is read in a batch for the page.'
+      required:
+      - logo
+      - price
+      - yield
+      - tags
+      - geo
+      properties:
+        logo:
+          allOf:
+          - $ref: '#/components/schemas/AssetCoveragePiece'
+          - type: object
+            properties:
+              state:
+                type: string
+                enum:
+                - present
+                - none-reviewed
+                - paused
+                - missing
+                - out-of-scope
+                description: 'Settled: `present` (a managed image) or `none-reviewed` (an applied `no-logo-available` review).'
+        price:
+          allOf:
+          - $ref: '#/components/schemas/AssetCoveragePiece'
+          - type: object
+            properties:
+              state:
+                type: string
+                enum:
+                - market
+                - onchain-only-reviewed
+                - none-reviewed
+                - paused
+                - onchain-only
+                - aging
+                - source-stopped
+                - unpriced
+                - out-of-scope
+                description: 'Settled: `market` (a fresh market price), `onchain-only-reviewed` (an `onchain-only` review) or `none-reviewed` (a `no-price-source` review). The `token-price-missing` states `onchain-only`, `aging`, `source-stopped` and `unpriced` without a standing review are needs.'
+        yield:
+          allOf:
+          - $ref: '#/components/schemas/AssetCoveragePiece'
+          - type: object
+            required:
+            - sources
+            properties:
+              state:
+                type: string
+                enum:
+                - configured
+                - none-reviewed
+                - not-applicable
+                - source-stopped
+                - missing
+                - out-of-scope
+                description: 'Intrinsic APY cannot be inferred, so every asset in scope needs a decision. Settled: `configured` (a provider wrote a non-zero intrinsic APY for the asset in the last 7 days, or an enabled entry exists and any provider wrote a row, zero included, in that time), `none-reviewed` (an applied `no-intrinsic-apy` review) or `not-applicable` (an Euler vault share: EVK, Earn, escrow or Securitize). `source-stopped` is a need: an enabled entry with no row for the asset in the last 7 days, a new entry included until its source first runs, or an asset whose only rows are older than 7 days. Only served rows count: a provider set up per token counts only while the asset has an enabled entry for it, and a DefiLlama pool row only while the enabled pool mapping names its pool.'
+              sources:
+                type: array
+                description: '`yield-source`: an enabled yield-source entry; `yield-pool`: an enabled DefiLlama pool mapping; `provider`: a provider serves a non-zero intrinsic APY now.'
+                items:
+                  type: string
+                  enum:
+                  - yield-source
+                  - yield-pool
+                  - provider
+        tags:
+          allOf:
+          - $ref: '#/components/schemas/AssetCoveragePiece'
+          - type: object
+            required:
+            - tags
+            properties:
+              state:
+                type: string
+                enum:
+                - tagged
+                - none-reviewed
+                - untagged
+                - out-of-scope
+                description: 'Settled: `tagged` (any rule tags the token: a CoinGecko category, a symbol rule or an address rule) or `none-reviewed` (an applied `no-category` review). The proposal is a matching symbol, prefix, contains or address rule, or a proposed `no-category` review; category rules are not evaluated here.'
+              tags:
+                type: array
+                description: The tags `/v3/tokens` derives for the token.
+                items:
+                  type: string
+        geo:
+          allOf:
+          - $ref: '#/components/schemas/AssetCoveragePiece'
+          - type: object
+            properties:
+              state:
+                type: string
+                enum:
+                - covered
+                - none-reviewed
+                - paused
+                - outstanding
+                description: 'Settled: `covered` (a geo rule applies on the whole chain) or `none-reviewed` (an applied `no-rule-needed` review). The proposal is a `geo` rule that names the asset address, or a proposed review of the asset.'
+    ChangePolicyResult:
+      type: object
+      required:
+      - version
+      - decision
+      - reasons
+      properties:
+        version:
+          type: string
+        decision:
+          oneOf:
+          - type: string
+            enum:
+            - apply
+            - propose
+          - type: 'null'
+          description: Null on rows recorded before the generic policy existed.
+        reasons:
+          type: array
+          items:
+            type: string
+    PriceCoverageWorkItemList:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceCoverageWorkItem'
+        meta:
+          allOf:
+          - $ref: '#/components/schemas/PaginationMeta'
+          - type: object
+            required:
+            - counts
+            - unreadSources
+            properties:
+              unreadSources:
+                type: array
+                items:
+                  type: string
+                description: Price sources whose token list could not be read. While it is not empty, the list is partial, because entries of these sources are missing from each item's `sources`.
+              counts:
+                type: object
+                description: Listed items on the requested chains, before the state filter and paging.
+                required:
+                - unpriced
+                - aging
+                - sourceStopped
+                - onchainOnly
+                - reviewed
+                properties:
+                  unpriced:
+                    type: integer
+                  aging:
+                    type: integer
+                  sourceStopped:
+                    type: integer
+                  onchainOnly:
+                    type: integer
+                  reviewed:
+                    type: integer
+  parameters:
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    ImageVersionQuery:
+      name: v
+      in: query
+      required: false
+      description: First 8 hex characters of the image's content digest, as `logoURI` carries it. Only the current digest earns the year-long immutable cache; any other value, a malformed one included, is ignored and the image is served with the one-hour cache, never an error.
+      schema:
+        type: string
+        pattern: ^[0-9a-f]{8}$
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  responses:
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404ChainCapability:
+      description: 'Not found, or `CHAIN_CAPABILITY_DISABLED`: a requested chain does not run the capability the operation needs (see `capabilities` on `/v3/chains`), named in `x-chain-capability` or, where it depends on the request, in the parameter. `details.chainIds` lists those chains and `details.capability` names the capability.'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: CHAIN_CAPABILITY_DISABLED
+              message: Chain(s) 137 do not run prices
+              requestId: req_example
+              details:
+                chainIds:
+                - 137
+                capability: prices
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error422:
+      description: Validation error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'

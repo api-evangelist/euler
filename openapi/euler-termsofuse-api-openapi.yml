@@ -2,7 +2,91 @@ openapi: 3.2.0
 info:
   title: Euler Data API (V3) Terms Of Use API
   version: 3.0.0
-  description: API specification for Euler Data v3.
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
 servers:
 - url: /
   description: Current environment
@@ -108,83 +192,31 @@ paths:
           $ref: '#/components/responses/Error404'
       operationId: getTermsOfUseCheckByAddress
 components:
-  schemas:
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
   parameters:
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of positive chain IDs (single value allowed). Duplicate IDs are removed in first-occurrence order; at most 20 distinct IDs and 512 input characters are accepted.
+      example: 1,10,8453
     OffsetParam:
       name: offset
       in: query
       required: false
+      description: Page offset, capped at 10000 to bound query cost.
       schema:
         type: integer
+        minimum: 0
+        maximum: 10000
         default: 0
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
     LimitParam:
       name: limit
       in: query
@@ -192,27 +224,9 @@ components:
       description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
       schema:
         type: integer
+        minimum: 1
         default: 20
         maximum: 100
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-  headers:
-    X-Request-Id:
-      description: Request identifier for tracing.
-      schema:
-        type: string
   responses:
     Error404:
       description: Not found
@@ -232,6 +246,297 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -243,18 +548,3 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
-    AdminSecret:
-      type: apiKey
-      in: header
-      name: X-Admin-Secret
-      description: Admin secret (server-to-server) for API key management.
-    PlatformSession:
-      type: apiKey
-      in: cookie
-      name: euler_platform_session
-      description: Signed, httpOnly platform-operator browser session cookie.
-    PlatformCsrf:
-      type: apiKey
-      in: header
-      name: X-CSRF-Token
-      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

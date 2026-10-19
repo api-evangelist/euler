@@ -1,0 +1,245 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Usage API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Usage
+  description: API usage and API key analytics. These endpoints are intended for operators and consumers tracking traffic, rate limits, and key-level activity.
+paths:
+  /v3/usage/stats:
+    get:
+      tags:
+      - Usage
+      summary: Usage statistics for the authenticated API key
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Usage statistics
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UsageStatsResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getUsageStats
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    UsageStatsResponse:
+      type: object
+      required:
+      - identifier
+      - key
+      - stats
+      - rateLimit
+      properties:
+        identifier:
+          type: string
+        key:
+          type: object
+          required:
+          - id
+          - prefix
+          - name
+          - rateLimit
+          - createdAt
+          - lastUsedAt
+          properties:
+            id:
+              type: string
+            prefix:
+              type: string
+            name:
+              type: string
+            rateLimit:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            lastUsedAt:
+              type: string
+              format: date-time
+              nullable: true
+        stats:
+          type: object
+          required:
+          - daily
+          - weekly
+          - topEndpoints
+          properties:
+            daily:
+              type: object
+              required:
+              - totalRequests
+              - avgResponseTimeMs
+              - errorCount
+              properties:
+                totalRequests:
+                  type: integer
+                avgResponseTimeMs:
+                  type: integer
+                errorCount:
+                  type: integer
+            weekly:
+              type: object
+              required:
+              - totalRequests
+              - avgResponseTimeMs
+              - errorCount
+              properties:
+                totalRequests:
+                  type: integer
+                avgResponseTimeMs:
+                  type: integer
+                errorCount:
+                  type: integer
+            topEndpoints:
+              type: array
+              items:
+                type: object
+                required:
+                - path
+                - method
+                - count
+                - avgResponseTimeMs
+                properties:
+                  path:
+                    type: string
+                  method:
+                    type: string
+                  count:
+                    type: integer
+                  avgResponseTimeMs:
+                    type: integer
+        rateLimit:
+          type: object
+          required:
+          - limit
+          - window
+          properties:
+            limit:
+              type: integer
+            window:
+              type: string
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  responses:
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

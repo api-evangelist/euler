@@ -1,0 +1,380 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Health API
+  version: 3.0.0
+  description: API specification for Euler Data v3.
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Health
+  description: Liveness, readiness, and dashboard-friendly platform status checks. Use these for operational monitoring, not for reconstructing full portfolio state.
+paths:
+  /v3/health:
+    get:
+      tags:
+      - Health
+      summary: Basic health check
+      x-status: implemented
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/HealthResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getHealth
+  /v3/health/detailed:
+    get:
+      tags:
+      - Health
+      summary: Dependency health check
+      x-status: implemented
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DetailedHealthResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getHealthDetailed
+  /v3/health/live:
+    get:
+      tags:
+      - Health
+      summary: Liveness probe
+      x-status: implemented
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: object
+                    required:
+                    - status
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                        - ok
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getHealthLive
+  /v3/health/ready:
+    get:
+      tags:
+      - Health
+      summary: Readiness probe
+      x-status: implemented
+      responses:
+        '200':
+          description: Ready
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: object
+                    required:
+                    - status
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                        - ready
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '503':
+          description: Not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: object
+                    required:
+                    - status
+                    - reasons
+                    - checks
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                        - not_ready
+                      reasons:
+                        type: array
+                        items:
+                          type: string
+                      checks:
+                        type: object
+                        properties:
+                          database:
+                            type: string
+                            enum:
+                            - ok
+                            - error
+                          redis:
+                            type: string
+                            enum:
+                            - ok
+                            - error
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+      operationId: getHealthReady
+  /v3/metrics:
+    get:
+      tags:
+      - Health
+      summary: Prometheus metrics endpoint
+      description: Internal observability endpoint for Prometheus scraping.
+      x-status: implemented
+      security:
+      - AdminSecret: []
+      responses:
+        '200':
+          description: Prometheus metrics text payload
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+      operationId: getMetrics
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - INVALID_ADDRESS
+
+                - CHAIN_NOT_SUPPORTED
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    HealthResponse:
+      type: object
+      required:
+      - status
+      - version
+      - uptime
+      - timestamp
+      properties:
+        status:
+          type: string
+          enum:
+          - healthy
+          - degraded
+          - unhealthy
+        version:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+    DetailedHealthResponse:
+      allOf:
+      - $ref: '#/components/schemas/HealthResponse'
+      - type: object
+        required:
+        - checks
+        properties:
+          checks:
+            type: object
+            properties:
+              database:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - ok
+                    - error
+                  latency:
+                    type: number
+                  error:
+                    type: string
+              redis:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - ok
+                    - error
+                  latency:
+                    type: number
+                  error:
+                    type: string
+              indexer:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - ok
+                    - syncing
+                    - error
+                  blocksBehind:
+                    type: integer
+                  syncProgress:
+                    type: number
+                  latency:
+                    type: number
+                  error:
+                    type: string
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+  responses:
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-Admin-Secret
+      description: Admin secret (server-to-server) for API key management.
+    PlatformSession:
+      type: apiKey
+      in: cookie
+      name: euler_platform_session
+      description: Signed, httpOnly platform-operator browser session cookie.
+    PlatformCsrf:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

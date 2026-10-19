@@ -1,0 +1,1006 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Compliance API
+  version: 3.0.0
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Compliance
+  description: Capability-gated address screening for trusted server-side consumers.
+paths:
+  /v3/compliance/address-screening:
+    post:
+      tags:
+      - Compliance
+      summary: Screen an address with TRM
+      description: 'Screens an EVM address using TRM and the versioned Euler policy. The endpoint
+
+        requires an active, unexpired API key with the `compliance:screen`
+
+        capability, or a platform session whose operator is on the admin allowlist
+
+        (the Toolbox, with the CSRF header); a session also receives the matched rules,
+
+        the evaluation id, its expiry and the retained provider payload. It applies a
+
+        dedicated per-caller limit of 100 requests per minute by default. Results can reuse
+
+        a fresh evaluation for the configured window (24 hours by default), while every
+
+        capability-authorized request, including requests rejected before provider screening,
+
+        is retained in the screening audit history. The service fails closed with 503 when screening cannot
+
+        produce a trustworthy result or when production enablement is off, and the two are told apart by
+
+        the error code rather than the status: `SERVICE_DISABLED` with `details.reason: disabled` means this
+
+        deployment carries no provider, so retrying can never succeed, while `SERVICE_UNAVAILABLE` with
+
+        `details.reason: unavailable` is a configured provider that failed and is worth retrying.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressScreeningRequest'
+      responses:
+        '200':
+          description: Address screening result.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AddressScreeningResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: postComplianceAddressScreening
+  /v3/compliance/address-screening/evaluations:
+    get:
+      tags:
+      - Compliance
+      summary: Address screening evaluations (history)
+      description: 'Pages through the retained provider evaluations, newest first, including
+
+        the raw provider payload and the screened address. Requires an active,
+
+        unexpired API key with the `compliance:screening-read`
+
+        capability, a separate grant from `compliance:screen`, or a platform
+
+        session whose operator is on the admin allowlist (the Toolbox).
+
+        Responses are compliance data: `Cache-Control: no-store`, never log them.
+
+        `suspicious=true|false` keeps one verdict. A query parameter this route does not
+
+        list answers 400 `VALIDATION_ERROR`.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AddressScreeningHistoryAddressParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryChainParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryFromParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryToParam'
+      - $ref: '#/components/parameters/AddressScreeningEvaluationSuspiciousParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryLimitParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: Evaluations matching the filter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AddressScreeningEvaluationRecord'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: listComplianceAddressScreeningEvaluations
+  /v3/compliance/address-screening/requests:
+    get:
+      tags:
+      - Compliance
+      summary: Address screening request audit log (history)
+      description: 'Pages through the append-only request audit log, newest first: which key
+
+        asked, for which address and chain, whether a cached evaluation was
+
+        reused, and how rejected or failed requests ended. Requires the
+
+        `compliance:screening-read` capability or an allowlisted platform
+
+        session. Responses are compliance data: `Cache-Control: no-store`,
+
+        never log them. The log records no verdict, so there is no `suspicious`
+
+        filter here: it answers 400 `VALIDATION_ERROR`, like any query parameter
+
+        this route does not list.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AddressScreeningHistoryAddressParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryChainParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryFromParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryToParam'
+      - $ref: '#/components/parameters/AddressScreeningHistoryLimitParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: Request audit rows matching the filter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AddressScreeningRequestRecord'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: listComplianceAddressScreeningRequests
+  /v3/compliance/address-screening/stats:
+    get:
+      tags:
+      - Compliance
+      summary: Address screening activity (usage)
+      description: 'How much screening happened in each trailing window: provider calls
+
+        (one per retained evaluation, the provider''s billable unit), flagged
+
+        evaluations, and the requests around them (total, cache hits, failed).
+
+        Defaults to the last 24, 72 and 168 hours; `hours` names up to eight
+
+        windows. Requires the `compliance:screening-read` capability or an
+
+        allowlisted platform session.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - name: hours
+        in: query
+        required: false
+        description: Comma-separated trailing windows in whole hours, 1 to 8760 each, at most eight.
+        schema:
+          type: string
+          example: 24,72,168
+      responses:
+        '200':
+          description: Activity per window.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AddressScreeningActivity'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getComplianceAddressScreeningStats
+components:
+  schemas:
+    AddressScreeningResponse:
+      type: object
+      required:
+      - address
+      - addressIsSuspicious
+      - screenedAt
+      - resolvedChain
+      - cached
+      - ruleVersion
+      properties:
+        evaluationId:
+          type: string
+          format: uuid
+          description: Platform sessions only. The evaluation the answer rests on.
+        matchedRules:
+          type: array
+          items:
+            type: string
+          description: Platform sessions only. The policy rules that matched.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Platform sessions only. Until when the evaluation is reused.
+        providerStatusCode:
+          type: integer
+          description: Platform sessions only.
+        providerResponse:
+          description: Platform sessions only. The raw provider payload as retained.
+        address:
+          type: string
+          description: EIP-55 checksummed address.
+        addressIsSuspicious:
+          type: boolean
+        screenedAt:
+          type: string
+          format: date-time
+        resolvedChain:
+          type: string
+          description: Chain accepted by TRM after its compatibility fallback, if required.
+        cached:
+          type: boolean
+        ruleVersion:
+          type: string
+          example: trm-custom-v1
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    AddressScreeningRequestRecord:
+      type: object
+      required:
+      - id
+      - apiKeyId
+      - apiKeyPrefix
+      - platformAdminId
+      - evaluationId
+      - address
+      - chain
+      - vpnIsUsed
+      - cacheHit
+      - outcome
+      - failureCode
+      - providerStatusCode
+      - requestedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        apiKeyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The key that asked; null when a platform session did.
+        apiKeyPrefix:
+          type: string
+          description: The key's prefix, or `platform-session`.
+        platformAdminId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The operator whose platform session asked; null for key requests.
+        evaluationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The evaluation the request produced or reused; null for rejected or failed requests.
+        address:
+          type: string
+          nullable: true
+          description: EIP-55 checksummed address, or null when the request could not be parsed safely.
+        chain:
+          type: string
+          nullable: true
+        vpnIsUsed:
+          type: boolean
+          nullable: true
+        cacheHit:
+          type: boolean
+        outcome:
+          type: string
+          enum:
+          - completed
+          - failed
+        failureCode:
+          type: string
+          nullable: true
+        providerStatusCode:
+          type: integer
+          nullable: true
+        requestedAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    AddressScreeningEvaluationRecord:
+      type: object
+      required:
+      - id
+      - provider
+      - address
+      - requestedChain
+      - resolvedChain
+      - addressIsSuspicious
+      - ruleVersion
+      - matchedRules
+      - providerResponse
+      - providerStatusCode
+      - evaluatedAt
+      - expiresAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          example: trm
+        address:
+          type: string
+          description: EIP-55 checksummed address.
+        requestedChain:
+          type: string
+        resolvedChain:
+          type: string
+        addressIsSuspicious:
+          type: boolean
+        ruleVersion:
+          type: string
+        matchedRules:
+          type: array
+          items:
+            type: string
+        providerResponse:
+          description: The raw provider payload as retained for compliance review.
+        providerStatusCode:
+          type: integer
+        evaluatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    AddressScreeningRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - address
+      properties:
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+        chain:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[a-zA-Z0-9_-]+$
+          default: all
+          description: TRM chain identifier. Defaults to `all`, which screens the address across every chain TRM supports; pass a single-chain identifier (e.g. `ethereum`) to narrow the scope.
+        vpnIsUsed:
+          type: boolean
+          nullable: true
+          description: Optional VPN-detection flag retained for audit. Omit or send null when not measured.
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    AddressScreeningActivity:
+      type: object
+      required:
+      - generatedAt
+      - windows
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        windows:
+          type: array
+          items:
+            type: object
+            required:
+            - hours
+            - since
+            - providerCalls
+            - flagged
+            - requests
+            - cacheHits
+            - failed
+            properties:
+              hours:
+                type: integer
+              since:
+                type: string
+                format: date-time
+              providerCalls:
+                type: integer
+                description: Retained evaluations in the window, one per provider call.
+              flagged:
+                type: integer
+              requests:
+                type: integer
+                description: Every screening request in the window, whatever its outcome.
+              cacheHits:
+                type: integer
+              failed:
+                type: integer
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  responses:
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Page offset, capped at 10000 to bound query cost.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        default: 0
+    AddressScreeningHistoryChainParam:
+      name: chain
+      in: query
+      required: false
+      description: Matches the requested or resolved chain of an evaluation, or the chain of a request.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 50
+        pattern: ^[a-zA-Z0-9_-]+$
+    AddressScreeningHistoryLimitParam:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    AddressScreeningHistoryFromParam:
+      name: from
+      in: query
+      required: false
+      description: Inclusive lower bound on the evaluation or request time (RFC 3339).
+      schema:
+        type: string
+        format: date-time
+    AddressScreeningEvaluationSuspiciousParam:
+      name: suspicious
+      in: query
+      required: false
+      description: '`true` for the evaluations that flagged the address, `false` for the
+
+        clear ones; absent for both. Applied before paging, so `meta.total`
+
+        counts the matching evaluations.
+
+        '
+      schema:
+        type: string
+        enum:
+        - 'true'
+        - 'false'
+    AddressScreeningHistoryAddressParam:
+      name: address
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: ^0x[a-fA-F0-9]{40}$
+    AddressScreeningHistoryToParam:
+      name: to
+      in: query
+      required: false
+      description: Inclusive upper bound on the evaluation or request time (RFC 3339).
+      schema:
+        type: string
+        format: date-time
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'

@@ -2,7 +2,91 @@ openapi: 3.2.0
 info:
   title: Euler Data API (V3) Entities API
   version: 3.0.0
-  description: API specification for Euler Data v3.
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
 servers:
 - url: /
   description: Current environment
@@ -11,15 +95,15 @@ tags:
 - name: Entities
   description: Platform-admin managed KYBed organization profiles used as backend-owned label and control-plane resources.
 paths:
-  /v3/entities:
+  /v3/labels/entities:
     get:
       tags:
       - Entities
       summary: List entity profiles
-      description: Lists KYBed entity profiles. Requires an active platform-admin session.
+      description: Lists KYBed entity profiles from the latest published label version by default. Explicit mutable-version reads require an active platform-admin session, and so does `include=counts`.
       x-status: implemented
       security:
-      - PlatformSession: []
+      - {}
       parameters:
       - name: limit
         in: query
@@ -33,18 +117,37 @@ paths:
         schema:
           type: integer
           minimum: 0
+          maximum: 10000
           default: 0
       - name: query
         in: query
         schema:
           type: string
+          minLength: 1
+          pattern: \S
         description: Optional case-insensitive filter over entity id and name.
+      - name: include
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - counts
+        description: '`counts` attaches `memberCount` (active members), `adminCount` (active members with the admin role) and `addressCount` (registered addresses) to every row. Team size is an operator''s fact, so the include takes an active platform-admin session whichever version is read; the counts are live, not versioned.'
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
       responses:
         '200':
           description: Entity profile page.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
           content:
             application/json:
               schema:
@@ -77,95 +180,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/LabelContextNotFound'
       operationId: listEntities
-    post:
-      tags:
-      - Entities
-      summary: Create entity profile
-      description: Creates a KYBed entity profile. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityCreateRequest'
-      responses:
-        '201':
-          description: Entity profile was created.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Entity'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Malformed JSON request body.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity slug already exists.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Missing or invalid entity field.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: createEntity
-  /v3/entities/{id}/members:
+  /v3/labels/entities/{id}/addresses:
     get:
       tags:
       - Entities
-      summary: List entity members
-      description: Lists entity members for a KYBed entity. Requires an active platform-admin session.
+      summary: List entity verified addresses
+      description: 'Publicly lists the verified addresses of a KYBed entity. Addresses are
+
+        chain-agnostic: each one counts as ownership evidence on every supported
+
+        chain, so there is no chain filter. A `chainId` query parameter is
+
+        rejected with 422 rather than ignored.'
       x-status: implemented
       security:
-      - PlatformSession: []
+      - {}
       parameters:
       - name: id
         in: path
@@ -185,208 +217,11 @@ paths:
         schema:
           type: integer
           minimum: 0
+          maximum: 10000
           default: 0
-      - name: query
-        in: query
-        schema:
-          type: string
-        description: Optional case-insensitive filter over member email and name.
-      - name: includeRevoked
-        in: query
-        schema:
-          type: boolean
-          default: false
-        description: Include revoked members when true.
       responses:
         '200':
-          description: Entity member page.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EntityMember'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Authenticated session exists, but platform-admin access is not active.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Invalid entity id.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: listEntityMembers
-    post:
-      tags:
-      - Entities
-      summary: Create entity member
-      description: Creates or reactivates an entity member. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityMemberCreateRequest'
-      responses:
-        '201':
-          description: Entity member was created or reactivated.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/EntityMember'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Malformed JSON request body.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity member email already exists.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Missing or invalid member field.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: createEntityMember
-  /v3/entities/{id}/addresses:
-    get:
-      tags:
-      - Entities
-      summary: List entity governance addresses
-      description: Lists chain-scoped governance addresses for a KYBed entity. Requires an active platform-admin session.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      - name: limit
-        in: query
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-      - name: offset
-        in: query
-        schema:
-          type: integer
-          minimum: 0
-          default: 0
-      - name: chainId
-        in: query
-        schema:
-          type: integer
-          minimum: 1
-        description: Optional supported chain ID filter.
-      responses:
-        '200':
-          description: Entity governance address page.
+          description: Entity verified address page.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -405,7 +240,7 @@ paths:
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
         '401':
-          description: Missing, invalid, or expired platform-admin session.
+          description: Missing, invalid, or expired authenticated session.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -414,7 +249,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Authenticated session exists, but platform-admin access is not active.
+          description: Session is inactive, lacks same-entity admin access, or targets a different entity.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -423,7 +258,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Entity profile was not found or chain is unsupported.
+          description: Entity profile was not found.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -432,7 +267,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
-          description: Invalid entity id or chain filter.
+          description: Invalid entity id or pagination, or a removed `chainId` filter was supplied.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -441,393 +276,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       operationId: listEntityAddresses
-    post:
-      tags:
-      - Entities
-      summary: Create entity governance address
-      description: Creates a chain-scoped governance address for a KYBed entity. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityAddressCreateRequest'
-      responses:
-        '201':
-          description: Entity governance address was created.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/EntityAddress'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Malformed JSON request body.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile was not found or chain is unsupported.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity governance address already exists for the entity and chain.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Missing or invalid address field.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: createEntityAddress
-  /v3/entities/{id}/addresses/{chainId}/{address}:
-    delete:
-      tags:
-      - Entities
-      summary: Delete entity governance address
-      description: Deletes a chain-scoped governance address for a KYBed entity. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      - name: chainId
-        in: path
-        required: true
-        schema:
-          type: integer
-          minimum: 1
-        description: Supported chain ID.
-      - name: address
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-        description: Valid EVM address to remove.
-      responses:
-        '200':
-          description: Entity governance address was deleted.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/EntityAddress'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Invalid chain ID or address route parameter.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile, governance address, or chain was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Invalid entity id.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: deleteEntityAddress
-  /v3/entities/{id}/members/{memberId}:
-    patch:
-      tags:
-      - Entities
-      summary: Update entity member
-      description: Updates mutable entity member fields. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      - name: memberId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityMemberUpdateRequest'
-      responses:
-        '200':
-          description: Entity member was updated.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/EntityMember'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Malformed JSON request body.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity member was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity member was already revoked.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Missing or invalid member field.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: updateEntityMember
-    delete:
-      tags:
-      - Entities
-      summary: Revoke entity member
-      description: Soft-revokes an entity member. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      - name: memberId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        '200':
-          description: Entity member was revoked.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/EntityMember'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity member was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity member was already revoked.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Invalid entity or member id.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: revokeEntityMember
-  /v3/entities/{id}:
+  /v3/labels/entities/{id}:
     get:
       tags:
       - Entities
       summary: Get entity profile
-      description: Reads one KYBed entity profile. Requires an active platform-admin session.
+      description: Reads one KYBed entity profile from the latest published label version by default. Explicit mutable-version reads require a platform-admin session or an entity-admin session for the same entity.
       x-status: implemented
       security:
-      - PlatformSession: []
+      - {}
       parameters:
       - name: id
         in: path
@@ -835,12 +292,20 @@ paths:
         schema:
           type: string
           pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
       responses:
         '200':
           description: Entity profile.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
           content:
             application/json:
               schema:
@@ -854,7 +319,7 @@ paths:
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
         '401':
-          description: Missing, invalid, or expired platform-admin session.
+          description: Missing, invalid, or expired authenticated session.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
@@ -872,10 +337,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Entity profile was not found.
+          description: The entity is not in the resolved version (`details.id`; the label context headers are set), or the label set or version could not be resolved (`details.labelSet` and `details.version`, no label context headers). Only the second carries `details.labelSet`.
           headers:
             X-Request-Id:
               $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
           content:
             application/json:
               schema:
@@ -890,327 +361,180 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       operationId: getEntity
-    patch:
-      tags:
-      - Entities
-      summary: Update entity profile
-      description: Updates mutable entity profile fields. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityUpdateRequest'
-      responses:
-        '200':
-          description: Entity profile was updated.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Entity'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '400':
-          description: Malformed JSON request body.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Missing or invalid entity field.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: updateEntity
-    delete:
-      tags:
-      - Entities
-      summary: Delete entity profile
-      description: Deletes an entity profile row. Requires a platform-admin session and CSRF token.
-      x-status: implemented
-      security:
-      - PlatformSession: []
-        PlatformCsrf: []
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-      responses:
-        '200':
-          description: Entity profile was deleted.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Entity'
-                  meta:
-                    $ref: '#/components/schemas/PaginationMeta'
-        '401':
-          description: Missing, invalid, or expired platform-admin session.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Inactive platform-admin access, missing CSRF token, or mismatched CSRF token.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Entity profile was not found.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Entity profile is still referenced by dependent resources.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Invalid entity id.
-          headers:
-            X-Request-Id:
-              $ref: '#/components/headers/X-Request-Id'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      operationId: deleteEntity
 components:
   schemas:
-    ErrorResponse:
+    Entity:
       type: object
       required:
-      - error
+      - id
+      - name
+      - logo
+      - description
+      - url
+      - socialTwitter
+      - socialYoutube
+      - socialDiscord
+      - socialTelegram
+      - socialGithub
+      - socialDefillama
+      - legalEntityName
+      - riskMethodology
+      - security
+      - termsOfService
+      - licenses
+      - disclaimers
+      - createdAt
+      - updatedAt
       properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    EntityUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+          description: Stable lowercase slug identifier.
         name:
           type: string
           pattern: \S
         logo:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            pattern: ^https://
+          - type: string
+            maxLength: 255
+            pattern: ^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$
+          - type: 'null'
+          description: Absolute https URL or a safe asset filename without path separators.
         description:
           type: string
           nullable: true
         url:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
         socialTwitter:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
         socialYoutube:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
         socialDiscord:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
         socialTelegram:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
         socialGithub:
           type: string
           format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
           nullable: true
+        socialDefillama:
+          type: string
+          format: uri
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          maxLength: 2048
+          nullable: true
+        legalEntityName:
+          type: string
+          maxLength: 16384
+          nullable: true
+        riskMethodology:
+          type: string
+          maxLength: 16384
+          nullable: true
+          description: Markdown, at most 16384 characters, stored trimmed; link destinations must be http(s) or relative.
+        security:
+          type: string
+          maxLength: 16384
+          nullable: true
+          description: Markdown, at most 16384 characters, stored trimmed; link destinations must be http(s) or relative.
+        termsOfService:
+          type: string
+          maxLength: 16384
+          nullable: true
+          description: Markdown, at most 16384 characters, stored trimmed; link destinations must be http(s) or relative.
+        licenses:
+          type: string
+          maxLength: 16384
+          nullable: true
+          description: Markdown, at most 16384 characters, stored trimmed; link destinations must be http(s) or relative.
+        disclaimers:
+          type: string
+          maxLength: 16384
+          nullable: true
+          description: Markdown, at most 16384 characters, stored trimmed; link destinations must be http(s) or relative.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        suspendedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Draft reads only; absent on published reads.
+        suspensionReason:
+          type: string
+          nullable: true
+          description: Draft reads by platform sessions only.
+        memberCount:
+          type: integer
+          minimum: 0
+          description: Active (not revoked) members. Present only on `GET /v3/labels/entities?include=counts`.
+        adminCount:
+          type: integer
+          minimum: 0
+          description: Active members with the admin role; zero means nobody can manage the team. Present only on `GET /v3/labels/entities?include=counts`.
+        addressCount:
+          type: integer
+          minimum: 0
+          description: Registered entity addresses. Present only on `GET /v3/labels/entities?include=counts`.
     EntityAddress:
       type: object
+      description: 'A verified address of a KYBed entity. Addresses are chain-agnostic: one
+
+        registration proves that the entity owns the address on every
+
+        supported chain. The address set is the ownership evidence for vault
+
+        claims; a claim is still verified per vault against that vault''s
+
+        governor at a pinned block. One address belongs to at most one entity.
+
+        '
       required:
       - entityId
-      - chainId
       - address
       - label
       properties:
         entityId:
           type: string
           pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        chainId:
-          type: integer
-          minimum: 1
         address:
           type: string
           pattern: ^0x[a-fA-F0-9]{40}$
-          description: EIP-55 checksummed governance address in API responses.
+          description: EIP-55 checksummed verified address in API responses.
         label:
           type: string
           pattern: \S
-          description: Human-readable governance address label.
-    EntityMemberCreateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - email
-      properties:
-        email:
-          type: string
-          format: email
-          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
-        name:
-          type: string
-          pattern: \S
+          maxLength: 512
           nullable: true
-        role:
-          type: string
-          enum:
-          - admin
-          - editor
-          default: editor
-    EntityAddressCreateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - chainId
-      - address
-      - label
-      properties:
-        chainId:
-          type: integer
-          minimum: 1
-        address:
-          type: string
-          pattern: ^0x[a-fA-F0-9]{40}$
-          description: Valid EVM address. Lowercase or correctly checksummed mixed-case input is accepted.
-        label:
-          type: string
-          pattern: \S
-          description: Human-readable governance address label.
+          description: Optional human-readable label. Editable by entity admins and platform admins.
     PaginationMeta:
       type: object
       required:
@@ -1227,187 +551,320 @@ components:
         limit:
           type: integer
           description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
         timestamp:
           type: string
           format: date-time
         chainId:
           type: string
           description: Comma-separated chain IDs for multi-chain responses.
-    Entity:
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
       type: object
       required:
       - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
       - name
-      - logo
-      - description
-      - url
-      - socialTwitter
-      - socialYoutube
-      - socialDiscord
-      - socialTelegram
-      - socialGithub
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
       - createdAt
       - updatedAt
       properties:
         id:
           type: string
           pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-          description: Stable lowercase slug identifier.
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
         name:
           type: string
-          pattern: \S
         logo:
           type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
           nullable: true
         description:
           type: string
           nullable: true
         url:
           type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
           nullable: true
-        socialTwitter:
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
           type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
           nullable: true
-        socialYoutube:
+        isDeprecated:
+          type: boolean
+        deprecationReason:
           type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
           nullable: true
-        socialDiscord:
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
           type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTelegram:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialGithub:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-    EntityMemberUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          pattern: \S
+        hold:
+          type: object
           nullable: true
-        role:
-          type: string
-          enum:
-          - admin
-          - editor
-    EntityMember:
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
       type: object
       required:
       - id
-      - entityId
-      - email
-      - name
-      - role
-      - createdAt
-      - revokedAt
+      - kind
+      - reason
+      - since
       properties:
         id:
           type: string
           format: uuid
-        entityId:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        email:
-          type: string
-          format: email
-          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
-          description: Normalized lowercase email address.
-        name:
-          type: string
-          pattern: \S
-          nullable: true
-        role:
+        kind:
           type: string
           enum:
-          - admin
-          - editor
-        createdAt:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
           type: string
           format: date-time
-        revokedAt:
-          type: string
-          format: date-time
-          nullable: true
-    EntityCreateRequest:
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
       type: object
-      additionalProperties: false
       required:
-      - id
-      - name
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
       properties:
-        id:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
           type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          pattern: \S
-        logo:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        url:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTwitter:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialYoutube:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialDiscord:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialTelegram:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
-          nullable: true
-        socialGithub:
-          type: string
-          format: uri
-          pattern: ^[Hh][Tt][Tt][Pp][Ss]?://
           nullable: true
   headers:
+    X-Label-Version:
+      description: The label version this read resolved. For a published read it is the version's key (`latest`, `production` and other aliases resolve to it, for example `v20260929144948869`); send it back as `version=` to pin later reads to the same snapshot. For a `current` or `draft` read it is `draft`.
+      schema:
+        type: string
+    X-Label-Version-Id:
+      description: The resolved published version's id. Absent on `current` and `draft` reads. It is not accepted as a `version=` selector; pin on `X-Label-Version`.
+      schema:
+        type: string
+        format: uuid
+    X-Label-Set:
+      description: The label set this read resolved, for example `public`.
+      schema:
+        type: string
     X-Request-Id:
       description: Request identifier for tracing.
       schema:
         type: string
+  parameters:
+    LabelVersionParam:
+      name: version
+      in: query
+      required: false
+      description: Version selector. Omission, `latest`, and `production` select the latest published snapshot. Explicit `current` and `draft` select the mutable working copy and require an authorized session as documented by the endpoint. Other published keys and aliases retain their stored casing.
+      schema:
+        type: string
+        default: latest
+    LabelSetParam:
+      name: labelSet
+      in: query
+      required: false
+      description: Label set identifier. Defaults to `public`.
+      schema:
+        type: string
+        default: public
+  responses:
+    LabelContextNotFound:
+      description: 'The label set or version could not be resolved: `labelSet` names no label set, `version` matches no published key or alias, or a `current` or `draft` read names a set other than `public`. This is the only 404 of the label reads that carries `details.labelSet` and `details.version`, which echo the request; a missing row never does, so a client can tell "this label set or version does not exist" from "this row is not labelled".'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -1419,18 +876,3 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
-    AdminSecret:
-      type: apiKey
-      in: header
-      name: X-Admin-Secret
-      description: Admin secret (server-to-server) for API key management.
-    PlatformSession:
-      type: apiKey
-      in: cookie
-      name: euler_platform_session
-      description: Signed, httpOnly platform-operator browser session cookie.
-    PlatformCsrf:
-      type: apiKey
-      in: header
-      name: X-CSRF-Token
-      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

@@ -2,7 +2,91 @@ openapi: 3.2.0
 info:
   title: Euler Data API (V3) Accounts API
   version: 3.0.0
-  description: API specification for Euler Data v3.
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
 servers:
 - url: /
   description: Current environment
@@ -30,7 +114,13 @@ paths:
 
         indexed portfolio view. Freshness metadata indicates whether the refresh
 
-        completed, timed out, or was rate-limited.'
+        completed, timed out, or was rate-limited. When any EVK position has
+
+        unknown debt or controller state, affected SDK rows are omitted and the
+
+        aggregate `portfolio.totals` properties are omitted instead of reporting
+
+        an incomplete result as zero.'
       x-status: implemented
       x-cache-ttl: 60
       parameters:
@@ -88,6 +178,8 @@ paths:
           $ref: '#/components/responses/Error400'
         '404':
           $ref: '#/components/responses/Error404'
+        '504':
+          $ref: '#/components/responses/Error504'
       operationId: getAccountsByAddressPortfolio
   /v3/accounts/{address}/positions:
     get:
@@ -96,13 +188,27 @@ paths:
       summary: Account positions across chains
       description: 'Returns paginated account positions across the selected chain scope.
 
-        Uses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.'
+        Cached reads remain eligible for the server cache even when a client sends
+
+        `Cache-Control: no-cache`; `forceFresh=true` remains an explicit refresh request.
+
+        Uncached reads have a concurrency budget and may return 429 for a caller/key
+
+        budget or 503 when service capacity is temporarily exhausted.
+
+        Uses `meta.hasMore` for pagination continuation on the hot path rather than an exact `meta.total`.
+
+        EVK debt and controller nulls mean unknown, not zero. A failed partial
+
+        live refresh retains a coherent last-known snapshot and its timestamp
+
+        when one exists; otherwise the unknown fields remain null.'
       x-status: implemented
       x-cache-ttl: 60
       parameters:
       - $ref: '#/components/parameters/AddressPath'
       - $ref: '#/components/parameters/ChainIdParam'
-      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/AccountPositionsOffsetParam'
       - $ref: '#/components/parameters/LimitParam'
       - name: forceFresh
         in: query
@@ -166,6 +272,14 @@ paths:
                         nullable: true
                       waitedMs:
                         type: integer
+        '400':
+          $ref: '#/components/responses/Error400'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          $ref: '#/components/responses/Error504'
       operationId: getAccountsByAddressPositions
   /v3/accounts/{address}/activity:
     get:
@@ -201,6 +315,10 @@ paths:
                       $ref: '#/components/schemas/AccountActivity'
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '504':
+          $ref: '#/components/responses/Error504'
       operationId: getAccountsByAddressActivity
   /v3/accounts/{address}/sub-accounts:
     get:
@@ -237,376 +355,11 @@ paths:
                       $ref: '#/components/schemas/SubAccount'
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
       operationId: getAccountsByAddressSubAccounts
 components:
-  parameters:
-    OffsetParam:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 0
-    LimitParam:
-      name: limit
-      in: query
-      required: false
-      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
-      schema:
-        type: integer
-        default: 20
-        maximum: 100
-    AddressPath:
-      name: address
-      in: path
-      required: true
-      schema:
-        type: string
-    ChainIdParam:
-      name: chainId
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Comma-separated list of chain IDs (single value allowed).
-      example: 1,10,8453
-  responses:
-    Error400:
-      description: Bad request
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Error404:
-      description: Not found
-      headers:
-        X-Request-Id:
-          $ref: '#/components/headers/X-Request-Id'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    SerializedPortfolioAccountPosition:
-      type: object
-      properties:
-        account:
-          type: string
-        vaultAddress:
-          type: string
-        vault:
-          $ref: '#/components/schemas/SerializedPortfolioVault'
-        asset:
-          type: string
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        borrowed:
-          type: string
-          description: Raw borrowed asset amount as a bigint string.
-        isController:
-          type: boolean
-        isCollateral:
-          type: boolean
-        balanceForwarderEnabled:
-          type: boolean
-        marketPriceUsd:
-          type: number
-          description: Market USD price number for this position's asset.
-        suppliedValueUsd:
-          type: number
-          description: Market USD value number for this supplied position.
-        borrowedValueUsd:
-          type: number
-          description: Market USD value number for this borrowed position.
-        liquidity:
-          $ref: '#/components/schemas/AccountPositionLiquidity'
-        borrowLiquidationPriceUsd:
-          type: number
-          description: Borrow liquidation price in USD.
-        collateralLiquidationPricesUsd:
-          type: object
-          description: Liquidation prices in USD keyed by collateral address.
-          additionalProperties:
-            type: number
-    AccountActivity:
-      type: object
-      properties:
-        type:
-          type: string
-        chainId:
-          type: integer
-        vault:
-          type: string
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        txHash:
-          type: string
-        blockNumber:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-    PaginationMeta:
-      type: object
-      required:
-      - timestamp
-      properties:
-        total:
-          type: integer
-          description: Exact total count when the endpoint provides one.
-        hasMore:
-          type: boolean
-          description: Indicates whether another page exists beyond the current page.
-        offset:
-          type: integer
-        limit:
-          type: integer
-          description: Echoed page size after endpoint-side clamping.
-        timestamp:
-          type: string
-          format: date-time
-        chainId:
-          type: string
-          description: Comma-separated chain IDs for multi-chain responses.
-    AccountPosition:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        account:
-          type: string
-        vault:
-          type: string
-        vaultType:
-          type: string
-          enum:
-          - evk
-          - earn
-          - securitize
-        asset:
-          type: string
-          nullable: true
-        shares:
-          type: string
-          nullable: true
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          nullable: true
-          description: Raw underlying asset amount as a bigint string.
-        borrowed:
-          type: string
-          nullable: true
-          description: Raw borrowed asset amount as a bigint string.
-        assetsValue:
-          type: string
-          nullable: true
-          description: Contract-derived account-liquidity asset value, raw 18-decimal bigint string.
-        debtValue:
-          type: string
-          nullable: true
-          description: Contract-derived account-liquidity debt value, raw 18-decimal bigint string.
-        isCollateral:
-          type: boolean
-          nullable: true
-        balanceForwarderEnabled:
-          type: boolean
-          nullable: true
-        isController:
-          type: boolean
-          nullable: true
-        liquidity:
-          $ref: '#/components/schemas/AccountPositionLiquidity'
-        subAccount:
-          type: object
-          nullable: true
-          properties:
-            owner:
-              type: string
-              nullable: true
-            timestamp:
-              type: string
-              format: date-time
-              nullable: true
-            lastAccountStatusCheckTimestamp:
-              type: string
-              format: date-time
-              nullable: true
-            enabledControllers:
-              type: array
-              nullable: true
-              items:
-                type: string
-            enabledCollaterals:
-              type: array
-              nullable: true
-              items:
-                type: string
-            isLockdownMode:
-              type: boolean
-              nullable: true
-            isPermitDisabledMode:
-              type: boolean
-              nullable: true
-        snapshot:
-          type: object
-          properties:
-            timestamp:
-              type: string
-              format: date-time
-              nullable: true
-            ageSeconds:
-              type: integer
-              nullable: true
-            source:
-              type: string
-              nullable: true
-            method:
-              type: string
-              nullable: true
-    AccountPortfolioResponse:
-      type: object
-      properties:
-        chainId:
-          type: integer
-        owner:
-          type: string
-        portfolio:
-          type: object
-          properties:
-            savings:
-              type: array
-              items:
-                $ref: '#/components/schemas/PortfolioSavingsPosition'
-            borrows:
-              type: array
-              items:
-                $ref: '#/components/schemas/PortfolioBorrowPosition'
-            positions:
-              type: array
-              items:
-                $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
-            managedLending:
-              type: array
-              items:
-                $ref: '#/components/schemas/PortfolioSavingsPosition'
-            directLending:
-              type: array
-              items:
-                $ref: '#/components/schemas/PortfolioSavingsPosition'
-            totals:
-              type: object
-              properties:
-                suppliedValueUsd:
-                  type: number
-                  description: Market USD number for total supplied value.
-                borrowedValueUsd:
-                  type: number
-                  description: Market USD number for total borrowed value.
-                netAssetValueUsd:
-                  type: number
-                  description: Market USD number for supplied minus borrowed value.
-                netApy:
-                  type: number
-                  description: Public net APY as a percent number.
-                roe:
-                  type: number
-                  description: Return-on-equity ratio number.
-                apyBreakdown:
-                  $ref: '#/components/schemas/YieldApyBreakdown'
-                roeBreakdown:
-                  $ref: '#/components/schemas/YieldApyBreakdown'
-        account:
-          type: object
-          nullable: true
-          additionalProperties: true
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/DataIssue'
-        freshness:
-          type: object
-          properties:
-            latestSnapshotTimestamp:
-              type: integer
-              nullable: true
-            ageSeconds:
-              type: integer
-              nullable: true
-            timestamp:
-              type: string
-              format: date-time
-            mode:
-              type: string
-              enum:
-              - fresh
-              - cached
-            forceFreshRequested:
-              type: boolean
-            refreshTriggered:
-              type: boolean
-            refreshCompleted:
-              type: boolean
-            timedOut:
-              type: boolean
-            rateLimited:
-              type: boolean
-            fallbackReason:
-              type: string
-              nullable: true
-            waitedMs:
-              type: integer
-    AccountPositionLiquidity:
-      type: object
-      nullable: true
-      properties:
-        vaultAddress:
-          type: string
-        unitOfAccount:
-          type: string
-        daysToLiquidation:
-          oneOf:
-          - type: integer
-          - type: string
-            enum:
-            - Infinity
-            - MoreThanAYear
-        liabilityValue:
-          $ref: '#/components/schemas/AccountLiquidityValue'
-        totalCollateralValue:
-          $ref: '#/components/schemas/AccountLiquidityValue'
-        collaterals:
-          type: array
-          items:
-            type: object
-            properties:
-              address:
-                type: string
-              value:
-                $ref: '#/components/schemas/AccountLiquidityValue'
-              marketPriceUsd:
-                type: number
-                description: Market USD price number for the collateral asset.
-              valueUsd:
-                type: number
-                description: Market USD value number for this collateral.
-        liabilityValueUsd:
-          type: number
-          description: Market USD liability value number.
-        totalCollateralValueUsd:
-          type: number
-          description: Market USD collateral value number.
     YieldApyBreakdown:
       type: object
       properties:
@@ -625,180 +378,46 @@ components:
         total:
           type: number
           description: Total APY as a percent number.
-    PortfolioSavingsPosition:
-      type: object
-      properties:
-        position:
-          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
-        vault:
-          $ref: '#/components/schemas/SerializedPortfolioVault'
-        subAccount:
-          type: string
-        shares:
-          type: string
-          description: Raw vault share amount as a bigint string.
-        assets:
-          type: string
-          description: Raw underlying asset amount as a bigint string.
-        suppliedValueUsd:
-          type: number
-          description: Market USD value number for this savings position.
-        apy:
-          type: number
-          description: Public APY as a percent number.
-        apyBreakdown:
-          $ref: '#/components/schemas/YieldApyBreakdown'
-    SubAccount:
+    PaginationMeta:
       type: object
       required:
-      - chainId
-      - owner
-      - addressPrefix
-      - blockNumber
       - timestamp
       properties:
-        chainId:
+        total:
           type: integer
-        owner:
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
           type: string
-        addressPrefix:
-          type: string
-        blockNumber:
-          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
         timestamp:
           type: string
           format: date-time
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: object
-          required:
-          - code
-          - message
-          - requestId
-          properties:
-            code:
-              type: string
-              description: 'Domain error code. Examples:
-
-                - INVALID_ADDRESS
-
-                - CHAIN_NOT_SUPPORTED
-
-                - VAULT_NOT_FOUND
-
-                - TOKEN_NOT_FOUND
-
-                - ACCOUNT_NOT_FOUND
-
-                - VALIDATION_ERROR
-
-                - RATE_LIMIT_EXCEEDED
-
-                - UNSUPPORTED_MEDIA_TYPE
-
-                - UNAUTHORIZED
-
-                - FORBIDDEN
-
-                - INTERNAL_ERROR
-
-                '
-            message:
-              type: string
-            requestId:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-    AccountLiquidityValue:
-      type: object
-      description: Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.
-      properties:
-        borrowing:
+        chainId:
           type: string
-          description: Borrowing value, raw 18-decimal bigint string.
-        liquidation:
-          type: string
-          description: Liquidation value, raw 18-decimal bigint string.
-        oracleMid:
-          type: string
-          description: Oracle midpoint value, raw 18-decimal bigint string.
-    DataIssue:
-      type: object
-      properties:
-        code:
-          type: string
-        severity:
-          type: string
-          enum:
-          - info
-          - warning
-          - error
-        message:
-          type: string
-        locations:
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
           type: array
           items:
-            type: object
-            properties:
-              owner:
-                type: object
-                additionalProperties: true
-              path:
-                type: string
-        source:
-          type: string
-        originalValue: {}
-        normalizedValue: {}
-    SerializedPortfolioVault:
-      type: object
-      properties:
-        address:
-          type: string
-        type:
-          type: string
-          enum:
-          - evk
-          - earn
-          - securitize
-          - unknown
-        asset:
-          type: object
-          properties:
-            address:
-              type: string
-            symbol:
-              type: string
-            decimals:
-              type: integer
-            name:
-              type: string
-        shares:
-          type: object
-          properties:
-            address:
-              type: string
-            symbol:
-              type: string
-            decimals:
-              type: integer
-            name:
-              type: string
-        supplyApy:
-          type: number
-          description: Public supply APY as a percent number.
-        borrowApy:
-          type: number
-          description: Public borrow APY as a percent number.
-        supplyApy1h:
-          type: number
-          description: One-hour public supply APY as a percent number.
-        strategyCount:
-          type: integer
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
     PortfolioBorrowPosition:
       type: object
       properties:
@@ -889,15 +508,813 @@ components:
           $ref: '#/components/schemas/YieldApyBreakdown'
         roeBreakdown:
           $ref: '#/components/schemas/YieldApyBreakdown'
-  headers:
-    Cache-Control:
-      description: Cache policy for this response.
+    AccountPosition:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        account:
+          type: string
+        vault:
+          type: string
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+        asset:
+          type: string
+          nullable: true
+        shares:
+          type: string
+          nullable: true
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          nullable: true
+          description: Raw underlying asset amount as a bigint string.
+        borrowed:
+          type: string
+          nullable: true
+          description: 'Raw borrowed asset amount as a bigint string. `"0"` is a successful
+
+            zero-debt read. `null` means EVK debt is currently unknown; it is not
+
+            a zero balance. Earn and Securitize positions use `"0"` because EVK
+
+            debt is not applicable to those vault types.
+
+            '
+        assetsValue:
+          type: string
+          nullable: true
+          description: Contract-derived account-liquidity asset value, raw 18-decimal bigint string.
+        debtValue:
+          type: string
+          nullable: true
+          description: 'Contract-derived account-liquidity debt value, raw 18-decimal bigint
+
+            string. `null` means the EVK debt read is unknown, not zero.
+
+            '
+        isCollateral:
+          type: boolean
+          nullable: true
+        balanceForwarderEnabled:
+          type: boolean
+          nullable: true
+        isController:
+          type: boolean
+          nullable: true
+          description: 'Explicit EVC controller status when AccountLens provides it. `null`
+
+            means controller status is unknown; a zero debt amount does not imply
+
+            `false`. The field is non-applicable for Earn and Securitize positions.
+
+            '
+        liquidity:
+          $ref: '#/components/schemas/AccountPositionLiquidity'
+        subAccount:
+          type: object
+          nullable: true
+          properties:
+            owner:
+              type: string
+              nullable: true
+            timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            lastAccountStatusCheckTimestamp:
+              type: string
+              format: date-time
+              nullable: true
+            enabledControllers:
+              type: array
+              nullable: true
+              items:
+                type: string
+            enabledCollaterals:
+              type: array
+              nullable: true
+              items:
+                type: string
+            isLockdownMode:
+              type: boolean
+              nullable: true
+            isPermitDisabledMode:
+              type: boolean
+              nullable: true
+        snapshot:
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+              nullable: true
+              description: 'Timestamp of the coherent snapshot represented by this position.
+
+                A failed partial refresh retains the prior snapshot and timestamp
+
+                when replacing it would erase known EVK debt or controller state.
+
+                '
+            ageSeconds:
+              type: integer
+              nullable: true
+            source:
+              type: string
+              nullable: true
+            method:
+              type: string
+              nullable: true
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    SerializedPortfolioVault:
+      type: object
+      properties:
+        address:
+          type: string
+        type:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          - unknown
+        asset:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        shares:
+          type: object
+          properties:
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+            name:
+              type: string
+        supplyApy:
+          type: number
+          description: Public supply APY as a percent number.
+        borrowApy:
+          type: number
+          description: Public borrow APY as a percent number.
+        supplyApy1h:
+          type: number
+          description: One-hour public supply APY as a percent number.
+        strategyCount:
+          type: integer
+    SerializedPortfolioAccountPosition:
+      type: object
+      properties:
+        account:
+          type: string
+        vaultAddress:
+          type: string
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        asset:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        borrowed:
+          type: string
+          description: Raw borrowed asset amount as a bigint string.
+        isController:
+          type: boolean
+        isCollateral:
+          type: boolean
+        balanceForwarderEnabled:
+          type: boolean
+        marketPriceUsd:
+          type: number
+          description: Market USD price number for this position's asset.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this supplied position.
+        borrowedValueUsd:
+          type: number
+          description: Market USD value number for this borrowed position.
+        liquidity:
+          $ref: '#/components/schemas/AccountPositionLiquidity'
+        borrowLiquidationPriceUsd:
+          type: number
+          description: Borrow liquidation price in USD.
+        collateralLiquidationPricesUsd:
+          type: object
+          description: Liquidation prices in USD keyed by collateral address.
+          additionalProperties:
+            type: number
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    AccountLiquidityValue:
+      type: object
+      description: Contract-derived account-liquidity value in unit-of-account terms; each field is a raw 18-decimal bigint string.
+      properties:
+        borrowing:
+          type: string
+          description: Borrowing value, raw 18-decimal bigint string.
+        liquidation:
+          type: string
+          description: Liquidation value, raw 18-decimal bigint string.
+        oracleMid:
+          type: string
+          description: Oracle midpoint value, raw 18-decimal bigint string.
+    AccountPositionLiquidity:
+      type: object
+      nullable: true
+      properties:
+        vaultAddress:
+          type: string
+        unitOfAccount:
+          type: string
+        daysToLiquidation:
+          oneOf:
+          - type: integer
+          - type: string
+            enum:
+            - Infinity
+            - MoreThanAYear
+        liabilityValue:
+          $ref: '#/components/schemas/AccountLiquidityValue'
+        totalCollateralValue:
+          $ref: '#/components/schemas/AccountLiquidityValue'
+        collaterals:
+          type: array
+          items:
+            type: object
+            properties:
+              address:
+                type: string
+              value:
+                $ref: '#/components/schemas/AccountLiquidityValue'
+              marketPriceUsd:
+                type: number
+                description: Market USD price number for the collateral asset.
+              valueUsd:
+                type: number
+                description: Market USD value number for this collateral.
+        liabilityValueUsd:
+          type: number
+          description: Market USD liability value number.
+        totalCollateralValueUsd:
+          type: number
+          description: Market USD collateral value number.
+    SubAccount:
+      type: object
+      required:
+      - chainId
+      - owner
+      - addressPrefix
+      - blockNumber
+      - timestamp
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        addressPrefix:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    AccountActivity:
+      type: object
+      properties:
+        type:
+          type: string
+        chainId:
+          type: integer
+        vault:
+          type: string
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        txHash:
+          type: string
+        blockNumber:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    AccountPortfolioResponse:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        owner:
+          type: string
+        portfolio:
+          type: object
+          properties:
+            savings:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            borrows:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioBorrowPosition'
+            positions:
+              type: array
+              items:
+                $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+            managedLending:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            directLending:
+              type: array
+              items:
+                $ref: '#/components/schemas/PortfolioSavingsPosition'
+            totals:
+              type: object
+              description: 'Aggregate portfolio metrics. When any EVK position has unknown
+
+                debt or controller state, the aggregate is incomplete and all
+
+                total properties are omitted; `errors` identifies the affected
+
+                position. Consumers must not interpret omitted totals as zero.
+
+                '
+              properties:
+                suppliedValueUsd:
+                  type: number
+                  description: Market USD number for total supplied value.
+                borrowedValueUsd:
+                  type: number
+                  description: Market USD number for total borrowed value.
+                netAssetValueUsd:
+                  type: number
+                  description: Market USD number for supplied minus borrowed value.
+                netApy:
+                  type: number
+                  description: Public net APY as a percent number.
+                roe:
+                  type: number
+                  description: Return-on-equity ratio number.
+                apyBreakdown:
+                  $ref: '#/components/schemas/YieldApyBreakdown'
+                roeBreakdown:
+                  $ref: '#/components/schemas/YieldApyBreakdown'
+        account:
+          type: object
+          nullable: true
+          additionalProperties: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIssue'
+        freshness:
+          type: object
+          properties:
+            latestSnapshotTimestamp:
+              type: integer
+              nullable: true
+            ageSeconds:
+              type: integer
+              nullable: true
+            timestamp:
+              type: string
+              format: date-time
+            mode:
+              type: string
+              enum:
+              - fresh
+              - cached
+            forceFreshRequested:
+              type: boolean
+            refreshTriggered:
+              type: boolean
+            refreshCompleted:
+              type: boolean
+            timedOut:
+              type: boolean
+            rateLimited:
+              type: boolean
+            fallbackReason:
+              type: string
+              nullable: true
+            waitedMs:
+              type: integer
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    PortfolioSavingsPosition:
+      type: object
+      properties:
+        position:
+          $ref: '#/components/schemas/SerializedPortfolioAccountPosition'
+        vault:
+          $ref: '#/components/schemas/SerializedPortfolioVault'
+        subAccount:
+          type: string
+        shares:
+          type: string
+          description: Raw vault share amount as a bigint string.
+        assets:
+          type: string
+          description: Raw underlying asset amount as a bigint string.
+        suppliedValueUsd:
+          type: number
+          description: Market USD value number for this savings position.
+        apy:
+          type: number
+          description: Public APY as a percent number.
+        apyBreakdown:
+          $ref: '#/components/schemas/YieldApyBreakdown'
+    DataIssue:
+      type: object
+      properties:
+        code:
+          type: string
+        severity:
+          type: string
+          enum:
+          - info
+          - warning
+          - error
+        message:
+          type: string
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              owner:
+                type: object
+                additionalProperties: true
+              path:
+                type: string
+        source:
+          type: string
+        originalValue: {}
+        normalizedValue: {}
+  parameters:
+    AccountPositionsOffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Account-position page offset, capped at 1000 to bound position discovery and enrichment work.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 1000
+        default: 0
+    AddressPath:
+      name: address
+      in: path
+      required: true
       schema:
         type: string
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Page offset, capped at 10000 to bound query cost.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        default: 0
+    ChainIdParam:
+      name: chainId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of positive chain IDs (single value allowed). Duplicate IDs are removed in first-occurrence order; at most 20 distinct IDs and 512 input characters are accepted.
+      example: 1,10,8453
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+        maximum: 100
+  headers:
     X-Request-Id:
       description: Request identifier for tracing.
       schema:
         type: string
+    Cache-Control:
+      description: Cache policy for this response.
+      schema:
+        type: string
+  responses:
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error504:
+      description: Upstream request timed out
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -909,18 +1326,3 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
-    AdminSecret:
-      type: apiKey
-      in: header
-      name: X-Admin-Secret
-      description: Admin secret (server-to-server) for API key management.
-    PlatformSession:
-      type: apiKey
-      in: cookie
-      name: euler_platform_session
-      description: Signed, httpOnly platform-operator browser session cookie.
-    PlatformCsrf:
-      type: apiKey
-      in: header
-      name: X-CSRF-Token
-      description: Double-submit CSRF token required for unsafe cookie-authenticated methods.

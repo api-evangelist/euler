@@ -1,0 +1,1516 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Changes API
+  version: 3.0.0
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Changes
+  description: Change requests for managed data. Every data area (token images, price sources, and later ones) goes through the same routes, with server-side checks, a per-domain policy that applies or proposes, admin review, revert, and an auto-apply kill switch.
+paths:
+  /v3/changes/targets/price-sources/{chainId}/{address}:
+    get:
+      tags:
+      - Changes
+      summary: Read a token's price sources before proposing a change
+      description: 'Requires `price-sources:read` or an allowlisted Toolbox session. Returns each configured source entry with its `version` (send it as `expectedVersion`; a source without an entry is filled with `expectedVersion: null`), the open proposals on the token, oldest first, and the current review of its price work item. API-key responses omit operator attribution, and `review.decidedBy` is null for them.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: The token's price sources
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PriceSourceTarget'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getPriceSourceTarget
+  /v3/changes/targets/{domain}:
+    get:
+      tags:
+      - Changes
+      summary: Read one target of any domain before proposing a change
+      description: Requires the domain's `:read` capability or an allowlisted Toolbox session; a domain no key may change (for example `trust-entries`) is session-only. `key` is the domain's target key (`keyFormat` in `GET /v3/changes/domains`). Returns the current value with the `version` to send as `expectedVersion`, the open proposals oldest first, and up to 50 decided changes newest first. API-key responses omit operator attribution.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: domain
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 500
+      responses:
+        '200':
+          description: The target
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChangeTarget'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: getChangeTarget
+  /v3/changes:
+    get:
+      tags:
+      - Changes
+      summary: List changes in a domain
+      description: Requires the domain's `:read` capability or an allowlisted Toolbox session. Without `domain` (or with `domain=all`) it lists every domain for a session and the domains a key may read. Without `status` it lists open proposals, oldest first; with a status (or `all`), newest first. `meta.total` is exact. A key may filter by its own key ID only. API-key responses omit operator attribution and other actors' IDs. Token-image rows add their image details. The admin secret is recorded as `actorKind=system` with `actorId=admin-secret`; rows from before carry `actorKind=admin-secret`.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: domain
+        in: query
+        schema:
+          type: string
+          enum:
+          - all
+          - token-images
+          - price-sources
+          - yield-sources
+          - yield-pools
+          - token-tags
+          - trust-entries
+          - geo
+          default: all
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - proposed
+          - applied
+          - rejected
+          - superseded
+          - reverted
+          - withdrawn
+          - failed
+          - expired
+          - all
+      - name: actorKind
+        in: query
+        schema:
+          type: string
+          enum:
+          - api-key
+          - platform-admin
+          - admin-secret
+          - system
+          - entity-admin
+      - name: actorId
+        in: query
+        schema:
+          type: string
+      - name: targetKey
+        in: query
+        schema:
+          type: string
+      - name: token
+        in: query
+        description: '`<chainId>:<address>`. Keeps the changes whose target is that token, in every domain the reader may read, read by exact keys: `price-sources` `<source>/<chainId>:<address>` for every price source; `yield-sources` `<source>/<chainId>:<address>` for every yield source configured now; `yield-pools` and `token-images` `<chainId>:<address>`; `token-tags` rules of type `addresses` that name the token, `<tag>:addresses:<chainId>:<address>`; `geo` rules that apply to the token now (by address, symbol, name or lineage, as on `asset-newly-exposed`) and open rule proposals that name the token''s address; and work-item reviews of the token, `<chainId>:<address>`, in every domain that records them. Not included: geo rules that were deleted or no longer apply to the token, token tag rules that match by symbol, symbol prefix, symbol fragment or CoinGecko category, and trust entries. Combines with the other filters.'
+        schema:
+          type: string
+          pattern: ^[1-9][0-9]{0,15}:0x[0-9a-fA-F]{40}$
+      - name: since
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: limit
+        in: query
+        description: Page size; a value above 100 is refused, not clamped.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+      responses:
+        '200':
+          description: Changes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeList'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: listChanges
+    post:
+      tags:
+      - Changes
+      summary: Submit a change in any registered domain
+      description: One body for every domain, token images included; an API key must send `evidence`. A key needs the domain's `:propose` or `:write` capability; the server computes the op class, runs its checks and decides with the domain policy, and an active suspension turns an auto-apply into a proposal. A stale `expectedVersion` records a superseded change; the same actor's open proposal on the target is superseded by the new one. A token keeps one intrinsic APY source. A `yield-sources` or `yield-pools` change that turns an entry on, as an add or an enable, returns 409 with `details.reason` `one-apy-source` while the token has another enabled yield source or DefiLlama pool, or is a Pendle PT that has not matured; `details.apySources` names the other source and the message says how to switch. This holds for every actor, platform sessions included. A key's proposal is refused at submit, and an approval or a revert that would turn a second source on is refused the same way. Disabling, removing or editing a source is always allowed. To switch, send the new source and the change that disables or removes the old one together to `POST /v3/changes/batch`. A platform session's `dismiss` applies only while the work list's dismiss rule holds, and returns 409 otherwise; a key's dismissal is a proposal, checked again when an admin approves it. A geo `update` or `remove` must name a stored rule; a derived address row from `GET /v3/geo-policies` cannot be changed and returns 404. A price-sources `fill` from a key or a system actor applies on its own only when every fill check passes, `provider-fresh` included, which needs the provider's own time for its price (CoinGecko `last_updated_at`, DefiLlama `timestamp`, Pyth `publish_time`, or for an ERC-4626 share the time of the underlying's stored V3 price) to be at most 24 hours old and at most 5 minutes ahead. An ERC-4626 fill also needs `asset()` to be the identifier, any decimals override to equal the chain's, and the underlying to have a positive V3 price, taken as V3 selects it from any source, the on-chain fallback and other shares included. Pendle gives no price time; its price is a current quote, so the time of the read stands for it. A Pendle fill applies on its own only for the PT itself, when V3 has a Pendle market for it on a chain the Pendle price source supports and Pendle prices it above 0; a matured PT that Pendle still prices qualifies, at its redemption value. A Pyth source never applies on its own. When a provider or the chain cannot answer for a fill that could apply on its own (no current entry, a CoinGecko, DefiLlama, ERC-4626 or Pendle source, not disabled, from a key with `price-sources:write` or a system actor, and no active suspension), the change is not recorded and the request returns 503; send it again later. Any other change is recorded as a proposal with the failed checks. For token images, dispatches permissions by registered domain. `token-images:propose` permits staged candidates and `token-images:write` permits a verified CoinGecko or Pendle fill. Replacements and removals always remain proposals. The `derive` operation builds a Pendle PT's logo server-side from the current managed image of the token named in the optional `value.source` (by default the PT's recorded underlying in `token_integrations`), as a circle crop with the teal `#17e3c2` PT ring, recorded with `derivedFrom` (source digest) in its `derive-source` check. A platform session applies a derive; a system actor applies only an empty-slot fill from the recorded underlying's verified-provider image; any other derive is a proposal. A target that is not a Pendle PT returns 400; a source without a managed image, or one that already carries the ring, returns 409. A verified fill requires an eligible token class, empty managed slot, exact chain-and-contract provider match, and verified legacy cutover. Incomplete cutover or provider unavailability returns 503. API-key responses omit operator attribution.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: dryRun
+        in: query
+        description: Runs the checks and the policy and returns the decision without writing or staging anything.
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeSubmitRequest'
+      responses:
+        '200':
+          description: No exact provider candidate (token images), or a dry-run decision
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/ChangeDryRunResult'
+                - type: object
+                  additionalProperties: true
+        '201':
+          description: Applied, proposed, or superseded change
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: submitChange
+  /v3/changes/{id}:
+    get:
+      tags:
+      - Changes
+      summary: Read a change with its events
+      description: Any registered domain; a row in an unregistered domain returns 400. Requires the domain's `:read` capability or an allowlisted Toolbox session. The record carries its event log, oldest first. API-key responses omit operator attribution from the change, its events and its image snapshots.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Recorded change, decision, and before and after digests
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+      operationId: getChange
+  /v3/changes/{id}/withdraw:
+    post:
+      tags:
+      - Changes
+      summary: Withdraw an open proposal
+      description: Only the actor that submitted the proposal may withdraw it, while it is still proposed.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: false
+        description: Optional; stored as the decision comment.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason:
+                  type: string
+                  minLength: 3
+                  maxLength: 1000
+      responses:
+        '200':
+          description: Withdrawn change
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeDecisionResult'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '429':
+          $ref: '#/components/responses/Error429'
+      operationId: withdrawChange
+  /v3/changes/domains:
+    get:
+      tags:
+      - Changes
+      summary: List the data domains that changes go through
+      description: An allowlisted Toolbox session sees every domain; an API key sees the domains it holds a capability for.
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Registered domains
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChangeDomainDescriptor'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+      operationId: listChangeDomains
+  /v3/work-items/{type}/{id}/dismiss:
+    post:
+      tags:
+      - Changes
+      summary: Review a work item ("reviewed, no action")
+      description: 'The same route for every work list. An allowlisted Toolbox session with CSRF records an applied review. An API key with the domain''s `:propose` or `:write` capability records a proposed review, which an admin approves in the Changes inbox; machine actors must send `evidence`. The kind must be one the work list recognizes, or null to stop for now: a null-kind price review lapses like `no-price-source`, a null-kind logo review holds until resumed, a null-kind geo review lapses when the asset is exposed again. A geo review needs `geo:propose` or `geo:write` from a key. `token-category-missing` records `no-category` in `token-tags` and `token-intrinsic-apy-missing` records `no-intrinsic-apy` in `yield-sources`, keyed `:`; neither takes a null kind. 409 when a standing review exists, or, for an admin, when another admin''s review landed first. A proposed review leaves the item outstanding.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - token-logo-missing
+          - token-price-missing
+          - asset-newly-exposed
+          - token-category-missing
+          - token-intrinsic-apy-missing
+      - $ref: '#/components/parameters/WorkItemIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemDismissRequest'
+      responses:
+        '201':
+          description: The recorded review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeDecisionResult'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '429':
+          $ref: '#/components/responses/Error429'
+      operationId: dismissWorkItemOfType
+components:
+  schemas:
+    ChangeEvent:
+      type: object
+      required:
+      - id
+      - event
+      - status
+      - actor
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        event:
+          type: string
+          enum:
+          - submitted
+          - approved
+          - rejected
+          - withdrawn
+          - superseded
+          - reverted
+          - failed
+          - expired
+        status:
+          type: string
+          enum:
+          - proposed
+          - applied
+          - rejected
+          - superseded
+          - reverted
+          - withdrawn
+          - failed
+          - expired
+        actor:
+          $ref: '#/components/schemas/ChangeActorRef'
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 'What the event recorded. An API-key reader sees only `decision`, `stale`, `kind`, `reason`, `comment` and the related change ids, plus `error` as the generic `{ message: ''The change could not be applied'' }`, as on the change itself.'
+        createdAt:
+          type: string
+          format: date-time
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    ChangeCheck:
+      type: object
+      description: A check the server ran itself. A caller's claims are evidence, never checks.
+      required:
+      - id
+      - outcome
+      - message
+      properties:
+        id:
+          type: string
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - warn
+          - skip
+        message:
+          type: string
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+    ChangeSubmitRequest:
+      type: object
+      description: 'The generic body for every domain. The server computes the operation class, runs its own checks and decides with the domain''s policy.
+
+        '
+      required:
+      - domain
+      - operation
+      - key
+      - expectedVersion
+      - reason
+      additionalProperties: false
+      properties:
+        domain:
+          type: string
+          enum:
+          - token-images
+          - price-sources
+          - yield-sources
+          - yield-pools
+          - token-tags
+          - trust-entries
+          - geo
+        operation:
+          type: string
+          minLength: 1
+          maxLength: 50
+        key:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: 'The domain''s target key, in the `keyFormat` that `GET /v3/changes/domains` serves: `<chainId>:<address>` for token images and for every dismissal or resume, `<source>/<chainId>:<address>` for price sources, `<tag>:<ruleType>:<value>` for token tags (rule types `symbols`, `symbolPrefixes`, `symbolContains`, `coingeckoCategories`, and `addresses`, whose value names one token as `<chainId>:<address>` in any case and is stored lowercase).'
+        value:
+          description: 'The proposed after-state in the domain''s value shape (`valueSchema` in `GET /v3/changes/domains`); omitted or null for a removal or a dismissal without a kind. A `token-images` `derive` takes `{ source?: { chainId, address } }`.'
+        expectedVersion:
+          type:
+          - string
+          - 'null'
+          description: The version the caller read; null when the target is empty. A stale version supersedes the change. Read it from `GET /v3/changes/targets/{domain}?key=…` (or `GET /v3/changes/targets/price-sources/{chainId}/{address}` for every source of a token).
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        rationale:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        evidence:
+          $ref: '#/components/schemas/ChangeEvidence'
+    ChangeTarget:
+      type: object
+      required:
+      - domain
+      - targetKey
+      - value
+      - version
+      - proposals
+      - history
+      properties:
+        domain:
+          type: string
+        targetKey:
+          type: string
+          description: The normalized target key.
+        value:
+          description: The current state in the domain's value shape; null while empty.
+        version:
+          type:
+          - string
+          - 'null'
+          description: Send as `expectedVersion`; null while the target is empty.
+        proposals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRecord'
+        history:
+          type: array
+          description: Decided changes, newest first, at most 50.
+          items:
+            $ref: '#/components/schemas/ChangeRecord'
+    ChangeDomainDescriptor:
+      type: object
+      required:
+      - id
+      - title
+      - description
+      - policyVersion
+      - operations
+      - capabilities
+      - keyFormat
+      - valueSchema
+      - workItemType
+      - reviewKinds
+      - checks
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        policyVersion:
+          type: string
+        operations:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type:
+          - object
+          - 'null'
+          description: Null for a domain no key may change.
+          required:
+          - read
+          - propose
+          - write
+          properties:
+            read:
+              type: string
+            propose:
+              type: string
+            write:
+              type: string
+        keyFormat:
+          type: string
+        valueSchema:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: JSON Schema of the value.
+        workItemType:
+          type:
+          - string
+          - 'null'
+        reviewKinds:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          description: 'Every check the domain can run on a change, by the `id` its change records use. A check that does not apply to an entry answers `skip` with the reason and `details.applies: false`.
+
+            '
+          items:
+            $ref: '#/components/schemas/ChangeCheckDescriptor'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ChangeEvidence:
+      type: object
+      description: Required from API keys and system actors. Reviewers see it; the policy never reads it.
+      required:
+      - model
+      - promptVersion
+      - runId
+      - sources
+      additionalProperties: true
+      properties:
+        model:
+          type: string
+          minLength: 1
+          maxLength: 200
+        promptVersion:
+          type: string
+          minLength: 1
+          maxLength: 200
+        runId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        sources:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 2000
+    ChangeCheckDescriptor:
+      type: object
+      required:
+      - id
+      - label
+      - purpose
+      properties:
+        id:
+          type: string
+          example: provider-fresh
+        label:
+          type: string
+          description: A short plain name.
+          example: Provider price is recent
+        purpose:
+          type: string
+          description: One sentence on what the check protects.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    ChangeActorRef:
+      type: object
+      description: 'Who did it. API-key readers see only their own key''s ID; every other actor is shown by kind with a null ID and label.
+
+        '
+      required:
+      - kind
+      - id
+      - label
+      properties:
+        kind:
+          type: string
+          enum:
+          - api-key
+          - platform-admin
+          - admin-secret
+          - system
+          - entity-admin
+        id:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+          description: The platform admin's email or the key's name; null for API-key readers.
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    WorkItemReview:
+      type: object
+      description: The applied review that moved a work item off the outstanding list.
+      required:
+      - changeId
+      - kind
+      - reason
+      - decidedBy
+      - decidedAt
+      properties:
+        changeId:
+          type: string
+          format: uuid
+          description: The applied change that records the review.
+        kind:
+          oneOf:
+          - type: string
+            enum:
+            - onchain-only
+            - no-price-source
+            - no-logo-available
+            - no-rule-needed
+            - no-category
+            - no-intrinsic-apy
+          - type: 'null'
+          description: 'The recognized terminal state, or null for a plain dismissal (stop looking for now). `onchain-only` or `no-price-source` on `token-price-missing`; `no-logo-available` on `token-logo-missing`; `no-category` on `token-category-missing` and `no-intrinsic-apy` on `token-intrinsic-apy-missing`, which take no null kind; `no-rule-needed` on `asset-newly-exposed`, where a null-kind review lapses when the asset is exposed again after it. A price item with a null-kind review is `reviewed` and lapses like `no-price-source`: any price observed after the decision brings it back. A logo item with a null-kind review stays reviewed until it is resumed.
+
+            '
+        reason:
+          type: string
+        decidedBy:
+          type:
+          - string
+          - 'null'
+          description: 'The platform admin''s email, else `<actorKind>:<actorId>`. Null for an API-key reader, which never sees operator identities.
+
+            '
+        decidedAt:
+          type: string
+          format: date-time
+    PriceSourceTarget:
+      type: object
+      required:
+      - chainId
+      - address
+      - sources
+      - proposals
+      - review
+      properties:
+        chainId:
+          type: integer
+        address:
+          type: string
+        sources:
+          type: array
+          items:
+            type: object
+            required:
+            - source
+            - entry
+            - version
+            properties:
+              source:
+                type: string
+                enum:
+                - defillama
+                - pyth
+                - coingecko
+                - erc4626
+                - pendle
+                - onchain
+              entry:
+                type: object
+                additionalProperties: true
+                description: The configured entry (identifier, symbol, metadata, enabled).
+              version:
+                type: string
+                description: Send as `expectedVersion` to change this entry.
+        proposals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRecord'
+        review:
+          oneOf:
+          - $ref: '#/components/schemas/WorkItemReview'
+          - type: 'null'
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    WorkItemDismissRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - kind
+      - reason
+      properties:
+        kind:
+          oneOf:
+          - type: string
+            enum:
+            - onchain-only
+            - no-price-source
+            - no-logo-available
+            - no-rule-needed
+            - no-category
+            - no-intrinsic-apy
+          - type: 'null'
+          description: The work list's recognized terminal state, or null to stop for now. `no-rule-needed` is the `asset-newly-exposed` kind. `no-category` (`token-category-missing`) and `no-intrinsic-apy` (`token-intrinsic-apy-missing`) take no null.
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        evidence:
+          $ref: '#/components/schemas/ChangeEvidence'
+    ChangeDecisionResult:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ChangeRecord'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    ChangeList:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRecord'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    ChangeRecord:
+      type: object
+      description: One change in any data domain, with its full record.
+      required:
+      - id
+      - domain
+      - operation
+      - opClass
+      - targetKey
+      - status
+      - reason
+      - value
+      - before
+      - appliedValue
+      - checks
+      - policy
+      - actor
+      - decision
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        domain:
+          type: string
+        operation:
+          type: string
+        opClass:
+          description: What the change does, computed by the server. Geo changes are `tighten` (more people or assets fall under a rule), `loosen` (fewer, including any change that loosens one part) or `update` (nothing anyone is subject to changes, for example the reason).
+          oneOf:
+          - type: string
+            enum:
+            - fill
+            - add
+            - replace
+            - update
+            - remove
+            - enable
+            - disable
+            - tighten
+            - loosen
+            - dismiss
+            - resume
+            - revert
+          - type: 'null'
+        targetKey:
+          type: string
+        status:
+          type: string
+          enum:
+          - proposed
+          - applied
+          - rejected
+          - superseded
+          - reverted
+          - withdrawn
+          - failed
+          - expired
+        reason:
+          type: string
+        rationale:
+          type:
+          - string
+          - 'null'
+        value:
+          description: The proposed after-state, in the domain's value shape.
+        before:
+          description: The state when the change was submitted.
+        appliedValue:
+          description: The state the change wrote, when applied.
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeCheck'
+        policy:
+          $ref: '#/components/schemas/ChangePolicyResult'
+        evidence:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        actor:
+          $ref: '#/components/schemas/ChangeActorRef'
+        decision:
+          type:
+          - object
+          - 'null'
+          required:
+          - actor
+          - at
+          - comment
+          properties:
+            actor:
+              $ref: '#/components/schemas/ChangeActorRef'
+            at:
+              type: string
+              format: date-time
+            comment:
+              type:
+              - string
+              - 'null'
+        expectedVersion:
+          type:
+          - string
+          - 'null'
+        resultingVersion:
+          type:
+          - string
+          - 'null'
+        revertsChangeId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        supersededByChangeId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        expiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        error:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        uploadId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: 'Token images only: the staged upload the change carries.'
+        sourceProvider:
+          type:
+          - string
+          - 'null'
+          description: 'Token images only: `coingecko`, `pendle` or `pendle-pt-ring`; null for an upload.'
+        sourceUrl:
+          type:
+          - string
+          - 'null'
+          description: Token images only.
+        sourceEvidence:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 'Token images only: the provider record or the derivation the image came from.'
+        events:
+          type: array
+          description: Present on the detail read only, oldest first.
+          items:
+            $ref: '#/components/schemas/ChangeEvent'
+    ChangeDryRunResult:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - wouldBe
+          - opClass
+          - checks
+          - policy
+          properties:
+            wouldBe:
+              type: string
+              enum:
+              - applied
+              - proposed
+              - superseded
+            opClass:
+              type: string
+            checks:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChangeCheck'
+            policy:
+              $ref: '#/components/schemas/ChangePolicyResult'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    ChangePolicyResult:
+      type: object
+      required:
+      - version
+      - decision
+      - reasons
+      properties:
+        version:
+          type: string
+        decision:
+          oneOf:
+          - type: string
+            enum:
+            - apply
+            - propose
+          - type: 'null'
+          description: Null on rows recorded before the generic policy existed.
+        reasons:
+          type: array
+          items:
+            type: string
+  parameters:
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    WorkItemIdPath:
+      name: id
+      in: path
+      required: true
+      description: Work item ID as listed, `<chainId>:<token address>`.
+      schema:
+        type: string
+        pattern: ^[1-9][0-9]{0,15}:0x[0-9a-fA-F]{40}$
+  headers:
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+  responses:
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error409:
+      description: Conflict
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error429:
+      description: Rate limited
+      headers:
+        Retry-After:
+          description: Seconds until next request is allowed.
+          schema:
+            type: integer
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'

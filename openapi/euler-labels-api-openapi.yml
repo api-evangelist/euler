@@ -1,0 +1,4855 @@
+openapi: 3.2.0
+info:
+  title: Euler Data API (V3) Labels API
+  version: 3.0.0
+  description: 'API specification for Euler Data v3. This spec defines the current
+
+    resource-oriented contract for the platform, with emphasis on consistent
+
+    schemas, predictable REST semantics, caching, observability, and a uniform
+
+    developer experience. This public document covers unauthenticated endpoints and integrations that
+
+    use API keys, including capability-scoped keys. Browser-session Toolbox
+
+    operations, admin-secret operations, and the Prometheus endpoint are served
+
+    separately and are intentionally omitted. Migration notes
+
+    - Euler Data v3 is not a path-for-path clone of v1/v2. Some endpoints map
+
+    directly, some require multiple v3 calls, and some legacy aggregates were
+
+    intentionally removed. - The live migration guide explains how legacy v1/v2
+
+    endpoints and payloads map into the v3 resource model. - Important semantic changes:
+
+    - Vault base APY and rewards APY are exposed separately in v3. - Account positions are flattened into account-vault rows instead of the
+
+    legacy nested sub-account shape. - All supported API paths live under `/v3`; legacy paths return `410`. - Summary endpoints prefer smaller, focused resources over large
+
+    BFF-style payloads. Base path: /v3
+
+
+    Conventions
+
+    - JSON field naming: camelCase
+
+    - Addresses: accept lowercase or checksum; responses are EIP-55 checksummed
+
+    - Public APY values (`*Apy`, `apy*`): percent numbers with 6 decimal places (e.g., 5.123456 = 5.123456%)
+
+    - Contract interest-rate fields (`borrowAPY`, `supplyAPY` in `interestRates`): decimal strings in contract fraction units
+
+    - Ratios (utilization, LTV, etc.): numbers with 6 decimal places
+
+    - Response timestamps: ISO-8601 strings (UTC). Some legacy fields still expose unix
+
+    seconds for compatibility and include `*Iso` companions. - Query time ranges: unix seconds (from/to)
+
+
+    Unit policy
+
+    - v3 separates market metadata from contract verdicts by both name and type. - Market-normalized USD prices and USD values are JSON numbers. These are values
+
+    derived from off-chain pricing, cached price snapshots, or API-level market math. This includes `/v3/prices`, token price routes, vault/earn/protocol USD totals,
+
+    portfolio market values, portfolio USD liquidation/risk fields such as
+
+    `liabilityValueUsd`, `totalCollateralValueUsd`, `borrowLiquidationPriceUsd`,
+
+    and `collateralLiquidationPricesUsd`, and vault holder `assetsUsd`. - Contract-derived oracle and raw account-liquidity verdict values are exact strings. These preserve the integer value used by contracts, normalized to 18 decimals
+
+    for API exposure. Oracle prices are quoted in the vault unit of account, which
+
+    can be USD, ETH, or another asset. This includes `/v3/oracles/prices`, raw
+
+    account-liquidity `liabilityValue` and `totalCollateralValue` objects,
+
+    `liabilityValueBorrowing`, `liabilityValueLiquidation`, and collateral verdict
+
+    values. - On-chain token quantities are bigint strings in their native unit scale. This
+
+    includes amounts, balances, shares, assets, borrows, reward amounts, liquidation
+
+    repay/yield amounts, and block numbers. - Caps are also bigint strings, but EVK caps are exposed as resolved underlying
+
+    asset-unit amounts rather than packed contract config words; an unlimited EVK cap is
+
+    type(uint256).max and `0` is a zero cap. The exceptions are
+
+    cap-history and config-history, which carry the raw uint16 encodings. - LTV config values use canonical basis-point strings. Legacy decimal aliases
+
+    may remain on config-history payloads for compatibility when explicitly named. Rate limiting
+
+    - Optional API keys for higher limits
+
+    - Standard limits are 1000 req/min for unauthenticated callers (IP-based)
+
+    and 10000 req/min for authenticated callers (per API key), with a 60s window. Individual API keys can carry a custom limit. - By default, proxy headers are not trusted for IP identity unless explicitly enabled. - Redis failures default to fail-closed (503) for strict enforcement; fail-open is opt-in. - RateLimit-* (IETF draft-6) and legacy X-RateLimit-* headers are returned.'
+servers:
+- url: /
+  description: Current environment
+security: []
+tags:
+- name: Labels
+  description: 'The labeling system behind the Toolbox: entity and product profiles, vault labels, vault assessments, geo policies, and label publishing. The address that governs a vault is its governing address: the governor of an EVK or Securitize vault, the owner of an Earn vault. In this API "controller" always means the EVC controller, the liability vault an account has enabled through the Ethereum Vault Connector, never the address that governs a vault. **Errors on the `/v3/labels` routes.** Key on the status, `error.code` and `error.details.reason`; `error.message` is for people and may change. `details.cause` narrows a reason that has several causes. An error without a reason is the only one its route answers with that status and code. The labels routes never answer `SERVICE_DISABLED`. | Status | Code | `details.reason` | Meaning |
+
+    |---|---|---|---|
+
+    | 401 | UNAUTHORIZED | `invalid-session` | No active session of a kind the route accepts. |
+
+    | 403 | FORBIDDEN | `authorization-denied` | The actor may not make this write. `details.cause`: `platform-admin-denied`, `missing-csrf` or `csrf-mismatch` on platform-only routes; `wrong-entity`, `insufficient-role`, `unsupported-actor`, `inactive-actor`, `malformed-actor` or `missing-actor` on entity, member, address, product and vault writes. |
+
+    | 403 | FORBIDDEN | `missing-csrf`, `csrf-mismatch` | Entity-or-platform route, unsafe method: the CSRF header is missing or does not match. While a session changes under the request the reason can also be `missing-session`, `invalid-session`, `expired-session`, `entity-member-denied`, `entity-auth-disabled` or `platform-admin-denied`. |
+
+    | 403 | FORBIDDEN | `entity-suspended` | The member''s entity is suspended by the platform. |
+
+    | 403 | FORBIDDEN | `entity-admin-required` | The route needs an entity admin; the session is an editor. |
+
+    | 403 | FORBIDDEN | `entity-scope-denied` | A draft read of another entity''s rows. |
+
+    | 403 | FORBIDDEN | `self-demotion-denied`, `self-revoke-denied` | An entity admin demoting or revoking their own membership. |
+
+    | 403 | FORBIDDEN | `published-row` | An entity member deleting a product the public has seen. |
+
+    | 403 | FORBIDDEN | `ungoverned-locked` | An ungoverned vault or product is write-once for entity members. |
+
+    | 403 | FORBIDDEN | `ownership-denied` | No entity address governs the vault; on a product, `details.addresses` lists the vaults the entity no longer governs. |
+
+    | 403 | FORBIDDEN | `vault-not-claimable` | An escrow vault, or a vault type an entity cannot claim. |
+
+    | 403 | FORBIDDEN | `no-governing-address` | The vault has no governor or owner on chain (`details.role`); only Euler can assign it. |
+
+    | 403 | FORBIDDEN | `capability-denied`, `api-key-read-only`, `platform-session-required` | An API key without the capability, a key on a write a read grant cannot make, or an action only a platform session may take. |
+
+    | 404 | NOT_FOUND | `unknown-vault` | The vault is not in indexed factory discovery. |
+
+    | 404 | NOT_FOUND | `label-set-not-found`, `label-version-not-found`, `hold-not-found`, `resource-not-found` | Label set, version, hold and quarantine routes. |
+
+    | 404 | NOT_FOUND | none | The entity, member, address, product, vault labels or listing override does not exist. On the label reads, a 404 with `details.labelSet` and `details.version` means the label set or version could not be resolved; only that 404 carries `details.labelSet`. |
+
+    | 404 | CHAIN_NOT_SUPPORTED | none | A product or vault delete or transfer on a chain the deployment does not serve. |
+
+    | 404 | CHAIN_CAPABILITY_DISABLED | none | A product or vault delete or transfer, or a listing override, on a served chain without labels; `details.chainIds` and `details.capability: labels`. A write naming such a chain in its body or path answers 422 naming `chainId`. |
+
+    | 409 | CONFLICT | `duplicate` | The entity, address, product or vault labels already exist.'
+paths:
+  /v3/labels/sets:
+    get:
+      tags:
+      - Labels
+      summary: List label sets
+      description: Returns the available label-set channels and their metadata.
+      x-status: implemented
+      security: []
+      responses:
+        '200':
+          description: Label-set list.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabelSet'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: listLabelSets
+  /v3/labels/sets/{labelSetId}/versions:
+    get:
+      tags:
+      - Labels
+      summary: List published label versions
+      description: 'Returns published snapshots for the label set. Draft rows are never
+
+        included, and this metadata read does not require a platform session.'
+      x-status: implemented
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      responses:
+        '200':
+          description: Published label versions.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabelVersion'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: listPublishedLabelVersions
+    post:
+      tags:
+      - Labels
+      summary: Publish current labels
+      description: 'Publishes an immutable snapshot of entity, product, and vault-label content.
+
+        Geo policies remain live and are not included. The snapshot builder decides
+
+        per row where the content comes from: a full publish takes every draft row
+
+        that no hold covers and keeps held rows at their published content; a
+
+        partial publish (`selection` in the body, platform session only) takes the
+
+        selected rows and whatever they need for a consistent version, overriding
+
+        holds for those rows, and keeps everything else as published. Left-out
+
+        changes stay pending for the timer. A draft vault row with no labels (the
+
+        row discovery materialises for every vault it finds, a claim cleared) is not
+
+        label content: no publication takes it, a selection naming one is a no-op,
+
+        and the `report.leftOut` says how many such rows the draft holds and which
+
+        the selection named. The `report` also lists what went live, what
+
+        was pulled in, what a hold kept back and why, and which holds were
+
+        overridden. `?dryRun=true` returns the report without writing anything.
+
+        When the built content matches the latest published version, the endpoint
+
+        returns that version with `publishOutcome: unchanged` and does not create a
+
+        release. Accepts a platform session or an API key holding the
+
+        `labels:publish` capability; a key may only publish in full. The version
+
+        records which kind of actor published it, and every publication is audited.
+
+        To publish exactly what a dry run showed, send its `draftToken` as
+
+        `expectedDraftToken`: if the draft, the latest version or the holds a partial
+
+        publish would override moved since, the answer is 412 with `details.reason`
+
+        `draft-changed` and the current `details.draftToken`, and nothing is written.
+
+        Without the field, the publish takes the draft as it is at that moment; it
+
+        will become required for keys, and a key publish without it is logged.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      - name: dryRun
+        in: query
+        required: false
+        description: Build the version and return the report without publishing.
+        schema:
+          type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                versionKey:
+                  type: string
+                aliases:
+                  type: array
+                  items:
+                    type: string
+                sourceRepo:
+                  type: string
+                  nullable: true
+                sourceRef:
+                  type: string
+                  nullable: true
+                sourceSha:
+                  type: string
+                  nullable: true
+                schemaAdapter:
+                  type: string
+                selection:
+                  $ref: '#/components/schemas/LabelRowSelection'
+                expectedDraftToken:
+                  type: string
+                  pattern: ^[0-9a-f]{64}$
+                  description: The `draftToken` of the dry run this publish confirms. Ignored on a dry run. Optional for now; keys will have to send it.
+      responses:
+        '200':
+          description: Publishable label content is unchanged and the latest version is returned, or the request was a dry run and only the report is returned.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    oneOf:
+                    - $ref: '#/components/schemas/LabelPublishResult'
+                    - $ref: '#/components/schemas/LabelPublishDryRunResult'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '201':
+          description: Published label snapshot created.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelPublishResult'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          description: '`expectedDraftToken` no longer matches: what this publish would write moved since the dry run. `details.reason` is `draft-changed` and `details.draftToken` is the current token. Nothing was written; preview again before publishing.'
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: publishLabelVersion
+  /v3/labels/sets/{labelSetId}/publication:
+    get:
+      tags:
+      - Labels
+      summary: Read publication state
+      description: 'Returns whether automatic publication is suspended, the deployment
+
+        override, the configured delays, the pending schedule, and the latest
+
+        published version with its publisher. Accepts a platform session or a
+
+        API key holding any `labels:*` capability; actor identities
+
+        are returned to platform sessions only. Responses are private and never
+
+        cached.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      responses:
+        '200':
+          description: Publication state.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelPublicationState'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getLabelPublicationState
+  /v3/labels/sets/{labelSetId}/publication/summary:
+    get:
+      tags:
+      - Labels
+      summary: Read the publication summary
+      description: 'The part of the publication state a curator surface needs to say when
+
+        a draft change goes live: the publication mode, whether automatic
+
+        publication is suspended, the pending due time, and the latest
+
+        published version. Carries no reason, no actor, and no revision, so it
+
+        is readable with an entity session or without one. In `manual` mode
+
+        `dueAt` is always null: changes go live when the platform publishes.
+
+        Responses are private and never cached.'
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      responses:
+        '200':
+          description: Publication summary.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelPublicationSummary'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: getLabelPublicationSummary
+  /v3/labels/sets/{labelSetId}/publication/versions:
+    get:
+      tags:
+      - Labels
+      summary: List published label versions with attribution
+      description: 'The platform-side version history: every published version with its
+
+        creator and publisher. Identities are returned to platform sessions;
+
+        an API key holding any `labels:*` capability sees the
+
+        publisher kind only. Responses are private and never cached.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      responses:
+        '200':
+          description: Attributed published label versions.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AttributedLabelVersion'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: listAttributedLabelVersions
+  /v3/labels/sets/{labelSetId}/publication/suspend:
+    post:
+      tags:
+      - Labels
+      summary: Suspend automatic publication
+      description: 'Stops the timer from publishing the draft until publication is resumed.
+
+        Explicit publication keeps working. The reason is required and recorded
+
+        with the actor in the publication audit. Accepts a platform session or a
+
+        API key holding `labels:publication-control`.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Suspended, or already suspended, in which case controlOutcome is unchanged.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelPublicationControlResult'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: suspendLabelPublication
+  /v3/labels/sets/{labelSetId}/publication/resume:
+    post:
+      tags:
+      - Labels
+      summary: Resume automatic publication
+      description: 'Lifts a platform suspension. The deployment override, when set, keeps
+
+        the timer frozen regardless. Accepts a platform session or an
+
+        API key holding `labels:publication-control`.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason:
+                  type: string
+                  nullable: true
+                  maxLength: 500
+      responses:
+        '200':
+          description: Resumed, or not suspended, in which case controlOutcome is unchanged.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelPublicationControlResult'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: resumeLabelPublication
+  /v3/labels/sets/{labelSetId}/holds:
+    get:
+      tags:
+      - Labels
+      summary: List active holds
+      description: 'Every unreleased hold: quarantines raised by the reviewer and entity holds
+
+        raised by entity suspension. Accepts a platform session or a key with
+
+        `labels:reject` or `labels:draft-read`. Actor identities are returned to
+
+        platform sessions only. Only the `public` label set has holds.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      responses:
+        '200':
+          description: Active holds.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabelHold'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: listLabelHolds
+    post:
+      tags:
+      - Labels
+      summary: Quarantine a row
+      description: 'Rejects one entity, product, or vault-label row: the curator''s draft stays
+
+        intact, the row keeps its published content on every full publish, and the
+
+        hash of the draft content at the time is recorded so a later edit is
+
+        detectable. The row must exist in the draft or in the latest published
+
+        version. Accepts a platform session or a key with `labels:reject`. One
+
+        active quarantine per row; a repeat answers 409 with the existing hold.
+
+        Send `expectedContentHash` to hold only the revision that was reviewed: a
+
+        draft that moved since answers 412 `stale-review` and writes no hold and no
+
+        event. It will become required for keys.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelQuarantineRequest'
+      responses:
+        '201':
+          description: Hold created.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelHold'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: quarantineLabelRow
+  /v3/labels/sets/{labelSetId}/holds/{holdId}:
+    delete:
+      tags:
+      - Labels
+      summary: Release a quarantine
+      description: 'Releases one quarantine so the next full publish takes the row''s draft.
+
+        Accepts a platform session or a key with `labels:reject`. Entity holds are
+
+        released by resuming the entity and answer 409 here. `expectedContentHash`
+
+        releases only the revision that was reviewed; a draft that moved since
+
+        answers 412 `stale-review` and nothing is released. It will become required
+
+        for keys.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      - name: holdId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: expectedContentHash
+        in: query
+        required: false
+        description: 'The held row''s draft revision the reviewer judged, the change log''s `afterContentHash`. To name a row the draft no longer has, use POST `…/release` with `expectedContentHash: null`.'
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+      responses:
+        '200':
+          description: Hold released.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelHold'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: releaseLabelHold
+  /v3/labels/sets/{labelSetId}/holds/{holdId}/release:
+    post:
+      tags:
+      - Labels
+      summary: Release a quarantine with a reason
+      description: 'Releases one quarantine like DELETE on the hold, and records an optional
+
+        `reason` on the hold (`releaseReason`) and in the publication event. An empty
+
+        body releases with no reason. Accepts a platform session or a key with
+
+        `labels:reject`. Entity holds are released by resuming the entity and answer
+
+        409 here. `expectedContentHash` releases only the revision that was reviewed;
+
+        a draft that moved since answers 412 `stale-review` and nothing is released.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      - name: holdId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelReleaseRequest'
+      responses:
+        '200':
+          description: Hold released.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LabelHold'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      operationId: releaseLabelHoldWithReason
+  /v3/labels/sets/{labelSetId}/changes:
+    get:
+      tags:
+      - Labels
+      summary: List the label change log
+      description: 'One row per label mutation with the actor, the before and after content,
+
+        and the changed fields, written in the row''s own transaction. `pending`
+
+        rows wait for a publish, `published` rows name the version that carried
+
+        them, `quarantined` rows are held, and `superseded` rows were replaced by a
+
+        later change to the same row. Newest first. Accepts a platform session or a
+
+        key with `labels:draft-read`, `labels:reject`, or `labels:publish`; actor
+
+        identities and request ids are returned to platform sessions only. Only the
+
+        `public` label set has a change log.'
+      x-status: implemented
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/LabelSetIdPath'
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - published
+          - quarantined
+          - superseded
+      - name: entityId
+        in: query
+        required: false
+        description: The entity that owned the row when it changed.
+        schema:
+          type: string
+      - name: resourceType
+        in: query
+        required: false
+        description: One row's changes; pair with `resourceEntityId`, or `chainId` plus `productId` or `vaultAddress`.
+        schema:
+          type: string
+          enum:
+          - entity
+          - product
+          - vault
+      - name: resourceEntityId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: chainId
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: productId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: vaultAddress
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          default: 0
+      responses:
+        '200':
+          description: Change log rows.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabelChange'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '500':
+          $ref: '#/components/responses/Error500'
+      operationId: listLabelChanges
+  /v3/labels/products:
+    get:
+      tags:
+      - Labels
+      summary: List curation products
+      description: Publicly reads the latest published product snapshot by default. Explicit `current` or `draft` reads expose the mutable working copy. Platform operators can read every entity; entity-member sessions are restricted to their own entity.
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - name: chainId
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+        description: 'Keeps rows on this chain. Any positive integer is accepted, including chains the deployment does not serve: an archived chain keeps its stored labels and an unknown one answers an empty page, never 404 `CHAIN_NOT_SUPPORTED`. A value that is not a positive integer answers 422.'
+      - name: entityId
+        in: query
+        schema:
+          type: string
+      - name: id
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+        description: 'Repeat once per product (`?id=core&id=prime`, at most 100): keeps only the listed product ids. Combines with `chainId` and every other filter, and with `version=` for a pinned read. An empty value answers 422.'
+      - $ref: '#/components/parameters/LabelViewParam'
+      - name: tags
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+        description: Repeat once per tag (`?tags=base&tags=keyring`); each value is one tag, matched exactly as stored, so a tag containing a comma or spaces is queryable. A vault matches when its exposed tag set (label-row tags plus platform assessment tags, the live assessment also for published reads) carries every listed tag; a product matches when at least one of its member vaults does. `tags=base` selects the Base app subset.
+      responses:
+        '200':
+          description: Product page. Item shape follows the `view` parameter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                      - $ref: '#/components/schemas/ProductLabels'
+                      - $ref: '#/components/schemas/ResolvedProductLabelsView'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/LabelContextNotFound'
+        '422':
+          $ref: '#/components/responses/Error422'
+      operationId: listProducts
+  /v3/labels/products/{chainId}/{id}:
+    get:
+      tags:
+      - Labels
+      summary: Get curation product
+      description: Publicly reads the product and its vault rows from the latest published snapshot by default. Explicit `current` or `draft` reads expose the mutable working copy. Platform operators can read every entity; entity-member sessions are restricted to products owned by their entity.
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
+      - $ref: '#/components/parameters/ChainIdPath'
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/LabelViewParam'
+      responses:
+        '200':
+          description: Product with associated vault labels. Shapes follow the `view` parameter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    allOf:
+                    - oneOf:
+                      - $ref: '#/components/schemas/ProductLabels'
+                      - $ref: '#/components/schemas/ResolvedProductLabelsView'
+                    - type: object
+                      required:
+                      - vaults
+                      properties:
+                        vaults:
+                          type: array
+                          items:
+                            oneOf:
+                            - $ref: '#/components/schemas/VaultLabels'
+                            - $ref: '#/components/schemas/ResolvedVaultLabelsView'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          description: A draft read (`version=current` or `draft`) of a product another entity holds; products always carry an owner, so an entity session reads only its own. Platform sessions and keys with `labels:draft-read` read every product.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 'The product is not in the resolved version (no `details.labelSet`), or the label set or version could not be resolved: `labelSet` names no label set, `version` matches no published key or alias, or a `current` or `draft` read names a set other than `public`. Only the second carries `details.labelSet` and `details.version`, which echo the request.'
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: getProduct
+  /v3/labels/vaults:
+    get:
+      tags:
+      - Labels
+      summary: List curation vault labels
+      description: Publicly reads the latest published vault-label snapshot by default. Explicit `current` or `draft` reads expose the mutable working copy. Platform operators can read every entity; entity-member sessions list their own entity's rows only (the single-vault read below also answers a row nobody holds). Vault labels live under `/v3/labels`.
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - name: include
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - visibility
+        description: '`visibility` attaches each row''s verdict. For a request the route has authenticated as a platform session (a `current` or `draft` read with the session cookie) it is the verdict as evaluated, the `VaultVisibility` record that `/visibility/platform` answers per vault; for every other request it is the public `VaultVisibilitySummary` the quantitative vault lists carry inline. Labels are the only enumeration that reaches a chain without an indexer, so this is how a consumer gets the displayable set there; it stays opt-in so reads that do not need it do not pay for the join. A row the evaluator has no verdict for answers `null` rather than being dropped.'
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - name: chainId
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+        description: 'Keeps rows on this chain. Any positive integer is accepted, including chains the deployment does not serve: an archived chain keeps its stored labels and an unknown one answers an empty page, never 404 `CHAIN_NOT_SUPPORTED`. A value that is not a positive integer answers 422.'
+      - name: entityId
+        in: query
+        schema:
+          type: string
+      - name: address
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            pattern: ^0x[0-9a-fA-F]{40}$
+        description: 'Repeat once per vault (`?address=0x…&address=0x…`, at most 100, any case): keeps only the listed addresses. Combines with `chainId` and every other filter, and with `version=` for a pinned read. An address that is not listed is simply absent from the page; a malformed one answers 422.'
+      - name: claimed
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: '`true` keeps only vaults a curator holds (an entity is set), `false` only vaults nobody holds; unset lists both.'
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description: 'Case-insensitive substring of the label name or of the address; whitespace around the value is trimmed. Matches nothing but the labels: not the on-chain symbol.'
+      - $ref: '#/components/parameters/LabelViewParam'
+      - name: vaultType
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Comma-separated vault-type filter (`evk,earn,securitize`, any case). Defaults to all vault types; any other value, `escrow` included, answers 400 `BAD_REQUEST` with `details` `{ "param": "vaultType", "unknown": [...], "allowed": ["evk", "earn", "securitize"] }`. Escrow vaults are `evk`: filter on `isEscrow=true`.'
+      - name: isEscrow
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: '`true` lists only escrow vaults, `false` only vaults that are not escrow; unset lists every vault. Combines with the other filters.'
+      - name: tags
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+        description: Repeat once per tag (`?tags=base&tags=keyring`); each value is one tag, matched exactly as stored, so a tag containing a comma or spaces is queryable. A vault matches when its exposed tag set (label-row tags plus platform assessment tags, the live assessment also for published reads) carries every listed tag; a product matches when at least one of its member vaults does. `tags=base` selects the Base app subset.
+      responses:
+        '200':
+          description: Vault-label page. Item shape follows the `view` parameter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                      - $ref: '#/components/schemas/VaultLabels'
+                      - $ref: '#/components/schemas/ResolvedVaultLabelsView'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/LabelContextNotFound'
+        '422':
+          $ref: '#/components/responses/Error422'
+      operationId: listVaultLabels
+  /v3/labels/vaults/{chainId}/{address}:
+    get:
+      tags:
+      - Labels
+      summary: Get curation vault labels
+      description: Publicly reads the vault-label row from the latest published snapshot by default. Explicit `current` or `draft` reads expose the mutable working copy. Platform operators can read every entity; entity-member sessions are restricted to vault labels owned by their entity.
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - $ref: '#/components/parameters/LabelSetParam'
+      - $ref: '#/components/parameters/LabelVersionParam'
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      - $ref: '#/components/parameters/LabelViewParam'
+      responses:
+        '200':
+          description: Vault labels. Shape follows the `view` parameter.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            X-Label-Set:
+              $ref: '#/components/headers/X-Label-Set'
+            X-Label-Version:
+              $ref: '#/components/headers/X-Label-Version'
+            X-Label-Version-Id:
+              $ref: '#/components/headers/X-Label-Version-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    oneOf:
+                    - $ref: '#/components/schemas/VaultLabels'
+                    - $ref: '#/components/schemas/ResolvedVaultLabelsView'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          description: A draft read (`version=current` or `draft`) of a row another entity holds. An entity session reads the rows its entity holds and any row nobody holds (`entityId` null), so a curator can tell a released or never-claimed vault from one another curator holds before claiming it; platform sessions and keys with `labels:draft-read` read every row. Published reads never answer this.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 'The vault is not in the resolved version (no `details.labelSet`), or the label set or version could not be resolved: `labelSet` names no label set, `version` matches no published key or alias, or a `current` or `draft` read names a set other than `public`. Only the second carries `details.labelSet` and `details.version`, which echo the request.'
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: getVaultLabelsRow
+  /v3/config-trust:
+    get:
+      tags:
+      - Labels
+      summary: List config trust entries
+      description: Lists platform-managed trust entries used by Layer 1 configuration policies (trusted hook targets, per-vault rule exemptions, and reviewed custom oracle adapters).
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - name: chainId
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: kind
+        in: query
+        schema:
+          type: string
+          enum:
+          - hook-target
+          - rule-exemption
+          - custom-adapter
+          - adapter-check-exemption
+      responses:
+        '200':
+          description: Trust entry list.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfigTrustEntry'
+        '422':
+          $ref: '#/components/responses/Error422'
+      operationId: listConfigTrustEntries
+  /v3/geo-policies:
+    get:
+      tags:
+      - Labels
+      summary: List geo policies
+      description: 'Publicly reads the live geo-policy table. Label-set and version selectors are accepted for request compatibility and do not change the result. The stored rules come first, in creation order, then the derived address rows (`derivedFrom` set): for each stored rule with an asset selector, one row per token the app reaches that is built on an asset the rule selects, so an evaluator that knows only address rules enforces the rule on wrappers too. Tokens that only share code with a restricted asset get no row. Derived rows follow the exposure sweep and may be up to a minute behind it; `meta.total` counts both kinds, and `chainId` filters both.'
+      x-status: implemented
+      security:
+      - {}
+      parameters:
+      - name: labelSet
+        in: query
+        required: false
+        description: Accepted for compatibility. Geo-policy reads always use live policy data.
+        schema:
+          type: string
+      - name: version
+        in: query
+        required: false
+        description: Accepted for compatibility. Geo-policy reads always use live policy data.
+        schema:
+          type: string
+      - $ref: '#/components/parameters/LimitParam'
+      - $ref: '#/components/parameters/OffsetParam'
+      - name: chainId
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      responses:
+        '200':
+          description: Geo-policy page.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GeoPolicy'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '422':
+          $ref: '#/components/responses/Error422'
+      operationId: listGeoPolicies
+  /v3/evk/vaults/{chainId}/{address}/assessment:
+    get:
+      tags:
+      - Labels
+      summary: Get EVK vault assessment
+      x-status: implemented
+      x-chain-capability: assessments
+      description: 'The stored assessment, or default unevaluated statuses when this deployment serves the
+
+        chain and the vault has genuinely never been checked. A chain the deployment does not
+
+        serve answers `404 CHAIN_NOT_SUPPORTED` instead, so "never assessed" is never reported
+
+        for a vault Euler could not have assessed; an archived metadata-only chain is unserved
+
+        too but carries imported rows, and those are still answered.
+
+
+        A served chain without the `assessments` chain capability answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: Vault assessment or default unevaluated statuses.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            ETag:
+              $ref: '#/components/headers/AssessmentETag'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultAssessment'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
+      operationId: getEvkVaultAssessment
+  /v3/evk/vaults/{chainId}/{address}/assessment/preview:
+    post:
+      tags:
+      - Labels
+      summary: Preview the Layer 1 verdict of a EVK vault, for the live configuration or a…
+      description: 'Answers what a fresh Layer 1 check would say, without storing anything. With an empty body
+
+        (or no body) it is a fresh check of the live vault under its policy family; with
+
+        `overrides` it is the EVK policy judging the live snapshot with the proposed configuration
+
+        applied: caps, LTV rows (change, add, remove), the interest rate model (its rates re-probed
+
+        with the vault impersonated at the pinned block), router resolutions (`resolvedVaults`),
+
+        oracle routes (base to adapter; a proposed adapter''s verdict comes from the registry when
+
+        it knows it and from the evaluate-only adapter check when it does not, and every quote a
+
+        changed route or resolution answers is simulated through the proposed adapter at the pinned
+
+        block, one unit of the base converted through the resolved vaults the way the router
+
+        converts it) and the hook configuration. The answer names the findings whose verdict
+
+        differs from the stored assessment (`changed`), the status the vault would land on
+
+        (`configStatusIfApplied`, from `currentConfigStatus` and the outcome) and, in
+
+        `notSimulated`, the findings left unknown because their simulation could not run (the
+
+        chain unreachable for a quote, the evaluate-only adapter check refused), each naming the
+
+        reason in its `observed`. Platform rule exemptions apply as the
+
+        stored check applies them. One vault is previewed at most 6 times per minute (429 with
+
+        `Retry-After`) and the reads get 12 seconds (504). Accepts a platform session or a
+
+        API key holding `assessments:evaluate`; a curator session is never enough.
+
+
+        Needs the `assessments` chain capability; a chain without it answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      x-status: implemented
+      x-chain-capability: assessments
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultConfigPreviewRequest'
+      responses:
+        '200':
+          description: The preview; `persisted` is always false.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultAssessmentPreview'
+        '400':
+          description: Malformed JSON, or an invalid address in the path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          description: A key without `assessments:evaluate`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The chain is not served (`CHAIN_NOT_SUPPORTED`), the chain does not run assessments (`CHAIN_CAPABILITY_DISABLED`), or no Layer 1 policy family matches the vault (`VAULT_NOT_FOUND`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          description: The body fails validation (`error.details.issues`), or overrides were sent for a vault outside the EVK family (`error.details.family`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: The vault was previewed more than 6 times in the last minute; `Retry-After` says when to retry.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          description: The on-chain reads did not finish within the 12-second budget (`UPSTREAM_TIMEOUT`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: previewEVKVaultAssessment
+  /v3/earn/vaults/{chainId}/{address}/assessment/preview:
+    post:
+      tags:
+      - Labels
+      summary: Preview the Layer 1 verdict of a Earn vault, for the live configuration or a…
+      description: 'Answers what a fresh Layer 1 check would say, without storing anything. With an empty body
+
+        (or no body) it is a fresh check of the live vault under its policy family; with
+
+        `overrides` it is the EVK policy judging the live snapshot with the proposed configuration
+
+        applied: caps, LTV rows (change, add, remove), the interest rate model (its rates re-probed
+
+        with the vault impersonated at the pinned block), router resolutions (`resolvedVaults`),
+
+        oracle routes (base to adapter; a proposed adapter''s verdict comes from the registry when
+
+        it knows it and from the evaluate-only adapter check when it does not, and every quote a
+
+        changed route or resolution answers is simulated through the proposed adapter at the pinned
+
+        block, one unit of the base converted through the resolved vaults the way the router
+
+        converts it) and the hook configuration. The answer names the findings whose verdict
+
+        differs from the stored assessment (`changed`), the status the vault would land on
+
+        (`configStatusIfApplied`, from `currentConfigStatus` and the outcome) and, in
+
+        `notSimulated`, the findings left unknown because their simulation could not run (the
+
+        chain unreachable for a quote, the evaluate-only adapter check refused), each naming the
+
+        reason in its `observed`. Platform rule exemptions apply as the
+
+        stored check applies them. One vault is previewed at most 6 times per minute (429 with
+
+        `Retry-After`) and the reads get 12 seconds (504). Accepts a platform session or a
+
+        API key holding `assessments:evaluate`; a curator session is never enough. Overrides are refused for an Earn vault (422); an empty body previews the live vault under the Earn policy.
+
+
+        Needs the `assessments` chain capability; a chain without it answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      x-status: implemented
+      x-chain-capability: assessments
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultConfigPreviewRequest'
+      responses:
+        '200':
+          description: The preview; `persisted` is always false.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultAssessmentPreview'
+        '400':
+          description: Malformed JSON, or an invalid address in the path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          description: A key without `assessments:evaluate`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The chain is not served (`CHAIN_NOT_SUPPORTED`), the chain does not run assessments (`CHAIN_CAPABILITY_DISABLED`), or no Layer 1 policy family matches the vault (`VAULT_NOT_FOUND`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          description: The body fails validation (`error.details.issues`), or overrides were sent for a vault outside the EVK family (`error.details.family`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: The vault was previewed more than 6 times in the last minute; `Retry-After` says when to retry.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          description: The on-chain reads did not finish within the 12-second budget (`UPSTREAM_TIMEOUT`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: previewEarnVaultAssessment
+  /v3/earn/vaults/{chainId}/{address}/assessment:
+    get:
+      tags:
+      - Labels
+      summary: Get Earn vault assessment
+      x-status: implemented
+      x-chain-capability: assessments
+      description: 'The stored assessment, or default unevaluated statuses when this deployment serves the
+
+        chain and the vault has genuinely never been checked. A chain the deployment does not
+
+        serve answers `404 CHAIN_NOT_SUPPORTED` instead, so "never assessed" is never reported
+
+        for a vault Euler could not have assessed; an archived metadata-only chain is unserved
+
+        too but carries imported rows, and those are still answered.
+
+
+        A served chain without the `assessments` chain capability answers 404
+
+        `CHAIN_CAPABILITY_DISABLED`.'
+      parameters:
+      - $ref: '#/components/parameters/ChainIdPath'
+      - $ref: '#/components/parameters/AddressPath'
+      responses:
+        '200':
+          description: Vault assessment or default unevaluated statuses.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+            ETag:
+              $ref: '#/components/headers/AssessmentETag'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - meta
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultAssessment'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '404':
+          $ref: '#/components/responses/Error404ChainCapability'
+      operationId: getEarnVaultAssessment
+components:
+  schemas:
+    ResolvedVaultLabels:
+      type: object
+      readOnly: true
+      description: Read-time display cascade (vault label, else product, else indexed on-chain identity; escrow vaults get a fixed name). Raw fields stay authoritative for editing — this block is derived and never stored.
+      required:
+      - name
+      - description
+      - portfolioNotice
+      - deprecated
+      - deprecationReason
+      - entityId
+      - url
+      - logo
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        portfolioNotice:
+          type: string
+          nullable: true
+        deprecated:
+          type: boolean
+          description: Vault or product deprecation.
+        deprecationReason:
+          type: string
+          nullable: true
+          description: Reason from the nearest actively deprecated source; null when nothing is deprecated. Retained reasons on non-deprecated rows never contribute.
+        entityId:
+          type: string
+          nullable: true
+          description: Vault entity, inherited from the product when unset.
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the entity logo.
+    VaultVisibilitySummary:
+      type: object
+      description: 'Platform visibility verdict for discovery surfaces. Warning stays discoverable with a badge; the per-surface booleans carve out lend/borrow discovery individually. A side is explorable when `status` is `visible` or `warning` and nothing hides that side: a platform override, the escrow rule, a curator listing flag on the vault or its product, or deprecation (which hides by default unless a curator re-lists with a `false` flag). An escrow vault (`isEscrow: true`) is never explorable for lending, because nothing can be borrowed from it and a deposit earns nothing; it stays explorable for borrowing, so a market that accepts it as collateral keeps it in its pairs. Its `status` is unaffected.'
+      required:
+      - status
+      - explorableLend
+      - explorableBorrow
+      - decidedBy
+      - reason
+      properties:
+        status:
+          type: string
+          enum:
+          - visible
+          - warning
+          - hidden
+          - pending_review
+        explorableLend:
+          type: boolean
+        explorableBorrow:
+          type: boolean
+        explorableLendDecidedBy:
+          $ref: '#/components/schemas/VaultListingDecidedBy'
+        explorableBorrowDecidedBy:
+          $ref: '#/components/schemas/VaultListingDecidedBy'
+        decidedBy:
+          type: string
+          description: Which resolution rule decided the status. `config-*` codes come from Layer 1 (configuration safety), `consistency-*` codes from Layer 2 (label consistency). `unclaimed` and `unassigned` are label gates. A verified or unassessable non-escrow vault stays in `pending_review` until an entity claims it, and EVK and Securitize vaults additionally require assignment to a product. Escrow vaults bypass both label gates. `advisories` badges a vault that passed both layers but has a failed advisory finding — it stays in discovery, with `checksStatus` on its assessment naming a Layer 1 concern and `consistencyContext` a Layer 2 one (an Earn vault's deprecated dependency); an advisory that could not be judged does not badge.
+          enum:
+          - config-revoked
+          - consistency-revoked
+          - config-suspended
+          - consistency-suspended
+          - config-failed
+          - not-explorable
+          - unassessable
+          - deprecated
+          - advisories
+          - unclaimed
+          - unassigned
+          - verified
+          - awaiting-verification
+        reason:
+          type: string
+          nullable: true
+          description: 'Display-appropriate explanation for the decision, when there is one: the curated deprecation reason, the failing check''s sentence, or, for `advisories`, the sentence of the first failed advisory (Layer 1 before Layer 2, each by finding key) followed by a count of the rest, e.g. "… (2 more checks flagged)". Null for a deprecated vault whose curator gave no reason, and whenever nothing needs explaining.'
+    PaginationMeta:
+      type: object
+      required:
+      - timestamp
+      properties:
+        total:
+          type: integer
+          description: Exact total count when the endpoint provides one.
+        hasMore:
+          type: boolean
+          description: Indicates whether another page exists beyond the current page.
+        offset:
+          type: integer
+        limit:
+          type: integer
+          description: Echoed page size after endpoint-side clamping.
+        outcome:
+          type: string
+          enum:
+          - disabled
+          - removed
+          description: On a toolbox config DELETE, what happened to the row.
+        products:
+          type: array
+          description: 'On a curation vault `POST`, `PUT`, or `PATCH`: the products the write touched (the one the vault left and the one it joined) as they are after the write, `governanceMode` included, so the caller applies them instead of re-reading.'
+          items:
+            $ref: '#/components/schemas/ProductLabels'
+        timestamp:
+          type: string
+          format: date-time
+        chainId:
+          type: string
+          description: Comma-separated chain IDs for multi-chain responses.
+        degradedProviders:
+          type: array
+          items:
+            type: string
+          description: Live providers whose data is incomplete in this response.
+        excludedChains:
+          $ref: '#/components/schemas/ExcludedChains'
+    VaultConfigAssessmentContext:
+      type: object
+      nullable: true
+      required:
+      - policyId
+      - policyVersion
+      - outcome
+      - localOutcome
+      - checksStatus
+      - evaluatedAt
+      - blockNumber
+      - blockHash
+      - findings
+      - summary
+      properties:
+        policyId:
+          type: string
+          enum:
+          - euler-evk
+          - euler-securitize
+          - euler-earn
+        policyVersion:
+          type: integer
+          minimum: 1
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        localOutcome:
+          type: string
+          description: Verdict excluding collateral-recognition findings; used for cycle-safe recognition.
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        checksStatus:
+          type: string
+          enum:
+          - positive
+          - warning
+          - negative
+          nullable: true
+          description: 'Health of the advisory findings, orthogonal to the gating verdict in `configStatus`: the rules that disclose a curator''s judgment call rather than suspend a vault. Null when the policy emitted no advisory finding. Same axis and vocabulary as an oracle adapter''s `checksStatus`; a vault advisory never condemns, so this does not reach `negative`.'
+        evaluatedAt:
+          type: string
+          format: date-time
+        blockNumber:
+          type: string
+          pattern: ^\d+$
+        blockHash:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{64}$
+        findings:
+          type: array
+          items:
+            type: object
+            required:
+            - key
+            - outcome
+            - required
+            - description
+            properties:
+              key:
+                type: string
+                description: 'Stable rule key. Static keys are listed in `x-finding-keys`; the templated namespaces are described in `x-finding-key-namespaces`. `evidence.*` keys are observations that never gate the verdict, but they are not the only non-gating findings: read `required` for that (`irm.max-apy` is advisory). A `scheduled.` key grades a pending timelocked change and never counts toward the verdict, `checksStatus`, `summary` or visibility. A required key ending in `.recognized` is a cross-entity recognition rule excluded from `localOutcome`. Keys are never renamed, only added.'
+                x-finding-keys:
+                - compliance.ds-token-wiring
+                - configuration.evc-compatible-asset
+                - configuration.lens-readable
+                - deployment.no-evault-nesting
+                - deployment.recognized-factory
+                - evidence.asset
+                - evidence.caps
+                - evidence.controller-perspective
+                - evidence.debt-socialization
+                - evidence.escrow-sink
+                - evidence.fee
+                - evidence.fee-receiver
+                - evidence.freeze-activity
+                - evidence.governance
+                - evidence.guardian
+                - evidence.inert-collateral-entries
+                - evidence.interest-fee
+                - evidence.interest-rate-model
+                - evidence.liability-price
+                - evidence.multisig
+                - evidence.pending-activity
+                - evidence.pyth-recovery-issues
+                - evidence.pyth-unserved-feeds
+                - evidence.queues
+                - evidence.resolved-vaults
+                - evidence.route-adapters
+                - evidence.scheduled-changes
+                - evidence.seize-activity
+                - evidence.supply-cap
+                - evidence.unit-of-account
+                - evidence.upgradeable
+                - evidence.vault-mode
+                - governance.router
+                - governance.timelock
+                - hooks.zero-or-trusted
+                - irm.max-apy
+                - irm.rate-computation
+                - liquidation.cool-off
+                - liquidation.max-discount
+                - market.interest-rate-model-present
+                - market.oracle-present
+                - market.unit-of-account-present
+                - operations.not-paused
+                - oracle.adapters-checks
+                - oracle.adapters-recognized
+                - oracle.liability-quote
+                - oracle.liability-route
+                - oracle.no-fallback
+                - oracle.recognized-router
+                x-finding-key-namespaces:
+                - pattern: collateral.<address>.<rule>
+                  policies:
+                  - euler-evk
+                  rules:
+                  - ltv
+                  - route
+                  - recognized
+                  - ramp
+                  - price
+                  - quote
+                  description: One group per active collateral of an EVK market vault; <address> is the lowercase collateral vault address. `recognized` reads the collateral's `localOutcome`.
+                - pattern: strategy.<address>.<rule>
+                  policies:
+                  - euler-earn
+                  rules:
+                  - recognized
+                  description: One group per active strategy of an Earn vault; <address> is the lowercase strategy vault address. `recognized` reads the strategy's full `outcome`, or its `localOutcome` when the strategy is itself an Earn vault. It is required until the strategy has passed after the curator's latest cap increase and advisory after, or while the vault caps it at zero; `observed.link` is `{ phase, committedAtBlock, committedAtLogIndex, acceptedAt }`.
+                - pattern: scheduled.<rule>
+                  policies:
+                  - euler-earn
+                  rules:
+                  - strategy.<address>.recognized
+                  - governance.timelock
+                  description: A timelocked change submitted on an Earn vault and not yet live, graded by the rule it will face once accepted, a strategy a pending cap adds or a pending timelock decrease. Never required, and outside `outcome`, `checksStatus`, `summary` and visibility. `observed` is `{ pending, validAt, submittedAtBlock }`, `pending` holding what the live rule would observe; a cause's summary starts with when the change can be accepted.
+              outcome:
+                type: string
+                enum:
+                - pass
+                - fail
+                - unknown
+                - not_applicable
+              required:
+                type: boolean
+                description: Whether the finding gates the verdict. Required findings reduce into `outcome` and `localOutcome`; an advisory finding carries a real `pass`, `fail` or `unknown` outcome for the reader but never suspends the vault.
+              description:
+                type: string
+              expected: {}
+              observed: {}
+              cause:
+                type: object
+                description: 'Why this is not a pass. On `fail` and `unknown` it is the failure; on `not_applicable` it is why the rule did not run, and its absence on an `evidence.*` row is what separates a skipped check from an observation. The rule key alone cannot say: `hooks.zero-or-trusted` fails either because the hook target is untrusted or because a zero target disabled an exit operation, and those have opposite remedies. Switch on `code`; `subject` is the value to act on; `summary` is one sentence naming it, and is what `configReason` carries for the blocking finding.'
+                required:
+                - code
+                - subject
+                - summary
+                - remedy
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - deposit-only-vault
+                    - feed-revert-tolerated
+                    - curator-unset
+                    - owner-renounced
+                    - vault-lens-reverted
+                    - not-a-recognized-evault
+                    - deployment-record-unavailable
+                    - liability-asset-is-evault
+                    - evc-compatible-asset-flag-set
+                    - hook-target-untrusted
+                    - exit-operations-disabled
+                    - oracle-unset
+                    - unit-of-account-unset
+                    - interest-rate-model-unset
+                    - router-not-recognized
+                    - router-has-fallback
+                    - router-config-unreadable
+                    - route-has-no-unit-of-account-adapter
+                    - collateral-route-skips-evault-asset
+                    - quote-reverted
+                    - quote-returned-zero
+                    - pyth-feed-discontinued
+                    - pyth-update-unconfirmed
+                    - pyth-feed-unattributed
+                    - pyth-receiver-incompatible
+                    - session-feed-tolerance-withdrawn
+                    - quote-unavailable
+                    - interest-rate-model-reverts
+                    - interest-rate-model-not-probed
+                    - borrow-apy-above-bound
+                    - router-governor-outside-entity
+                    - timelock-too-short
+                    - liquidation-discount-out-of-range
+                    - liquidation-cool-off-out-of-range
+                    - collateral-ltv-out-of-range
+                    - dependency-not-verified
+                    - dependency-not-assessed
+                    - route-adapter-unrecognized
+                    - route-adapter-unassessed
+                    - route-adapter-checks-failing
+                    - dependency-unclaimed
+                    - dependency-hidden
+                    - dependency-deprecated
+                    - governing-address-unregistered
+                    - vault-paused
+                    - compliance-service-unresolvable
+                    - compliance-probe-unavailable
+                  subject:
+                    type: string
+                    nullable: true
+                    description: The one value to act on -- an address, or a formatted parameter value. Null when the rule names none.
+                  summary:
+                    type: string
+                    description: One sentence naming the value that failed, not the requirement it failed.
+                  remedy:
+                    type: string
+                    nullable: true
+                    description: Which way out applies. Null when the answer is not the reader's to act on.
+                    enum:
+                    - have-euler-trust-the-hook-target
+                    - restore-the-disabled-exit-operations
+                    - make-the-vault-deposit-only
+                    - set-an-interest-rate-model
+                    - use-a-recognized-euler-router
+                    - remove-the-router-fallback
+                    - add-the-missing-oracle-route
+                    - replace-the-oracle-adapter
+                    - review-the-oracle-adapter
+                    - move-router-governance-to-the-entity
+                    - change-the-vault-parameter
+                    - wait-for-the-dependency-verdict
+                    - wait-for-euler-to-check-again
+                    - unpause-the-vault
+                    - remove-the-dependency
+                    - register-the-address
+                    - contact-euler
+              exempted:
+                type: boolean
+                description: True when a platform rule exemption downgraded this finding to evidence.
+        summary:
+          type: object
+          required:
+          - passed
+          - failed
+          - unknown
+          - notApplicable
+          properties:
+            passed:
+              type: integer
+              minimum: 0
+            failed:
+              type: integer
+              minimum: 0
+            unknown:
+              type: integer
+              minimum: 0
+            notApplicable:
+              type: integer
+              minimum: 0
+    LabelRowKey:
+      description: Identifies one publishable row across the draft and every version.
+      oneOf:
+      - type: object
+        required:
+        - type
+        - entityId
+        properties:
+          type:
+            type: string
+            enum:
+            - entity
+          entityId:
+            type: string
+      - type: object
+        required:
+        - type
+        - chainId
+        - productId
+        properties:
+          type:
+            type: string
+            enum:
+            - product
+          chainId:
+            type: integer
+          productId:
+            type: string
+      - type: object
+        required:
+        - type
+        - chainId
+        - address
+        properties:
+          type:
+            type: string
+            enum:
+            - vault
+          chainId:
+            type: integer
+          address:
+            type: string
+    GeoPolicy:
+      type: object
+      required:
+      - id
+      - countries
+      - countriesResolved
+      - policyType
+      - createdAt
+      - updatedAt
+      - version
+      - derivedFrom
+      - createdBy
+      - updatedBy
+      properties:
+        id:
+          type: string
+          format: uuid
+        chainId:
+          type: integer
+          minimum: 1
+          nullable: true
+        productId:
+          type: string
+          nullable: true
+        vaultAddress:
+          type: string
+          nullable: true
+          pattern: ^0x[a-fA-F0-9]{40}$
+        assetAddress:
+          type: string
+          nullable: true
+          pattern: ^0x[a-fA-F0-9]{40}$
+        assetSymbols:
+          type: array
+          nullable: true
+          description: Case-insensitive exact symbol matchers.
+          items:
+            type: string
+        assetSymbolRegex:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: Case-insensitive regular expression matched against token symbols.
+        assetNames:
+          type: array
+          nullable: true
+          description: Case-insensitive exact token-name matchers.
+          items:
+            type: string
+        assetNameRegex:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: Case-insensitive regular expression matched against token names.
+        countries:
+          type: array
+          minItems: 1
+          description: As authored — ISO 3166-1 alpha-2 codes and group aliases (`EU`, `EEA`, `EFTA`). Unknown entries are rejected at write time.
+          items:
+            type: string
+            minLength: 1
+        countriesResolved:
+          type: array
+          readOnly: true
+          description: Read-time expansion of `countries` — group aliases replaced by their current member codes, deduplicated and sorted. Consumers evaluate against this list; a rule authored with an alias tracks the bloc's current membership.
+          items:
+            type: string
+        policyType:
+          type: string
+          enum:
+          - block
+          - restrict
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the row last changed. Rows written before it was recorded carry their creation time.
+        version:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Opaque version of the row, `<updatedAt>|<changeId>`. Send it as `expectedVersion` with `POST /v3/changes` (domain `geo`, key the policy ID); a stale one records a superseded change instead of writing. Null on a derived row, which cannot be changed.
+        derivedFrom:
+          type: object
+          nullable: true
+          readOnly: true
+          required:
+          - policyId
+          - assetAddress
+          - relation
+          - path
+          description: Set on a row the server derives from a stored asset rule, null on a stored row. A derived row copies the rule's countries, type, reason and product or vault scope onto one token the app reaches that is built on an asset the rule selects (an ERC-4626 wrapper, an escrow, EVK or Earn share, an Earn allocation, a Pendle SY, PT, YT or LP). Shared code never derives a row. Its `id` is a stable UUID of version 8; it has no authors and is not writable.
+          properties:
+            policyId:
+              type: string
+              format: uuid
+              description: The stored rule.
+            assetAddress:
+              type: string
+              description: The asset the stored rule selects.
+            relation:
+              type: string
+              enum:
+              - erc4626
+              - evk-share
+              - escrow-share
+              - earn-share
+              - securitize-share
+              - earn-allocation
+              - pendle-pt
+              - pendle-lp
+              - pendle-sy
+              - pendle-yt
+              description: The last link from the derived token to the asset.
+            path:
+              type: array
+              items:
+                type: string
+              description: From the derived token to the selected asset, both included.
+        createdBy:
+          $ref: '#/components/schemas/RowAuthor'
+        updatedBy:
+          $ref: '#/components/schemas/RowAuthor'
+    LabelPublicationReport:
+      description: 'What the snapshot builder did: `published` rows went live from the draft, `pulledIn` rows were needed by a selected row, `heldBack` rows carry a pending change a hold kept out (their own hold, a held dependency absent from the published version, or a held published row that still needs them), and `overrides` are held rows the selection published anyway.'
+      type: object
+      required:
+      - published
+      - pulledIn
+      - heldBack
+      - overrides
+      - leftOut
+      properties:
+        published:
+          type: array
+          items:
+            type: object
+            required:
+            - key
+            - change
+            properties:
+              key:
+                $ref: '#/components/schemas/LabelRowKey'
+              change:
+                type: string
+                enum:
+                - create
+                - update
+                - delete
+        pulledIn:
+          type: array
+          items:
+            type: object
+            required:
+            - key
+            - change
+            - requiredBy
+            properties:
+              key:
+                $ref: '#/components/schemas/LabelRowKey'
+              change:
+                type: string
+                enum:
+                - create
+                - update
+                - delete
+              requiredBy:
+                $ref: '#/components/schemas/LabelRowKey'
+        heldBack:
+          type: array
+          items:
+            type: object
+            required:
+            - key
+            - change
+            - cause
+            - holds
+            - relatedKey
+            properties:
+              key:
+                $ref: '#/components/schemas/LabelRowKey'
+              change:
+                type: string
+                enum:
+                - create
+                - update
+                - delete
+              cause:
+                type: string
+                enum:
+                - hold
+                - depends-on-held
+                - required-by-held
+              holds:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelHoldRef'
+              relatedKey:
+                nullable: true
+                allOf:
+                - $ref: '#/components/schemas/LabelRowKey'
+        overrides:
+          type: array
+          items:
+            type: object
+            required:
+            - key
+            - holds
+            properties:
+              key:
+                $ref: '#/components/schemas/LabelRowKey'
+              holds:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelHoldRef'
+        leftOut:
+          type: object
+          required:
+          - rows
+          - selected
+          description: 'Draft vault rows with no labels (the rows discovery materialises for vaults nobody claimed, claims cleared), which the publication leaves out: how many the draft holds, and which of them the selection named, a no-op rather than an error. A selection naming only such rows answers `publishOutcome: unchanged` with them listed here.'
+          properties:
+            rows:
+              type: integer
+              minimum: 0
+            selected:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelRowKey'
+    LabelHold:
+      description: A row held out of publication. A quarantine is a rejection of one row; an entity hold is raised by entity suspension and covers every row the entity owns. Held rows keep their published content on every full publish while the draft stays intact.
+      type: object
+      required:
+      - id
+      - kind
+      - resource
+      - reason
+      - contentHash
+      - heldBy
+      - createdAt
+      - releasedAt
+      - releasedBy
+      - releaseReason
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        resource:
+          $ref: '#/components/schemas/LabelRowKey'
+        reason:
+          type: string
+        contentHash:
+          type: string
+          nullable: true
+          description: Hash of the draft row when the hold was raised; null when the draft lacked the row.
+        heldBy:
+          $ref: '#/components/schemas/LabelHoldActor'
+        createdAt:
+          type: string
+          format: date-time
+        releasedAt:
+          type: string
+          format: date-time
+          nullable: true
+        releasedBy:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldActor'
+        releaseReason:
+          type: string
+          nullable: true
+          description: 'Why the hold was released, when the release gave a reason: a quarantine release, or the entity resume that lifted an entity hold. Null while the hold is active.'
+    LabelPublishDryRunResult:
+      type: object
+      required:
+      - dryRun
+      - publishOutcome
+      - latestVersion
+      - report
+      - changes
+      - draftToken
+      properties:
+        dryRun:
+          type: boolean
+          enum:
+          - true
+        publishOutcome:
+          type: string
+          enum:
+          - published
+          - unchanged
+          description: What the same request without `dryRun` would do.
+        latestVersion:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/LabelVersion'
+        report:
+          $ref: '#/components/schemas/LabelPublicationReport'
+        changes:
+          type: array
+          description: 'What publishing would change, row by row: the report''s `published` and `pulledIn` rows with their content on both sides, then the `heldBack` rows (`held: true`) with the draft content a lifted hold would publish. This is the exact answer to "what would publishing change", computed by the same comparison publication uses, so it covers every difference between the draft and the latest version, including writes the change log never sees.'
+          items:
+            $ref: '#/components/schemas/LabelPublicationRowChange'
+        draftToken:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          description: Opaque token for exactly what this preview would publish, including the holds a partial publish would override. Send it back as `expectedDraftToken` to publish only if nothing moved since.
+    LabelHoldRef:
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+    LabelPublishResult:
+      allOf:
+      - $ref: '#/components/schemas/LabelVersion'
+      - type: object
+        required:
+        - publishOutcome
+        - report
+        properties:
+          publishOutcome:
+            type: string
+            enum:
+            - published
+            - unchanged
+            description: Whether this request created a snapshot or returned the unchanged latest snapshot.
+          report:
+            $ref: '#/components/schemas/LabelPublicationReport'
+    VaultAssessmentPreviewSecuritize:
+      allOf:
+      - $ref: '#/components/schemas/VaultAssessmentPreviewBase'
+      - type: object
+        required:
+        - family
+        - policyId
+        properties:
+          family:
+            type: string
+            enum:
+            - securitize
+          policyId:
+            type: string
+            enum:
+            - euler-securitize
+          findings:
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/VaultConfigFinding'
+              - type: object
+                properties:
+                  key:
+                    type: string
+                    x-finding-keys:
+                    - operations.not-paused
+                    - compliance.ds-token-wiring
+                    - evidence.controller-perspective
+                    - evidence.asset
+                    - evidence.supply-cap
+                    - evidence.multisig
+                    - evidence.freeze-activity
+                    - evidence.seize-activity
+          appliedOverrides:
+            type: array
+            maxItems: 0
+            items:
+              type: string
+            description: Always empty; this vault kind accepts no overrides.
+          notSimulated:
+            type: array
+            maxItems: 0
+            items:
+              type: string
+            description: Always empty; nothing is simulated for this vault kind.
+    AttributedLabelVersion:
+      allOf:
+      - $ref: '#/components/schemas/LabelVersion'
+      - type: object
+        required:
+        - createdBy
+        - createdByEmail
+        - publishedBy
+        - publishedByEmail
+        properties:
+          createdBy:
+            type: string
+            nullable: true
+            description: Present for platform sessions; API keys see null.
+          createdByEmail:
+            type: string
+            nullable: true
+            description: The email of the platform administrator `createdBy` names, for display. Present for platform sessions when the id is a known administrator; null otherwise and for API keys.
+          publishedBy:
+            type: string
+            nullable: true
+            description: Platform administrator id, worker id, or API key id, matching `publishedByKind`. Present for platform sessions; API keys see null.
+          publishedByEmail:
+            type: string
+            nullable: true
+            description: The email of the platform administrator `publishedBy` names when `publishedByKind` is `platform-admin`, for display. Present for platform sessions; null for the worker, for keys, and for API key sessions.
+          publishedChanges:
+            type: integer
+            minimum: 0
+            description: Change-log rows this version carried; present on the version history.
+    LabelChange:
+      type: object
+      required:
+      - id
+      - resource
+      - ownerEntityId
+      - action
+      - initialAction
+      - before
+      - after
+      - afterContentHash
+      - changedFields
+      - actor
+      - requestId
+      - status
+      - publishedVersionId
+      - holdId
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        resource:
+          $ref: '#/components/schemas/LabelRowKey'
+        ownerEntityId:
+          type: string
+          nullable: true
+        action:
+          type: string
+          enum:
+          - create
+          - update
+          - delete
+          - claim
+          - unclaim
+          - restore
+          - scoped-restore
+          - transfer
+          description: '`restore` marks a row a whole-draft restore brought back; `scoped-restore` one that a restore limited to a curator, products or vaults brought back; `transfer` a row the platform moved to another curator.'
+        initialAction:
+          type: string
+          enum:
+          - create
+          - update
+          - delete
+          - claim
+          - unclaim
+          - restore
+          - scoped-restore
+          - transfer
+          description: The action the row first waited with. A later write to the same row supersedes its pending change and carries this forward, so a claim followed by an edit still reads as a claim until it is published. Equals `action` when nothing was superseded.
+        before:
+          type: object
+          nullable: true
+          additionalProperties: true
+        after:
+          type: object
+          nullable: true
+          additionalProperties: true
+        afterContentHash:
+          type: string
+          nullable: true
+          pattern: ^[0-9a-f]{64}$
+          description: 'Hash of `after` as a draft row; null when the change deleted the row. On a row''s `pending` or `quarantined` change it is the current draft row''s hash: send it as a hold''s or release''s `expectedContentHash`.'
+        changedFields:
+          type: array
+          items:
+            type: string
+        actor:
+          type: object
+          required:
+          - kind
+          - id
+          - email
+          properties:
+            kind:
+              type: string
+              enum:
+              - platform-admin
+              - entity-admin
+              - entity-editor
+              - api-key
+              - system
+            id:
+              type: string
+              nullable: true
+            email:
+              type: string
+              nullable: true
+        requestId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+          - pending
+          - published
+          - quarantined
+          - superseded
+        publishedVersionId:
+          type: string
+          format: uuid
+          nullable: true
+        holdId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    LabelPublicationRowChange:
+      type: object
+      required:
+      - key
+      - change
+      - before
+      - after
+      - changedFields
+      - held
+      properties:
+        held:
+          type: boolean
+          description: 'True for a row a hold keeps out of this publication: it is listed in the report''s `heldBack`, is not taken, and its `after` is the draft content the hold keeps out.'
+        key:
+          $ref: '#/components/schemas/LabelRowKey'
+        change:
+          type: string
+          enum:
+          - create
+          - update
+          - delete
+        before:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: The complete row as the latest published version carries it, in the published shape (every published field, no timestamps or assignment); null for a create.
+        after:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: The complete row as the new version would carry it (for a held row, as the draft has it), in the published shape; null for a delete.
+        changedFields:
+          type: array
+          items:
+            type: string
+          description: The fields whose value differs between `before` and `after`, sorted.
+    RowAuthor:
+      type:
+      - object
+      - 'null'
+      description: 'Who wrote the row: a platform admin by id, or a system actor such as `admin-secret` or `euler-labels-unified-importer`. Shown only to a platform session whose operator is on the Toolbox admin allowlist; null for every other reader, and for rows written before authors were recorded.'
+      required:
+      - kind
+      - id
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+    VaultConfigPreviewRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        overrides:
+          $ref: '#/components/schemas/VaultConfigOverrides'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - requestId
+          properties:
+            code:
+              type: string
+              description: 'Domain error code. Examples:
+
+                - BAD_REQUEST
+
+                - INVALID_ADDRESS
+
+                - INVALID_CHAIN_ID
+
+                - CHAIN_NOT_SUPPORTED
+
+                - CHAIN_CAPABILITY_DISABLED
+
+                - NOT_FOUND
+
+                - VAULT_NOT_FOUND
+
+                - TOKEN_NOT_FOUND
+
+                - ACCOUNT_NOT_FOUND
+
+                - VALIDATION_ERROR
+
+                - CONFLICT
+
+                - PRECONDITION_FAILED
+
+                - PAYLOAD_TOO_LARGE
+
+                - RATE_LIMIT_EXCEEDED
+
+                - UNSUPPORTED_MEDIA_TYPE
+
+                - UPSTREAM_TIMEOUT
+
+                - UNAUTHORIZED
+
+                - FORBIDDEN
+
+                - SERVICE_UNAVAILABLE
+
+                - SERVICE_DISABLED
+
+                - INTERNAL_ERROR
+
+                '
+            message:
+              type: string
+            requestId:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              description: Context of the error. Where present, `details.reason` is a stable kebab-case value to key on, and `details.cause` narrows a reason that has several causes. The labels routes list theirs in the Labels tag.
+    ListingFlag:
+      type: boolean
+      nullable: true
+      description: Curator listing flag. `null` leaves the decision to platform overrides and deprecation, `true` hides the vault(s) from discovery, `false` keeps a deprecated vault listed.
+    VaultLabels:
+      type: object
+      required:
+      - chainId
+      - address
+      - vaultType
+      - isEscrow
+      - isDeprecated
+      - notExplorableLend
+      - notExplorableBorrow
+      - tags
+      - resolved
+      - createdAt
+      - updatedAt
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          description: 'Vault family derived from indexed discovery. An escrow vault is `evk` with `isEscrow: true`.'
+        isEscrow:
+          type: boolean
+          description: True for an EVK vault the escrow perspective has verified as collateral-only. Derived by Euler from the perspective and never accepted in a request body; such a vault has no entity, no product and no curator listing flags.
+        visibility:
+          oneOf:
+          - $ref: '#/components/schemas/VaultVisibilitySummary'
+          - $ref: '#/components/schemas/VaultVisibility'
+          nullable: true
+          description: 'Present only on `GET /v3/labels/vaults?include=visibility`: the row''s visibility verdict, or null when none has been evaluated yet. The public summary for most readers; the record as evaluated (`VaultVisibility`) when the route has authenticated a platform session.'
+        productId:
+          type: string
+          nullable: true
+        entityId:
+          type: string
+          nullable: true
+          description: Entity associated through verified on-chain ownership, or null for unclaimed and escrow vaults.
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorableLend:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Curator lend-side listing flag; overrides the product flag for this vault.
+        notExplorableBorrow:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Curator borrow-side listing flag; overrides the product flag for this vault. Earn vaults have no borrow side and reject `true`.
+        tags:
+          type: array
+          description: Union of entity-managed label tags and platform-managed assessment tags, sorted, deduplicated. The label row may only carry the curator vocabulary (`keyring`, `access control`, `governance limited`, `suppress high utilisation warning`, `cyclical note`); every other tag (`recently added` and the Base app's `base` included) can only come from the assessment, so a non-vocabulary tag here was set by the platform. Published reads union the published row with the live assessment.
+          items:
+            type: string
+        campaigns:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/LabelCampaign'
+        resolved:
+          $ref: '#/components/schemas/ResolvedVaultLabels'
+        assignedBy:
+          type: string
+          nullable: true
+          description: The platform administrator who assigned the vault to its curator (a platform registration or transfer); null for a curator's own claim and on published reads. Layer 2 verifies an assigned vault whose governing address (the governor of an EVK or Securitize vault, the owner of an Earn vault) is the zero address.
+        assignedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When Euler assigned the vault; null when `assignedBy` is null.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+    LabelHoldSummary:
+      description: What a draft read shows on a held row.
+      type: object
+      required:
+      - id
+      - kind
+      - reason
+      - since
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - quarantine
+          - entity-hold
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    VaultAssessmentPreview:
+      description: 'What a fresh Layer 1 check would say, in the shape of the vault''s kind: `family` names the variant. EVK previews may carry applied overrides and findings whose simulation could not run; Earn and Securitize previews accept no overrides and answer both lists empty. Each variant lists the finding keys its policy can produce.'
+      oneOf:
+      - $ref: '#/components/schemas/VaultAssessmentPreviewEvk'
+      - $ref: '#/components/schemas/VaultAssessmentPreviewEarn'
+      - $ref: '#/components/schemas/VaultAssessmentPreviewSecuritize'
+      discriminator:
+        propertyName: family
+        mapping:
+          evk: '#/components/schemas/VaultAssessmentPreviewEvk'
+          earn: '#/components/schemas/VaultAssessmentPreviewEarn'
+          securitize: '#/components/schemas/VaultAssessmentPreviewSecuritize'
+    ConfigTrustEntry:
+      type: object
+      required:
+      - id
+      - chainId
+      - kind
+      - address
+      - ruleKey
+      - label
+      - fingerprint
+      - provider
+      - sessionBound
+      - maxSilenceSeconds
+      - createdAt
+      - updatedAt
+      - version
+      - createdBy
+      - updatedBy
+      properties:
+        id:
+          type: string
+          format: uuid
+        chainId:
+          type: integer
+        kind:
+          type: string
+          enum:
+          - hook-target
+          - rule-exemption
+          - custom-adapter
+          - adapter-check-exemption
+        address:
+          type: string
+          description: Hook target address for hook-target entries; vault address for rule-exemption entries; oracle adapter address for custom-adapter and adapter-check-exemption entries.
+        ruleKey:
+          type: string
+          nullable: true
+          description: Exempted finding key (rule-exemption entries only), e.g. `collateral.0x....ltv`; for adapter-check-exemption entries, the adapter health check key that is accepted.
+        label:
+          type: string
+          nullable: true
+        fingerprint:
+          type: string
+          nullable: true
+          pattern: ^0x[0-9a-f]{64}$
+          description: Metadata-stripped runtime bytecode SHA-256 (custom-adapter entries only).
+        provider:
+          type: string
+          nullable: true
+          description: Curated provider identity (custom-adapter entries only).
+        sessionBound:
+          type: boolean
+          description: 'Custom-adapter entries only: the reviewed adapter pauses outside trading sessions. A quote revert on one of its routed pairs is then excused (`not_applicable`) when that pair quoted successfully within `maxSilenceSeconds`, measured from the last successful quote v3 observed on the pair. A pair silent longer, or never seen quoting, still fails.'
+        maxSilenceSeconds:
+          type: integer
+          nullable: true
+          description: Set exactly when `sessionBound`; between 3600 and 604800 (seven days, the closure bound of the modeled session-bound adapters).
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the row last changed. Rows written before it was recorded carry their creation time.
+        version:
+          type: string
+          description: '`toolbox:<updatedAt>`; the `expectedVersion` of a `trust-entries` change. Trust entries are never edited in place, so it moves only when the entry is replaced.'
+        createdBy:
+          $ref: '#/components/schemas/RowAuthor'
+        updatedBy:
+          $ref: '#/components/schemas/RowAuthor'
+    VaultVisibility:
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - status
+      - checks
+      - source
+      - evaluatedAt
+      properties:
+        chainId:
+          type: integer
+        vaultAddress:
+          type: string
+        status:
+          type: string
+          enum:
+          - visible
+          - warning
+          - hidden
+          - pending_review
+        checks:
+          type: object
+          additionalProperties: true
+          description: 'Decision evidence: `decidedBy`, `reason`, layer statuses, the resolved deprecation, the platform `notExplorable*` overrides as authored, and `listing` — the effective per-side discovery result (`{ lend: { hidden, decidedBy }, borrow: { hidden, decidedBy } }`) after platform overrides, curator flags, and deprecation.'
+        source:
+          type: string
+        evaluatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    LabelQuarantineRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      - reason
+      properties:
+        resource:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            required:
+            - type
+            - entityId
+            properties:
+              type:
+                type: string
+                enum:
+                - entity
+              entityId:
+                type: string
+          - type: object
+            additionalProperties: false
+            required:
+            - type
+            - chainId
+            - id
+            properties:
+              type:
+                type: string
+                enum:
+                - product
+              chainId:
+                type: integer
+              id:
+                type: string
+          - type: object
+            additionalProperties: false
+            required:
+            - type
+            - chainId
+            - address
+            properties:
+              type:
+                type: string
+                enum:
+                - vault
+              chainId:
+                type: integer
+              address:
+                type: string
+        reason:
+          type: string
+          maxLength: 500
+        expectedContentHash:
+          type: string
+          nullable: true
+          pattern: ^[0-9a-f]{64}$
+          description: 'The draft revision the reviewer judged: the change log''s `afterContentHash` for the row (null for a row the draft no longer has). Compared with the current draft row inside the write''s transaction; when the row moved since, the answer is 412 with `details.reason` `stale-review` and the current `details.contentHash`, and nothing is written. Optional for now; keys will have to send it, and a key write without it is logged.'
+    VaultConfigFinding:
+      description: One Layer 1 finding, as in `VaultConfigAssessmentContext.findings`.
+      type: object
+      required:
+      - key
+      - outcome
+      - required
+      - description
+      properties:
+        key:
+          type: string
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        required:
+          type: boolean
+        description:
+          type: string
+        expected: {}
+        observed: {}
+        cause:
+          type: object
+          description: 'Why this is not a pass. On `fail` and `unknown` it is the failure; on `not_applicable` it is why the rule did not run, and its absence on an `evidence.*` row is what separates a skipped check from an observation. The rule key alone cannot say: `hooks.zero-or-trusted` fails either because the hook target is untrusted or because a zero target disabled an exit operation, and those have opposite remedies. Switch on `code`; `subject` is the value to act on; `summary` is one sentence naming it, and is what `configReason` carries for the blocking finding.'
+          required:
+          - code
+          - subject
+          - summary
+          - remedy
+          properties:
+            code:
+              type: string
+              enum:
+              - deposit-only-vault
+              - feed-revert-tolerated
+              - curator-unset
+              - owner-renounced
+              - vault-lens-reverted
+              - not-a-recognized-evault
+              - deployment-record-unavailable
+              - liability-asset-is-evault
+              - evc-compatible-asset-flag-set
+              - hook-target-untrusted
+              - exit-operations-disabled
+              - oracle-unset
+              - unit-of-account-unset
+              - interest-rate-model-unset
+              - router-not-recognized
+              - router-has-fallback
+              - router-config-unreadable
+              - route-has-no-unit-of-account-adapter
+              - collateral-route-skips-evault-asset
+              - quote-reverted
+              - quote-returned-zero
+              - pyth-feed-discontinued
+              - pyth-update-unconfirmed
+              - pyth-feed-unattributed
+              - pyth-receiver-incompatible
+              - session-feed-tolerance-withdrawn
+              - quote-unavailable
+              - interest-rate-model-reverts
+              - interest-rate-model-not-probed
+              - borrow-apy-above-bound
+              - router-governor-outside-entity
+              - timelock-too-short
+              - liquidation-discount-out-of-range
+              - liquidation-cool-off-out-of-range
+              - collateral-ltv-out-of-range
+              - dependency-not-verified
+              - dependency-not-assessed
+              - route-adapter-unrecognized
+              - route-adapter-unassessed
+              - route-adapter-checks-failing
+              - dependency-unclaimed
+              - dependency-hidden
+              - dependency-deprecated
+              - governing-address-unregistered
+              - vault-paused
+              - compliance-service-unresolvable
+              - compliance-probe-unavailable
+            subject:
+              type: string
+              nullable: true
+              description: The one value to act on -- an address, or a formatted parameter value. Null when the rule names none.
+            summary:
+              type: string
+              description: One sentence naming the value that failed, not the requirement it failed.
+            remedy:
+              type: string
+              nullable: true
+              description: Which way out applies. Null when the answer is not the reader's to act on.
+              enum:
+              - have-euler-trust-the-hook-target
+              - restore-the-disabled-exit-operations
+              - make-the-vault-deposit-only
+              - set-an-interest-rate-model
+              - use-a-recognized-euler-router
+              - remove-the-router-fallback
+              - add-the-missing-oracle-route
+              - replace-the-oracle-adapter
+              - review-the-oracle-adapter
+              - move-router-governance-to-the-entity
+              - change-the-vault-parameter
+              - wait-for-the-dependency-verdict
+              - wait-for-euler-to-check-again
+              - unpause-the-vault
+              - remove-the-dependency
+              - register-the-address
+              - contact-euler
+        exempted:
+          type: boolean
+    ExcludedChains:
+      type: array
+      description: 'On a read across chains that names no `chainId`: the served chains it left out because they do not run the capability the operation needs, rather than reading them as empty. Absent when no chain was left out.'
+      items:
+        type: object
+        required:
+        - chainId
+        - capability
+        properties:
+          chainId:
+            type: integer
+          capability:
+            type: string
+            enum:
+            - indexing
+            - activity
+            - prices
+            - historicalPrices
+            - assessments
+            - labels
+            - logos
+            - stats
+            - risk
+            - rewards
+            - apys
+    LabelCampaign:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - type
+      properties:
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+          - deposit
+          - borrow
+    LabelRowSelection:
+      description: The rows a partial publish takes from the draft. Dependencies the selected rows need are pulled in automatically; everything else keeps its published content. Platform sessions only.
+      type: object
+      additionalProperties: false
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+        products:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - id
+            additionalProperties: false
+            properties:
+              chainId:
+                type: integer
+              id:
+                type: string
+        vaults:
+          type: array
+          items:
+            type: object
+            required:
+            - chainId
+            - address
+            additionalProperties: false
+            properties:
+              chainId:
+                type: integer
+              address:
+                type: string
+    VaultAssessmentFindingChange:
+      type: object
+      required:
+      - key
+      - before
+      - after
+      properties:
+        key:
+          type: string
+        before:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/VaultConfigFinding'
+          description: The stored finding; null when the preview introduces the key.
+        after:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/VaultConfigFinding'
+          description: The previewed finding; null when the change removes the key.
+    LabelPublicationState:
+      type: object
+      required:
+      - labelSetId
+      - mode
+      - suspended
+      - suspendedAt
+      - suspendedBy
+      - suspensionReason
+      - frozenByEnvironment
+      - effectiveFrozen
+      - minDelaySeconds
+      - maxDelaySeconds
+      - dueAt
+      - windowStartedAt
+      - revision
+      - latestVersion
+      properties:
+        labelSetId:
+          type: string
+        mode:
+          type: string
+          enum:
+          - manual
+          - scheduled
+          description: 'How changes go live. `manual` (the rollout default): only an explicit publish by a platform session or a key with `labels:publish` creates a version; no publication window opens and `dueAt` stays null (a CHECK enforces it). `scheduled`: label writes open a window and the worker publishes after the cooldown. Changed in the database only; every mode change resets the schedule, so a switch to `scheduled` opens nothing until the next label write, and a switch to `manual` disarms an open window.'
+        suspended:
+          type: boolean
+          description: A platform actor has suspended automatic publication (relevant in `scheduled` mode). Explicit publication still works.
+        suspendedAt:
+          type: string
+          format: date-time
+          nullable: true
+        suspendedBy:
+          type: object
+          nullable: true
+          required:
+          - kind
+          - id
+          properties:
+            kind:
+              type: string
+              enum:
+              - platform-admin
+              - api-key
+            id:
+              type: string
+              nullable: true
+              description: Present for platform sessions; API keys see the kind only.
+        suspensionReason:
+          type: string
+          nullable: true
+        frozenByEnvironment:
+          type: boolean
+          description: The deployment override (`LABEL_PUBLICATION_FROZEN`) is set. Lifting it is a deploy, not an API call.
+        effectiveFrozen:
+          type: boolean
+          description: True when either the suspension or the environment override stops the timer. In `manual` mode there is no timer; explicit publication is unaffected either way.
+        minDelaySeconds:
+          type: integer
+          description: Cooldown after the last label change before the timer publishes. At least 60.
+        maxDelaySeconds:
+          type: integer
+          description: Cap from the first unpublished change; the timer publishes at the latest here. At most 86400.
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the pending draft is due, or null when nothing is pending or the mode is `manual`.
+        windowStartedAt:
+          type: string
+          format: date-time
+          nullable: true
+        revision:
+          type: string
+          description: Identifies the pending mutations; increments with every scheduled label write.
+        latestVersion:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/AttributedLabelVersion'
+    ProductPlatformListing:
+      description: The platform-owned discovery decision on a product, as a product row shows it.
+      type: object
+      required:
+      - notExplorableLend
+      - notExplorableBorrow
+      - reason
+      properties:
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+    LabelReleaseRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: Why the hold is released or the entity resumed. Trimmed; blank or null records no reason.
+        expectedContentHash:
+          type: string
+          nullable: true
+          pattern: ^[0-9a-f]{64}$
+          description: 'The draft revision the reviewer judged: the change log''s `afterContentHash` for the row (null for a row the draft no longer has). Compared with the current draft row inside the write''s transaction; when the row moved since, the answer is 412 with `details.reason` `stale-review` and the current `details.contentHash`, and nothing is written. Optional for now; keys will have to send it, and a key write without it is logged.'
+    LabelVersion:
+      type: object
+      required:
+      - id
+      - labelSetId
+      - versionKey
+      - status
+      - aliases
+      - isLatest
+      - sourceRepo
+      - sourceRef
+      - sourceSha
+      - schemaAdapter
+      - checksum
+      - publishedByKind
+      - createdAt
+      - publishedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        labelSetId:
+          type: string
+        versionKey:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+          - archived
+        aliases:
+          type: array
+          description: 'Named selectors for this version. `latest` is carried by exactly one published version per label set, the one `isLatest` marks: a publish hands it over from the previous version in the same transaction.'
+          items:
+            type: string
+        isLatest:
+          type: boolean
+        sourceRepo:
+          type: string
+          nullable: true
+        sourceRef:
+          type: string
+          nullable: true
+        sourceSha:
+          type: string
+          nullable: true
+        schemaAdapter:
+          type: string
+        checksum:
+          type: string
+          nullable: true
+          description: SHA-256 checksum of canonical entity, product, and vault-label content, the server-derived `isEscrow` flag of a vault included. Audit timestamps and geo policies are excluded.
+        publishedByKind:
+          type: string
+          enum:
+          - platform-admin
+          - worker
+          - api-key
+          nullable: true
+          description: Who created the version. The publisher's identity is platform-only and appears on the publication state route.
+        createdAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+    VaultAssessmentPreviewEarn:
+      allOf:
+      - $ref: '#/components/schemas/VaultAssessmentPreviewBase'
+      - type: object
+        required:
+        - family
+        - policyId
+        properties:
+          family:
+            type: string
+            enum:
+            - earn
+          policyId:
+            type: string
+            enum:
+            - euler-earn
+          findings:
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/VaultConfigFinding'
+              - type: object
+                properties:
+                  key:
+                    type: string
+                    x-finding-keys:
+                    - governance.timelock
+                    - evidence.guardian
+                    - evidence.multisig
+                    - evidence.fee
+                    - evidence.queues
+                    - evidence.escrow-sink
+                    - evidence.pending-activity
+                    - evidence.scheduled-changes
+                    - evidence.asset
+                    x-finding-key-namespaces:
+                    - pattern: strategy.<address>.<rule>
+                      policies:
+                      - euler-earn
+                      rules:
+                      - recognized
+                    - pattern: scheduled.<rule>
+                      policies:
+                      - euler-earn
+                      rules:
+                      - strategy.<address>.recognized
+                      - governance.timelock
+          appliedOverrides:
+            type: array
+            maxItems: 0
+            items:
+              type: string
+            description: Always empty; this vault kind accepts no overrides.
+          notSimulated:
+            type: array
+            maxItems: 0
+            items:
+              type: string
+            description: Always empty; nothing is simulated for this vault kind.
+    VaultConsistencyContext:
+      type: object
+      nullable: true
+      description: 'The findings behind a Layer 2 verdict, for the policies that grade more than ownership. An Earn vault''s: whether each strategy it can hold funds in (a cap or a withdraw-queue slot) and each active collateral of those strategies is escrow or shown (claimed, assigned to a product, not suspended in its own Layer 2 check, and passing Layer 1 when the vault''s entity claims it), gating always for the vault entity''s own and, for another curator''s, only until acceptable after the curator''s latest cap increase; a deprecated one only warns. And whether its owner, unless renounced, and its curator, when one is set, are addresses an entity registers. Null for every other vault, and for an Earn vault suspended on ownership whose Earn state could not be read; replaced by each completed Layer 2 check. The first required failure is `consistencyReason`; a failed advisory badges the vault `warning`.'
+      required:
+      - policyId
+      - policyVersion
+      - outcome
+      - evaluatedAt
+      - blockNumber
+      - findings
+      properties:
+        policyId:
+          type: string
+          enum:
+          - euler-earn-consistency
+        policyVersion:
+          type: integer
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        evaluatedAt:
+          type: string
+          format: date-time
+        blockNumber:
+          type: string
+          nullable: true
+        findings:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/VaultConfigFinding'
+            - type: object
+              properties:
+                key:
+                  type: string
+                  x-finding-keys:
+                  - governance.owner-registered
+                  - governance.curator-registered
+                  x-finding-key-namespaces:
+                  - pattern: strategy.<address>.<rule>
+                    policies:
+                    - euler-earn-consistency
+                    rules:
+                    - visible
+                    description: One per strategy in scope; <address> is the lowercase strategy vault address. `observed.link` is `{ phase, committedAtBlock, committedAtLogIndex, acceptedAt }`. `own` (claimed by the vault's entity) and `admission` (not acceptable since the curator's latest cap increase) gate; `accepted`, `drift` (failing after acceptance, or a collateral activated after the increase) and `uncapped` (cap zero) do not.
+                  - pattern: collateral.<address>.<rule>
+                    policies:
+                    - euler-earn-consistency
+                    rules:
+                    - visible
+                    description: One per active collateral of those strategies; <address> is the lowercase collateral vault address.
+                  - pattern: scheduled.<rule>
+                    policies:
+                    - euler-earn-consistency
+                    rules:
+                    - strategy.<address>.visible
+                    - collateral.<address>.visible
+                    - governance.owner-registered
+                    description: A pending change graded by the rule it will face once accepted, a strategy a pending cap adds, a collateral it brings, or an owner transfer awaiting acceptance. Never required, so outside `outcome`, `consistencyStatus` and visibility. `observed` is `{ pending, validAt, submittedAtBlock }`; `validAt` is null for an owner transfer.
+    VaultAssessmentPreviewBase:
+      description: The fields every preview answers, whatever the vault kind.
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - persisted
+      - family
+      - policyId
+      - policyVersion
+      - blockNumber
+      - blockHash
+      - evaluatedAt
+      - currentConfigStatus
+      - configStatusIfApplied
+      - outcome
+      - localOutcome
+      - checksStatus
+      - summary
+      - findings
+      - changed
+      - appliedOverrides
+      - notSimulated
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        vaultAddress:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+        persisted:
+          type: boolean
+          enum:
+          - false
+        family:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+        policyId:
+          type: string
+          enum:
+          - euler-evk
+          - euler-securitize
+          - euler-earn
+        policyVersion:
+          type: integer
+          minimum: 1
+        blockNumber:
+          type: string
+          pattern: ^\d+$
+        blockHash:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{64}$
+        evaluatedAt:
+          type: string
+          format: date-time
+        currentConfigStatus:
+          type: string
+          enum:
+          - unverified
+          - pending
+          - verified
+          - suspended
+          - revoked
+          description: The stored Layer 1 status, `unverified` when nothing is stored yet.
+        configStatusIfApplied:
+          type: string
+          enum:
+          - unverified
+          - pending
+          - verified
+          - suspended
+          - revoked
+          description: The status the stored check would write from `currentConfigStatus` and the previewed outcome.
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        localOutcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+          - not_applicable
+        checksStatus:
+          type: string
+          enum:
+          - positive
+          - warning
+          - negative
+          nullable: true
+          description: What the advisory findings would say if this configuration were applied. Same axis as `checksStatus` on the stored assessment.
+        summary:
+          type: object
+          required:
+          - passed
+          - failed
+          - unknown
+          - notApplicable
+          properties:
+            passed:
+              type: integer
+              minimum: 0
+            failed:
+              type: integer
+              minimum: 0
+            unknown:
+              type: integer
+              minimum: 0
+            notApplicable:
+              type: integer
+              minimum: 0
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultConfigFinding'
+        changed:
+          type: array
+          description: Findings whose verdict differs from the stored assessment, added and removed ones included.
+          items:
+            $ref: '#/components/schemas/VaultAssessmentFindingChange'
+        appliedOverrides:
+          type: array
+          items:
+            type: string
+          description: One line per override applied, in the order applied.
+        notSimulated:
+          type: array
+          items:
+            type: string
+          description: 'Finding keys left unknown because their simulation could not run: a quote the probe could not reach, or `oracle.adapters-recognized` when the evaluate-only check refused a proposed adapter. Each finding names the reason in `observed`; the list is empty when every change the batch makes was simulated.'
+    LabelSet:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ResolvedProductLabelsView:
+      type: object
+      readOnly: true
+      description: Consumer-facing product shape (`view=resolved`) — entity fallbacks applied to url and logo, entityName included, resolved wrapper omitted.
+      required:
+      - id
+      - chainId
+      - entityId
+      - entityName
+      - coBrandEntityIds
+      - name
+      - logo
+      - description
+      - url
+      - portfolioNotice
+      - isDeprecated
+      - deprecationReason
+      - notExplorable
+      - governanceMode
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        entityName:
+          type: string
+          nullable: true
+        coBrandEntityIds:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          $ref: '#/components/schemas/ListingFlag'
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          description: Governance mode recorded at the selected label version. See `ProductLabels.governanceMode`.
+        anyExplorableLend:
+          type: boolean
+        anyExplorableBorrow:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+    LabelPublicationControlResult:
+      allOf:
+      - $ref: '#/components/schemas/LabelPublicationState'
+      - type: object
+        required:
+        - controlOutcome
+        properties:
+          controlOutcome:
+            type: string
+            enum:
+            - suspended
+            - resumed
+            - updated
+            - unchanged
+            description: Whether this request changed the state or found it already as requested.
+    ResolvedProductLabels:
+      type: object
+      readOnly: true
+      description: Read-time entity fallbacks for display. Derived, never stored.
+      required:
+      - entityName
+      - url
+      - logo
+      properties:
+        entityName:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          description: Product url, falling back to the owning entity url.
+        logo:
+          type: string
+          nullable: true
+          description: Product logo, falling back to the owning entity logo.
+    ResolvedVaultLabelsView:
+      type: object
+      readOnly: true
+      description: Consumer-facing vault-label shape (`view=resolved`) — the display cascade flattened to the top level; raw label fields are omitted. entityId and deprecation are the resolved values with product inheritance applied.
+      required:
+      - chainId
+      - address
+      - vaultType
+      - isEscrow
+      - productId
+      - entityId
+      - name
+      - description
+      - portfolioNotice
+      - deprecated
+      - deprecationReason
+      - notExplorableLend
+      - notExplorableBorrow
+      - url
+      - logo
+      - tags
+      - campaigns
+      - createdAt
+      - updatedAt
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+        vaultType:
+          type: string
+          enum:
+          - evk
+          - earn
+          - securitize
+          description: An escrow vault is `evk` with the `isEscrow` flag set.
+        isEscrow:
+          type: boolean
+          description: True for an EVK vault the escrow perspective has verified as collateral-only.
+        visibility:
+          oneOf:
+          - $ref: '#/components/schemas/VaultVisibilitySummary'
+          - $ref: '#/components/schemas/VaultVisibility'
+          nullable: true
+          description: 'Present only on `GET /v3/labels/vaults?include=visibility`: the row''s visibility verdict, or null when none has been evaluated yet. The public summary for most readers; the record as evaluated (`VaultVisibility`) when the route has authenticated a platform session.'
+        productId:
+          type: string
+          nullable: true
+        entityId:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        portfolioNotice:
+          type: string
+          nullable: true
+        deprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorableLend:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Raw vault-level curator flag; the effective listing is on the vault row's `visibility`.
+        notExplorableBorrow:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Raw vault-level curator flag; the effective listing is on the vault row's `visibility`.
+        url:
+          type: string
+          nullable: true
+        logo:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          description: Same union as `VaultLabels.tags` (label-row vocabulary tags plus platform assessment tags).
+          items:
+            type: string
+        campaigns:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/LabelCampaign'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+    ProductLabels:
+      type: object
+      required:
+      - id
+      - chainId
+      - entityId
+      - coBrandEntityIds
+      - name
+      - isDeprecated
+      - notExplorable
+      - governanceMode
+      - resolved
+      - anyExplorableLend
+      - anyExplorableBorrow
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        chainId:
+          type: integer
+          minimum: 1
+        entityId:
+          type: string
+        coBrandEntityIds:
+          type: array
+          description: Additional entities whose logos should be displayed. Product management remains exclusively with entityId.
+          items:
+            type: string
+        name:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+          maxLength: 2048
+          pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+          description: Absolute https URL.
+        portfolioNotice:
+          type: string
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          allOf:
+          - $ref: '#/components/schemas/ListingFlag'
+          description: Product-wide curator listing flag applied to both sides of every member vault unless a vault-level flag overrides it.
+        governanceMode:
+          type: string
+          enum:
+          - governed
+          - ungoverned
+          - unknown
+          readOnly: true
+          description: Derived by the server from the on-chain governor of member vaults; clients cannot set it. Products are created as `unknown`. Every vault assignment recomputes the mode over the resulting member set and rejects sets that mix governed and ungoverned vaults. Layer 2 adopts `governed` or `ungoverned` for an `unknown` product once its membership verifies against chain state. Entity members cannot update or delete an `ungoverned` product or its vaults after the initial assignment.
+        resolved:
+          $ref: '#/components/schemas/ResolvedProductLabels'
+        anyExplorableLend:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is lend-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        anyExplorableBorrow:
+          type: boolean
+          readOnly: true
+          description: True when at least one member vault is borrow-discoverable per the materialized visibility verdicts. Live chain state (e.g. borrowability) is deliberately excluded.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        hold:
+          type: object
+          nullable: true
+          description: The hold covering this row on a draft read; absent on published reads.
+          allOf:
+          - $ref: '#/components/schemas/LabelHoldSummary'
+        platformListing:
+          type: object
+          nullable: true
+          description: Euler's listing override on this product, shown to platform sessions on draft reads (null when there is none); absent on published reads and to curators.
+          allOf:
+          - $ref: '#/components/schemas/ProductPlatformListing'
+    VaultAssessment:
+      type: object
+      required:
+      - chainId
+      - vaultAddress
+      - configStatus
+      - checksStatus
+      - configContext
+      - consistencyStatus
+      - consistencyContext
+      - riskStatus
+      - isDeprecated
+      - notExplorable
+      - notExplorableLend
+      - notExplorableBorrow
+      - tags
+      - schedulingTier
+      - nextCheckAt
+      - configFailedAttempts
+      - configLastFailedAt
+      - createdAt
+      properties:
+        chainId:
+          type: integer
+          minimum: 1
+        vaultAddress:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+        configStatus:
+          type: string
+          enum:
+          - unverified
+          - pending
+          - verified
+          - suspended
+          - revoked
+          description: 'Layer 1 (on-chain configuration safety) lifecycle. `unverified`: never verified, or the first check failed (`configContext.outcome` is `fail`). `verified`: the configuration policy passed. `suspended`: a re-check failed after the vault had been verified. `revoked`: set manually by a platform admin. `pending`: a platform admin requested a re-check through the PATCH endpoint; the automatic loop never writes this value. A due check is signalled by a non-null `configCheckAt`, not by the status, and a passing status is left unchanged while re-checks run.'
+        configReason:
+          type: string
+          nullable: true
+        checksStatus:
+          type: string
+          enum:
+          - positive
+          - warning
+          - negative
+          nullable: true
+          description: 'Health of the advisory findings, orthogonal to the gating verdict in `configStatus`: the rules that disclose a curator''s judgment call rather than suspend a vault. Null when the policy emitted no advisory finding. Same axis and vocabulary as an oracle adapter''s `checksStatus`; a vault advisory never condemns, so this does not reach `negative`.'
+        configContext:
+          $ref: '#/components/schemas/VaultConfigAssessmentContext'
+        configCheckAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the next Layer 1 check is due. Non-null means an on-chain change or a manual request is awaiting a check; cleared when the check completes.
+        configLastCheckedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When Layer 1 last completed a check, whatever the outcome.
+        configFailedAttempts:
+          type: integer
+          minimum: 0
+          description: 'Layer 1 checks that failed to finish since the last completed one: the RPC was unreachable, or a read the policy needs was not answered. Each failure pushes the next check back, from 5 minutes and doubling up to 6 hours; an on-chain change still triggers a check at once. Back to 0 when a check completes.'
+        configLastFailedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the latest of those failures happened; null once a check completes.
+        schedulingTier:
+          type: string
+          enum:
+          - active
+          - background
+          - static
+          description: 'Which periodic sweep re-checks the vault. `active` (hourly): labeled and not deprecated in the latest published version, or total supply worth at least 100,000 USD, or a collateral or Earn strategy of such a vault; Layer 1''s verdict plays no part, so a hidden vault stays hourly. `background` (daily): everything else. `static` (never swept): escrow vaults, whose configuration cannot change. Governance events trigger an immediate check whatever the tier. On a chain this deployment does not index the tier is the stored default and `nextCheckAt` is null: no sweep reaches the row.'
+        nextCheckAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'When the next Layer 1 check is expected: `configCheckAt` when a check is scheduled, else the last check plus the tier''s sweep interval; null for a vault never checked with nothing scheduled, and for a static vault with nothing scheduled.'
+        configVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the vault last passed Layer 1.
+        consistencyStatus:
+          type: string
+          enum:
+          - not_applicable
+          - pending
+          - verified
+          - suspended
+          - revoked
+          description: 'Layer 2 (label to chain consistency) lifecycle. `not_applicable`: nothing to check (escrow or unclaimed vault). `verified`: the labels agree with the current on-chain governor or owner and with product membership, and an Earn vault''s required `consistencyContext` findings pass. `suspended`: an inconsistency was detected, such as a governor outside the entity''s addresses, a product mixing governed and ungoverned vaults, or an Earn vault''s unclaimed dependency or unregistered owner or curator; resolution is a platform-admin action. `revoked`: set manually by a platform admin. `pending`: a re-check was requested manually, or the first check could not read chain state and will retry.'
+        consistencyReason:
+          type: string
+          nullable: true
+          description: The Layer 2 verdict in one sentence, for display. For a `suspended` Earn vault it is the `cause.summary` of the first required finding that failed. The findings themselves, with their keys and outcomes, are in `consistencyContext`; key on those, not on this sentence.
+        consistencyContext:
+          $ref: '#/components/schemas/VaultConsistencyContext'
+        consistencyCheckAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the next Layer 2 check is due. Set by governance events on chain and by manual requests, and for an Earn vault also by configuration events of the vault, its strategies and their collaterals, by label publications that change a dependency's standing, and by registration changes of its owner or curator; label mutations run their check synchronously instead.
+        consistencyLastCheckedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When Layer 2 last completed a check, whatever the outcome.
+        riskStatus:
+          type: string
+          enum:
+          - unverified
+          - pending
+          - ok
+          - warning
+          - critical
+          - suspended
+          - revoked
+          description: 'Layer 3 (risk context) lifecycle. Not yet automated: no worker writes this field, so it stays `unverified` unless a platform admin sets it through the PATCH endpoint.'
+        riskContext:
+          type: object
+          nullable: true
+          additionalProperties: true
+        riskAssessedAt:
+          type: string
+          format: date-time
+          nullable: true
+        isDeprecated:
+          type: boolean
+        deprecationReason:
+          type: string
+          nullable: true
+        notExplorable:
+          type: boolean
+        notExplorableLend:
+          type: boolean
+        notExplorableBorrow:
+          type: boolean
+        tags:
+          type: array
+          description: Platform-managed tags. Every tag outside the curator vocabulary lives here (`recently added`, the Base app's `base`); vault reads union them with the label row's vocabulary tags.
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        platformUpdatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When a platform admin (or the label import) last wrote this assessment; null while the vault has no stored assessment. The checks never move it. The ETag of GET and PATCH is this value quoted.
+    VaultAssessmentPreviewEvk:
+      allOf:
+      - $ref: '#/components/schemas/VaultAssessmentPreviewBase'
+      - type: object
+        required:
+        - family
+        - policyId
+        properties:
+          family:
+            type: string
+            enum:
+            - evk
+          policyId:
+            type: string
+            enum:
+            - euler-evk
+          findings:
+            type: array
+            items:
+              allOf:
+              - $ref: '#/components/schemas/VaultConfigFinding'
+              - type: object
+                properties:
+                  key:
+                    type: string
+                    x-finding-keys:
+                    - configuration.lens-readable
+                    - deployment.recognized-factory
+                    - deployment.no-evault-nesting
+                    - configuration.evc-compatible-asset
+                    - hooks.zero-or-trusted
+                    - market.oracle-present
+                    - market.unit-of-account-present
+                    - market.interest-rate-model-present
+                    - oracle.recognized-router
+                    - oracle.no-fallback
+                    - oracle.liability-route
+                    - oracle.liability-quote
+                    - oracle.adapters-recognized
+                    - oracle.adapters-checks
+                    - irm.rate-computation
+                    - irm.max-apy
+                    - governance.router
+                    - liquidation.max-discount
+                    - liquidation.cool-off
+                    - evidence.vault-mode
+                    - evidence.upgradeable
+                    - evidence.unit-of-account
+                    - evidence.interest-fee
+                    - evidence.fee-receiver
+                    - evidence.governance
+                    - evidence.multisig
+                    - evidence.caps
+                    - evidence.interest-rate-model
+                    - evidence.debt-socialization
+                    - evidence.inert-collateral-entries
+                    - evidence.route-adapters
+                    - evidence.resolved-vaults
+                    - evidence.liability-price
+                    - evidence.pyth-unserved-feeds
+                    - evidence.pyth-recovery-issues
+                    x-finding-key-namespaces:
+                    - pattern: collateral.<address>.<rule>
+                      policies:
+                      - euler-evk
+                      rules:
+                      - ltv
+                      - route
+                      - recognized
+                      - ramp
+                      - price
+                      - quote
+    VaultConfigOverrides:
+      description: A proposed EVK vault configuration as changes to the live one. Every kind is optional; addresses are 0x-prefixed, LTVs and caps are decimal integer strings in the units the assessment reports them (basis points for LTVs, resolved asset units for caps).
+      type: object
+      additionalProperties: false
+      properties:
+        caps:
+          type: object
+          additionalProperties: false
+          properties:
+            supplyCap:
+              type: string
+              pattern: ^\d+$
+            borrowCap:
+              type: string
+              pattern: ^\d+$
+        collaterals:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - collateral
+            properties:
+              collateral:
+                type: string
+                pattern: ^0x[a-fA-F0-9]{40}$
+              borrowLTV:
+                type: string
+                pattern: ^\d+$
+              liquidationLTV:
+                type: string
+                pattern: ^\d+$
+              initialLiquidationLTV:
+                type: string
+                pattern: ^\d+$
+              targetTimestamp:
+                type: integer
+                minimum: 0
+              rampDuration:
+                type: integer
+                minimum: 0
+              remove:
+                type: boolean
+                description: Drop the collateral row instead of changing it.
+        interestRateModel:
+          type: object
+          additionalProperties: false
+          required:
+          - address
+          properties:
+            address:
+              type: string
+              pattern: ^0x[a-fA-F0-9]{40}$
+        resolvedVaults:
+          type: array
+          maxItems: 50
+          description: '`govSetResolvedVault(vault, resolved)` on the vault''s router: the entry the lens would report after it (the vault, its asset, the unit of account, the unwrap chain) is added or removed, so a route staged in the same batch on the vault''s asset prices it. A vault with an adapter configured for itself keeps answering through it either way, as the router reads the configured pair before any resolution.'
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - vault
+            - resolved
+            properties:
+              vault:
+                type: string
+                pattern: ^0x[a-fA-F0-9]{40}$
+              resolved:
+                type: boolean
+        oracleRoutes:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - base
+            properties:
+              base:
+                type: string
+                pattern: ^0x[a-fA-F0-9]{40}$
+              quote:
+                type: string
+                pattern: ^0x[a-fA-F0-9]{40}$
+                description: Defaults to the vault's unit of account.
+              adapter:
+                type: string
+                pattern: ^0x[a-fA-F0-9]{40}$
+                description: Required unless `remove` is true.
+              remove:
+                type: boolean
+        hooks:
+          type: object
+          additionalProperties: false
+          properties:
+            hookTarget:
+              type: string
+              pattern: ^0x[a-fA-F0-9]{40}$
+            hookedOperations:
+              type: object
+              additionalProperties: false
+              properties:
+                deposit:
+                  type: boolean
+                mint:
+                  type: boolean
+                withdraw:
+                  type: boolean
+                redeem:
+                  type: boolean
+                transfer:
+                  type: boolean
+                skim:
+                  type: boolean
+                borrow:
+                  type: boolean
+                repay:
+                  type: boolean
+                repayWithShares:
+                  type: boolean
+                pullDebt:
+                  type: boolean
+                convertFees:
+                  type: boolean
+                liquidate:
+                  type: boolean
+                flashloan:
+                  type: boolean
+                touch:
+                  type: boolean
+                vaultStatusCheck:
+                  type: boolean
+    LabelHoldActor:
+      type: object
+      required:
+      - kind
+      - id
+      - email
+      properties:
+        kind:
+          type: string
+          enum:
+          - platform-admin
+          - api-key
+          - system
+        id:
+          type: string
+          nullable: true
+          description: Returned to platform sessions only; keys see null.
+        email:
+          type: string
+          nullable: true
+          description: The platform administrator's email, for display next to the id. Returned to platform sessions only; null for keys, the system, and key sessions.
+    LabelPublicationSummary:
+      type: object
+      required:
+      - mode
+      - suspended
+      - dueAt
+      - latestVersion
+      properties:
+        mode:
+          type: string
+          enum:
+          - manual
+          - scheduled
+          description: How changes go live; see `LabelPublicationState.mode`.
+        suspended:
+          type: boolean
+          description: Automatic publication is suspended (relevant in `scheduled` mode).
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the pending draft is due in `scheduled` mode; null when nothing is pending or the mode is `manual`.
+        latestVersion:
+          type: object
+          nullable: true
+          required:
+          - versionKey
+          - publishedAt
+          properties:
+            versionKey:
+              type: string
+            publishedAt:
+              type: string
+              format: date-time
+              nullable: true
+    VaultListingDecidedBy:
+      type: string
+      description: 'Who decided one discovery side''s listing, nearest explicit decision first: `platform` (assessment override), `escrow` (lend side of an escrow vault, set by Euler automatically), `curator` (vault-level flag), `curator-product` (product-level flag), `deprecated` (resolved deprecation with no curator flag), or `none` (shown, nothing decided).'
+      enum:
+      - platform
+      - escrow
+      - curator
+      - curator-product
+      - deprecated
+      - none
+  parameters:
+    LabelVersionParam:
+      name: version
+      in: query
+      required: false
+      description: Version selector. Omission, `latest`, and `production` select the latest published snapshot. Explicit `current` and `draft` select the mutable working copy and require an authorized session as documented by the endpoint. Other published keys and aliases retain their stored casing.
+      schema:
+        type: string
+        default: latest
+    AddressPath:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Requested page size. Values above the endpoint cap are clamped; the default shared cap is 100.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+        maximum: 100
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      description: Page offset, capped at 10000 to bound query cost.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        default: 0
+    LabelSetParam:
+      name: labelSet
+      in: query
+      required: false
+      description: Label set identifier. Defaults to `public`.
+      schema:
+        type: string
+        default: public
+    ChainIdPath:
+      name: chainId
+      in: path
+      required: true
+      schema:
+        type: integer
+    LabelViewParam:
+      name: view
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - curation
+        - resolved
+        default: curation
+      description: Read view. `curation` (default) returns raw label fields with the resolved block nested, mirroring the write schema so read-modify-write round-trips stay safe. `resolved` returns the display cascade flattened to the top level with raw fields omitted, for read-only consumers. Unknown values are rejected with 400.
+    LabelSetIdPath:
+      name: labelSetId
+      in: path
+      required: true
+      description: Label set identifier.
+      schema:
+        type: string
+  headers:
+    AssessmentETag:
+      description: The assessment's `platformUpdatedAt` in double quotes; absent while the vault has no stored assessment. Send it back as `If-Match` on the next PATCH.
+      schema:
+        type: string
+    X-Label-Version-Id:
+      description: The resolved published version's id. Absent on `current` and `draft` reads. It is not accepted as a `version=` selector; pin on `X-Label-Version`.
+      schema:
+        type: string
+        format: uuid
+    X-Label-Set:
+      description: The label set this read resolved, for example `public`.
+      schema:
+        type: string
+    X-Request-Id:
+      description: Request identifier for tracing.
+      schema:
+        type: string
+    X-Label-Version:
+      description: The label version this read resolved. For a published read it is the version's key (`latest`, `production` and other aliases resolve to it, for example `v20260929144948869`); send it back as `version=` to pin later reads to the same snapshot. For a `current` or `draft` read it is `draft`.
+      schema:
+        type: string
+  responses:
+    LabelContextNotFound:
+      description: 'The label set or version could not be resolved: `labelSet` names no label set, `version` matches no published key or alias, or a `current` or `draft` read names a set other than `public`. This is the only 404 of the label reads that carries `details.labelSet` and `details.version`, which echo the request; a missing row never does, so a client can tell "this label set or version does not exist" from "this row is not labelled".'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error403:
+      description: Forbidden
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error409:
+      description: Conflict
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error400:
+      description: Bad request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error500:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error503:
+      description: Service unavailable
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404ChainCapability:
+      description: 'Not found, or `CHAIN_CAPABILITY_DISABLED`: a requested chain does not run the capability the operation needs (see `capabilities` on `/v3/chains`), named in `x-chain-capability` or, where it depends on the request, in the parameter. `details.chainIds` lists those chains and `details.capability` names the capability.'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: CHAIN_CAPABILITY_DISABLED
+              message: Chain(s) 137 do not run prices
+              requestId: req_example
+              details:
+                chainIds:
+                - 137
+                capability: prices
+    Error412:
+      description: Precondition failed
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error415:
+      description: Unsupported media type
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error422:
+      description: Validation error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Not found
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error413:
+      description: Request body too large
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error401:
+      description: Unauthorized
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (optional; higher rate limits).
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
