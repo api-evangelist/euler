@@ -959,3 +959,9 @@ components:
       scheme: bearer
       bearerFormat: API key
       description: 'Alternative to X-API-Key using Authorization: Bearer <key>'
+x-provenance:
+  method: harvested
+  publisher: Euler Finance
+  source: https://v3.euler.finance/v3/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
